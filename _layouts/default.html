@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">   
+	<title>GR's Website</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://data.princeton.edu/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/css/data.css" rel="stylesheet"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="https://data.princeton.edu/js/bootstrap.min.js"></script>
+<!-- 
+    removed Google Analytics in local copy 
+-->
+</head>
+<body>
+<div id="topbar" style="width:100%">
+ 
+<!-- nav xs -->
+<div id="nav-xs" class="visible-xs">
+  <button class="btn btn-clear" type="button"> / </button>
+  <div class="btn-group"> 
+  <button class="btn btn-clear dropdown-toggle" type="button" id="courses" 
+  data-toggle="dropdown" aria-expanded="true">
+    Courses
+  <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu" role="menu" aria-labelledby="courses">
+    <li role="presentation"><a role="menuitem" tabindex="-1" href="/glms">GLMs</a></li>
+    <li role="presentation"><a role="menuitem" tabindex="-1" href="/multilevel">Multilevel</a></li>
+    <li role="presentation"><a role="menuitem" tabindex="-1" href="/survival">Survival</a></li>
+    <li role="presentation"><a role="menuitem" tabindex="-1" href="/demography">Demography</a></li>
+  </ul></div>
+  <div class="btn-group">
+  <button class="btn btn-clear dropdown-toggle" type="button" id="tutorials" 
+  data-toggle="dropdown" aria-expanded="true">
+    Software
+  <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu" role="menu" aria-labelledby="tutorials">
+      <li role="presentation"><a role="menuitem" tabindex="-1" href="/stata">Stata</a></li>
+      <li role="presentation"><a role="menuitem" tabindex="-1" href="/R"> R </a></li>
+      <li role="presentation"><a role="menuitem" tabindex="-1" href="https://grodri.github.io/markstat">Markstat</a></li>
+  </ul>  
+  </div>
+</div> 
+
+<!-- nav sm+ -->	
+<div id="nav-sm" class="hidden-sx">
+    <ul class="topnav">
+        <li><a href="/">/</a></li>
+        <li><a href="/glms">GLMs</a></li>
+        <li><a href="/multilevel">Multilevel</a></li>
+        <li><a href="/survival">Survival</a></li>
+        <li><a href="/demography">Demography</a></li>
+        <li><a href="/stata">Stata</a></li>
+        <li><a href="/R"> R </a></li>
+        <li><a href="https://grodri.github.io/markstat">Markstat</a></li>
+    </ul>      
+</div>
+
+<!-- google cse -->
+
+<!-- cse toggle -->
+
+</div><!--/ top navigation -->
+
+<!-- banner -->
+<div id="mid" class="container-fluid" style="position:relative; 
+	background-color:#3366cc; color:white; text-align:center;
+	min-height:80px;box-shadow: 0px 0px 24px 2px rgba(0,0,0,0.3)">
+<div id="gr" style="font-size:20px">Germ&aacute;n Rodr&iacute;guez</div>
+<span id="site" style="font-size:28px">Applied Statistics</span>
+<span id="pu" style="font-size:14px">Princeton University</span>
+</div></div>
+
+<div class="container mt-3" style="max-width:768px">
+
+    {{ content }}
+    
+</div>  
+
+<footer id="footer">
+<p style="text-align:center;margin:0">&copy; 2022 Germ&aacute;n Rodr&iacute;guez, Princeton University
+</footer>
+</body>
+</html>
