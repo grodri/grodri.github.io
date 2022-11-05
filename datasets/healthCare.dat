@@ -1,0 +1,35 @@
+          eth       migr      avail      provider          n 
+ 1   indNoSpa         no         no          none          7  
+ 2   indNoSpa         no         no       midwife         93  
+ 3   indNoSpa         no         no    healthPost          6  
+ 4   indNoSpa         no         no        doctor          1  
+ 5   indNoSpa         no        yes          none          4  
+ 6   indNoSpa         no        yes       midwife        197  
+ 7   indNoSpa         no        yes    healthPost         31  
+ 8   indNoSpa         no        yes        doctor          8  
+ 9   indNoSpa        yes        yes       midwife         85  
+10   indNoSpa        yes        yes    healthPost         22  
+11   indNoSpa        yes        yes        doctor          1  
+12     indSpa         no         no          none          2  
+13     indSpa         no         no       midwife         29  
+14     indSpa         no         no    healthPost          7  
+15     indSpa         no        yes          none         34  
+16     indSpa         no        yes       midwife        714  
+17     indSpa         no        yes    healthPost        232  
+18     indSpa         no        yes        doctor        161  
+19     indSpa        yes        yes          none         25  
+20     indSpa        yes        yes       midwife        328  
+21     indSpa        yes        yes    healthPost        127  
+22     indSpa        yes        yes        doctor         92  
+23     ladino         no         no          none         11  
+24     ladino         no         no       midwife        138  
+25     ladino         no         no    healthPost         74  
+26     ladino         no         no        doctor          4  
+27     ladino         no        yes          none         42  
+28     ladino         no        yes       midwife        232  
+29     ladino         no        yes    healthPost        194  
+30     ladino         no        yes        doctor        169  
+31     ladino        yes        yes          none          8  
+32     ladino        yes        yes       midwife         67  
+33     ladino        yes        yes    healthPost        106  
+34     ladino        yes        yes        doctor         83  

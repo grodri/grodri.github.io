@@ -1,0 +1,114 @@
+number,name,state,birthstr,startstr,stopstr,status
+1,John Jay,NY,"December 12, 1745","October 19, 1789","June 29, 1795",Resigned
+2,John Rutledge,SC,"September 17, 1739","February 15, 1790","March 4, 1791",Resigned
+3,William Cushing,MA,"March 1, 1732","February 2, 1790","September 13, 1810",Died
+4,James Wilson,PA,"September 14, 1742","October 5, 1789","August 21, 1798",Died
+5,John Blair,VA,"April 17, 1732","February 2, 1790","October 25, 1795",Resigned
+6,James Iredell,NC,"October 5, 1751","May 12, 1790","October 20, 1799",Died
+7,Thomas Johnson,MD,"November 4, 1732","August 6, 1792","January 16, 1793",Resigned
+8,William Paterson,NJ,"December 24, 1745","March 11, 1793","September 8, 1806",Died
+9,Samuel Chase,MD,"April 17, 1741","February 4, 1796","June 19, 1811",Died
+10,Oliver Ellsworth,CT,"April 29, 1745","March 8, 1796","December 15, 1800",Resigned
+11,Bushrod Washington,VA,"June 5, 1762","November 9, 1798","November 26, 1829",Died
+12,Alfred Moore,NC,"May 21, 1755","April 21, 1800","January 26, 1804",Resigned
+13,John Marshall,VA,"September 24, 1755","February 4, 1801","July 6, 1835",Died
+14,William Johnson,SC,"December 27, 1771","May 7, 1804","August 4, 1834",Died
+15,Henry Brockholst Livingston,NY,"November 25, 1757","January 20, 1807","March 18, 1823",Died
+16,Thomas Todd,KY,"January 23, 1765","March 3, 1807","February 7, 1826",Died
+17,Gabriel Duvall,MD,"December 6, 1752","November 23, 1811","January 12, 1835",Resigned
+18,Joseph Story,MA,"September 18, 1779","February 3, 1812","September 10, 1845",Died
+19,Smith Thompson,NY,"January 17, 1768","September 1, 1823","December 18, 1843",Died
+20,Robert Trimble,KY,"November 17, 1776","June 16, 1826","August 25, 1828",Died
+21,John McLean,OH,"March 11, 1785","January 11, 1830","April 4, 1861",Died
+22,Henry Baldwin,PA,"January 14, 1780","January 18, 1830","April 21, 1844",Died
+23,James Moore Wayne,GA,"July 1, 1790","January 14, 1835","July 5, 1867",Died
+24,Roger B. Taney,MD,"March 17, 1777","March 28, 1836","October 12, 1864",Died
+25,Philip Pendleton Barbour,VA,"May 25, 1783","May 12, 1836","February 25, 1841",Died
+26,John Catron,TN,"January 7, 1786","May 1, 1837","May 30, 1865",Died
+27,John McKinley,AL,"May 1, 1780","January 9, 1838","July 19, 1852",Died
+28,Peter Vivian Daniel,VA,"April 24, 1784","January 10, 1842","May 31, 1860",Died
+29,Samuel Nelson,NY,"November 10, 1792","February 27, 1845","November 28, 1872",Retired
+30,Levi Woodbury,NH,"December 22, 1789","September 23, 1845","September 4, 1851",Died
+31,Robert Cooper Grier,PA,"March 5, 1794","August 10, 1846","January 31, 1870",Retired
+32,Benjamin Robbins Curtis,MA,"November 4, 1809","October 10, 1851","September 30, 1857",Resigned
+33,John Archibald Campbell,AL,"June 24, 1811","April 11, 1853","April 30, 1861",Resigned
+34,Nathan Clifford,ME,"August 18, 1803","January 21, 1858","July 25, 1881",Died
+35,Noah Haynes Swayne,OH,"December 7, 1804","January 27, 1862","January 24, 1881",Retired
+36,Samuel Freeman Miller,IA,"April 5, 1816","July 21, 1862","October 13, 1890",Died
+37,David Davis,IL,"March 9, 1815","December 10, 1862","March 4, 1877",Resigned
+38,Stephen Johnson Field,CA,"November 4, 1816","May 10, 1863","December 1, 1897",Retired
+39,Salmon P. Chase,OH,"January 13, 1808","December 15, 1864","May 7, 1873",Died
+40,William Strong,PA,"May 6, 1808","March 14, 1870","December 14, 1880",Retired
+41,Joseph Philo Bradley,NJ,"March 14, 1813","March 23, 1870","January 22, 1892",Died
+42,Ward Hunt,NY,"June 14, 1810","January 9, 1873","January 27, 1882",Retired
+43,Morrison Waite,OH,"November 29, 1816","March 4, 1874","March 23, 1888",Died
+44,John Marshall Harlan,KY,"June 1, 1833","December 10, 1877","October 14, 1911",Died
+45,William Burnham Woods,GA,"August 3, 1824","January 5, 1881","May 14, 1887",Died
+46,Stanley Matthews,OH,"July 21, 1824","May 17, 1881","March 22, 1889",Died
+47,Horace Gray,MA,"March 24, 1828","January 9, 1882","September 15, 1902",Died
+48,Samuel Blatchford,NY,"March 9, 1820","April 3, 1882","July 7, 1893",Died
+49,Lucius Quintus Cincinnatus Lamar,MS,"September 17, 1825","January 18, 1888","January 23, 1893",Died
+50,Melville Fuller,IL,"February 11, 1833","October 8, 1888","July 4, 1910",Died
+51,David Josiah Brewer,KS,"June 20, 1837","January 6, 1890","March 28, 1910",Died
+52,Henry Billings Brown,MI,"March 2, 1836","January 5, 1891","May 28, 1906",Retired
+53,George Shiras Jr.,PA,"January 26, 1832","October 10, 1892","February 23, 1903",Retired
+54,Howell Edmunds Jackson,TN,"April 8, 1832","March 4, 1893","August 8, 1895",Died
+55,Edward Douglass White,LA,"November 3, 1845","March 12, 1894","May 19, 1921",Died
+56,Rufus Wheeler Peckham,NY,"November 8, 1838","January 6, 1896","October 24, 1909",Died
+57,Joseph McKenna,CA,"August 10, 1843","January 26, 1898","January 5, 1925",Retired
+58,Oliver Wendell Holmes Jr.,MA,"March 8, 1841","December 8, 1902","January 12, 1932",Retired
+59,William R. Day,OH,"April 17, 1849","March 2, 1903","November 13, 1922",Retired
+60,William Henry Moody,MA,"December 23, 1853","December 17, 1906","November 20, 1910",Retired
+61,Horace Harmon Lurton,TN,"February 26, 1844","January 3, 1910","July 12, 1914",Died
+62,Charles Evans Hughes,NY,"April 11, 1862","October 10, 1910","June 10, 1916",Resigned
+63,Willis Van Devanter,WY,"April 17, 1859","January 3, 1911","June 2, 1937",Retired
+64,Joseph Rucker Lamar,GA,"October 14, 1857","January 3, 1911","January 2, 1916",Died
+65,Mahlon Pitney,NJ,"February 5, 1858","March 18, 1912","December 31, 1922",Resigned
+66,James Clark McReynolds,TN,"February 3, 1862","October 12, 1914","January 31, 1941",Retired
+67,Louis Brandeis,KY,"November 13, 1856","June 5, 1916","February 13, 1939",Retired
+68,John Hessin Clarke,OH,"September 18, 1857","October 9, 1916","September 18, 1922",Retired
+69,William Howard Taft,CT,"September 15, 1857","July 11, 1921","February 3, 1930",Retired
+70,George Sutherland,UT,"March 25, 1862","October 2, 1922","January 17, 1938",Retired
+71,Pierce Butler,MN,"March 17, 1866","January 2, 1923","November 16, 1939",Died
+72,Edward Terry Sanford,TN,"July 23, 1865","February 19, 1923","March 8, 1930",Died
+73,Harlan F. Stone,NY,"October 11, 1872","March 2, 1925","April 22, 1946",Died
+74,Owen Josephus Roberts,PA,"May 2, 1875","June 2, 1930","July 31, 1945",Resigned
+75,Benjamin N. Cardozo,NY,"May 24, 1870","March 14, 1932","July 9, 1938",Died
+76,Hugo Black,AL,"February 27, 1886","August 19, 1937","September 17, 1971",Retired
+77,Stanley Forman Reed,KY,"December 31, 1884","January 31, 1938","February 25, 1957",Retired
+78,Felix Frankfurter,MA,"November 15, 1882","January 30, 1939","August 28, 1962",Retired
+79,William O. Douglas,CT,"October 16, 1898","April 17, 1939","November 12, 1975",Retired
+80,Frank Murphy,MI,"April 13, 1890","February 5, 1940","July 19, 1949",Died
+81,James F. Byrnes,SC,"May 2, 1879","July 8, 1941","October 3, 1942",Resigned
+82,Robert H. Jackson,NY,"February 13, 1892","July 11, 1941","October 9, 1954",Died
+83,Wiley Blount Rutledge,IA,"July 20, 1894","February 15, 1943","September 10, 1949",Died
+84,Harold Hitz Burton,OH,"June 22, 1888","October 1, 1945","October 13, 1958",Retired
+85,Fred M. Vinson,KY,"January 22, 1890","June 24, 1946","September 8, 1953",Died
+86,Tom C. Clark,TX,"September 23, 1899","August 24, 1949","June 12, 1967",Retired
+87,Sherman Minton,IN,"October 20, 1890","October 12, 1949","October 15, 1956",Retired
+88,Earl Warren,CA,"March 19, 1891","October 5, 1953","June 23, 1969",Retired
+89,John Marshall Harlan II,NY,"May 20, 1899","March 28, 1955","September 23, 1971",Retired
+90,William J. Brennan,NJ,"April 25, 1906","October 16, 1956","July 20, 1990",Retired
+91,Charles Evans Whittaker,MO,"February 22, 1901","March 25, 1957","March 31, 1962",Resigned
+92,Potter Stewart,OH,"January 23, 1915","October 14, 1958","July 3, 1981",Retired
+93,Byron White,CO,"June 8, 1917","April 16, 1962","June 28, 1993",Retired
+94,Arthur Goldberg,IL,"August 8, 1908","October 1, 1962","July 25, 1965",Resigned
+95,Abe Fortas,TN,"June 19, 1910","October 4, 1965","May 14, 1969",Resigned
+96,Thurgood Marshall,NY,"July 2, 1908","October 2, 1967","October 1, 1991",Retired
+97,Warren E. Burger,VA,"September 17, 1907","June 23, 1969","September 26, 1986",Retired
+98,Harry Blackmun,MN,"November 12, 1908","June 9, 1970","August 3, 1994",Retired
+99,Lewis Franklin Powell Jr.,VA,"September 19, 1907","January 7, 1972","June 26, 1987",Retired
+100,William Rehnquist,AZ,"October 1, 1924","January 7, 1972","September 3, 2005",Died
+101,John Paul Stevens,IL,"April 20, 1920","December 19, 1975","June 29, 2010",Retired
+102,Sandra Day O'Connor,AZ,"March 26, 1930","September 25, 1981","January 31, 2006",Retired
+103,Antonin Scalia,VA,"March 11, 1936","September 26, 1986","February 13, 2016",Died
+104,Anthony Kennedy,CA,"July 23, 1936","February 18, 1988",,Incumbent
+105,David Souter,NH,"September 17, 1939","October 9, 1990","June 29, 2009",Retired
+106,Clarence Thomas,GA,"June 23, 1948","October 23, 1991",,Incumbent
+107,Ruth Bader Ginsburg,NY,"March 15, 1933","August 10, 1993",,Incumbent
+108,Stephen Breyer,MA,"August 15, 1938","August 3, 1994",,Incumbent
+109,John Roberts,MD,"January 27, 1955","September 29, 2005",,Incumbent
+110,Samuel Alito,NJ,"April 1, 1950","January 31, 2006",,Incumbent
+111,Sonia Sotomayor,NY,"June 26, 1954","August 8, 2009",,Incumbent
+112,Elena Kagan,MA,"April 28, 1960","August 7, 2010",,Incumbent
+113,Neil Gorsuch,CO,"August 29, 1967","April 10, 2017",,Incumbent
