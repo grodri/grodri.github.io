@@ -71,11 +71,12 @@ Week 4 deals with
 analysis of survival time when there are multiple causes of failure.
 Additional materials include a discussion of
 ![](/images/pdficon_small.png) [cumulative incidence](cumulativeIncidence.pdf),
-including estimation of the cumulative incidence function (CIF) and Fine
-and Gray's competing risk model, and an expanded computing log fitting
-competing risk models to the tenure of U.S. [Supreme Court
-justices](justices). THERE ARE TWO OR THREE MORE PAGES HERE
-A competing risk simulation is [here](simcomp).
+and Fine and Gray's competing risk model. The computing logs apply these
+ideas to the tenure of U.S. Supreme Court justices, including estimating
+cumulative [incidence functions](justices) and a nice status plot, 
+fitting a [Cox model](justices2) of competing risks, and fitting
+the [Fine and Gray model](justices3). We close with a competing risk
+[simulation](simcomp).
 
 ### 4. Unobserved Heterogeneity
 

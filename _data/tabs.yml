@@ -15,9 +15,9 @@ multilevel:
   - url: index
     label: Home
   - url: lang1
-    label: "2 levels"
+    label: "2 Levels"
   - url: egm   
-    label: "3 levels"
+    label: "3 Levels"
   - url: hospmle 
     label: Logit
   - url: lips   
