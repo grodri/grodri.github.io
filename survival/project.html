@@ -1,0 +1,146 @@
+---
+layout: default
+section: survival
+---
+
+<h2 class='first'>
+	Survival Analysis Project:<br/>
+	Marriage Dissolution in the U.S. 
+</h2>
+
+<p>
+	Our class project will analyze data on marriage dissolution in the U.S.
+based on a longitudinal survey.  We will conduct the analysis in three parts,
+starting with a basic proportional hazards model, adding time-varying covariates, 
+and then considering multiple-spell data.
+</p>
+<p>
+	The dataset comes from Lillard and Panis (2003), 
+<em>aML Multilevel Multiprocess Statistical Software, Version 2.0</em>.
+EconWare, Los Angeles, California. 
+I have created a Stata system file available as
+<code>http://data.princeton.edu/pop509/divorce3.dta</code>
+which includes the following variables:
+</p>
+<p>
+<style>
+tr.thd {border-top: 1px solid #ccc; border-bottom:1px solid #ccc;}
+tr.thd th {padding: 5px; }
+</style>
+<table class="table-classic" style="margin:auto">
+<tr class='thd'><th align='left'>Name</th><th align='left'>Description</th></tr>
+<tr><td>id</td><td>Unique respondent's id</td></tr>
+<tr><td>spans</td><td>See explanation below</td></tr>
+<tr><td>weight</td><td>Sampling weight (will ignore)</td></tr>
+<tr><td>marnum</td><td>Marriage number (1..6)</td></tr>
+<tr><td>censor</td><td>Censoring indicator (1=censored,0=divorced)</td></tr>
+<tr><td>lower</td><td>Lower bound for time of event</td></tr>
+<tr><td>upper</td><td>Upper bound for time of event</td></tr>
+<tr><td>hiseduc</td><td>Husband's education (in years of schooling)</td></tr>
+<tr><td>hereduc</td><td>Wife's education (in years of schooling)</td></tr>
+<tr><td>heblack</td><td>Indicator for whether the husband is African American</td></tr>
+<tr><td>sheblack</td><td>Indicator for whether the wife is African American</td></tr>
+<tr><td>age</td><td>Age of husband (at marriage)</td></tr>
+<tr><td>agediff</td><td>Age difference between husband and wife</td></tr>
+<tr class='bt'><td colspan=2><i>These vars are repeated for n=1,2,...,17:</i></td></tr>
+<tr><td>time<i>n</i></td><td>Time at which this span ends</td></tr>
+<tr class='bb'><td>numkid<i>n</i></td><td>Number of children during this span</td></tr>
+</table>
+<p></p>
+<p>
+An unusual feature of this dataset is that it has lower and upper bounds rather
+than a single time variable.
+Censored cases are marriages that ended by widowhood or were intact as of
+the date of last interview; the time is known exactly for these cases
+and the lower and upper bounds are equal.
+For marriages that ended in divorce the dataset records a range of possible dates 
+such that the divorce is known to have occurred at some time between the lower and 
+upper bounds. 
+For simplicity we will assume that divorces occurred at the mid-point of the interval.
+</p><p>
+Note also that we have multiple marriages per respondent. The dataset has
+3,371 respondents with a total of 4,238 marriages. The respondent with the 
+most marriages had six. The variable <code>marnum</code> is the marriage number
+for the survey respondent (which may be the husband or the wife). 
+For the analyses in parts 1 and 2 we will focus on first marriages only,
+but in part 3 we will consider all marriages together in a multiple spell model.
+</p><p>
+Another interesting feature of the dataset is that we have data on fertility,
+recording the dates of birth of each child within each marriage. 
+This will allow us to explore the extent to which the divorce rate
+varies with number of children. The data are available in wide format
+with a provision for up to 17 children (the maximum in the sample).
+For example respondent with id 9 has been married once only, had a child
+at duration 3.734 years and was interviewed at duration 10.546. 
+This respondent has two fertility spans: (from 0) up to 3.734 with 0 children 
+and (from 3.734) up to 10.546 with one child.
+</p>
+
+<h3>[1] A Proportional Hazards Model</h3>
+<p>
+(a) Explore the determinants of divorce using a proportional hazards model
+for first marriages only. I recommend that you use the same specification
+as Lillard and Panis. They model ethnicity effects using two dummy variables: 
+<code>heblack</code> and <code>mixedrace</code>, which is defined as
+<code>heblack != sheblack</code>. 
+They consider husband's education using two dummy variables, 
+<code>dropout</code> for <code>hiseduc &lt; 12</code> and
+<code>college</code> for <code>hiseduc &ge; 16</code>.
+They also consider the age difference between the spouses using dummies for
+<code>heolder</code> when <code>agediff &gt; 10</code> and
+<code>sheolder</code> when <code>agediff &lt; -10</code>.
+Make sure in your exploration you describe the effects of husband's education, 
+couple's ethnicity and age difference, and test their significance.
+</p><p>
+(b) Use Schoenfeld residuals to explore whether the effects of the
+<em>significant</em> predictors can be considered proportional.  
+Explore further the proportionality of the effect of <code>heblack</code> 
+introducing an interaction with marriage duration.  
+</p><p>
+(c) Estimate the survival function for white couples where the 
+husband has high school education. 
+Note what proportion of marriages survives 20 years,
+and what proportion eventually dissolve. 
+Compare these results with appropriate estimates for black couples
+with the same education. 
+The idea here is to translate hazard ratios into more familiar probabilities.
+</p>
+<h3>[2] A Time-Varying Covariate</h3>
+<p>
+(a) Examine the effect of children on marriage stability by introducing
+a linear term on number of children as a time-varying covariate,
+interpret the estimate and test its significance.
+You should find that the hazard of divorce is lower among couples with
+(more) children, but note the potential endogeneity of number of children.
+(One solution to this problem requires joint modeling of fertility and marital 
+disruption using simultaneous hazard models, as in Lillard, 1993).
+</p><p>
+(b) Estimate the survival function for white couples where the
+husband has high school education assuming they never have children. 
+How would you translate the effect of having children into survival probabilities?
+The idea again is to translate hazard ratios into more familiar probabilities,
+but this is a bit trickier with time-varying covariates.
+</p><p>
+To do this analysis you will need to create a separate record each time a couple 
+has a child. Our discussion of time-varying covariates in class should come handy.
+</p>
+
+<h3>[3] A Multiple-Spell Model</h3>
+<p>
+(a) Fit the model to all marriages adding dummy variables to represent second 
+marriages and third or higher order marriages, ignoring for now the fact that 
+some respondents contribute multiple observations. Interpret and test the 
+significance of the dummy variables for marriage order.
+</p><p>
+(b) Fit a shared frailty model using a random effect to account for possible 
+correlation between the durations of a respondent's marriages. Test the 
+significance of the random effect and interpret the estimate of its variance
+in terms of a correlation coefficient and in terms of a regression coefficient.
+Note any changes in the  coefficients of marriage order after introducing the 
+shared frailty term.
+</p><p>
+(c) How does the risk of divorce for second marriages compares with the risk
+for first marriages?  In your answer try to distinguish the risk for
+average first and second marriages and the risk for the average couple.
+It would be useful to translate your answers into survival probabilities.
+</p>

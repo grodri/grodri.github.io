@@ -1,0 +1,20 @@
+<ul class="nav nav-tabs">
+<li class="active"><a data-toggle="tab" href="#stata">Stata</a></li>
+<li><a data-toggle="tab" href="#R">&nbsp; R &nbsp;</a></li>
+</ul>
+
+<p></p>
+
+<script>
+$(function () {
+    $(".r").hide();
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        var href = $(e.target).attr("href")
+        var language = href.substr(1).toLowerCase();
+        var other = language == 'r' ? 'stata' : 'r';
+        $("." + other).hide();
+        $("." + language).show();
+    });
+
+})
+</script>

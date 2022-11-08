@@ -1,0 +1,22 @@
+[{"title":"1. Parametric Models", "sections":[
+  {"url":"us2013", "title":"The Survival and Hazard Functions"},
+  {"url":"recid1", "title":"Weibull and Log-Normal Models"}]},
+{"title":"2. Non-Parametric Estimation", "sections":[
+  {"url":"gehan", "title":"Kaplan-Meier and Mantel-Haenszel"},
+  {"url":"cox", "title":"Cox Proportional Hazards with Two Groups"},
+  {"url":"recid2", "title":"Cox Proportional Hazards Regression"},
+  {"url":"recid3", "title":"Continuous and Discrete Time Models"},
+  {"url":"pwespline", "title":"Survival with a Regression Spline"}]},
+{"title":"3. Competing Risks", "sections":[
+  {"url":"justices", "title":"Survival with Competing Risks"},
+  {"url":"justices2", "title":"Cox Models of Competing Risks"},
+  {"url":"justices3", "title":"The Fine and Gray Model"},
+  {"url":"simcomp", "title":"A Competing Risk Simulation"}]},
+{"title":"4. Unobserved Heterogeneity", "sections":[
+  {"url":"frailtyApp", "title":"A Frailty Shiny App"},
+  {"url":"heterogeneityApp", "title":"A Heterogeneity Shiny App"}]},
+{"title":"5. Multivariate Survival", "sections":[
+  {"url":"frailty", "title":"A Shared Frailty Model"},
+  {"url":"frailtyr", "title":"A Cox Model with Shared Frailty"},
+  {"url":"frailty2", "title":"Interpretation of Frailty Models"},
+  {"url":"frailty2r", "title":"A Note on Log-Normal Frailty"}]}]

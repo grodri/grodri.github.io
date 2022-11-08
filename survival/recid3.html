@@ -1,0 +1,337 @@
+---
+layout: default
+section: survival
+tab: "Non-Parametric"
+pager: true
+---
+
+<h2 id="continuous-and-discrete-time-models">Continuous and Discrete
+Time Models</h2>
+<p>Let’s have another look at the recidivism data. We will split
+duration into single years with an open-ended category at 5+ and fit a
+piecewise exponential model with the same covariates as Wooldridge.</p>
+<p>We will then treat the data as discrete, assuming that all we know is
+that recidivism occured somewhere in the year. We will fit a binary data
+model with a logit link, which corresponds to the discrete time model,
+and using a complementary-log-log link, which corresponds to a grouped
+continuous time model.</p>
+
+{% include srtabs.html %}
+
+<h3 id="a-piece-wise-exponential-model">A Piece-wise Exponential
+Model</h3>
+<pre class='stata'>. use https://www.stata.com/data/jwooldridge/eacsap/recid, clear
+
+. gen fail = 1-cens
+
+. gen id = _n
+
+. stset durat, fail(fail) id(id)
+
+Survival-time data settings
+
+           ID variable: id
+         Failure event: fail!=0 &amp; fail&lt;.
+Observed time interval: (durat[_n-1], durat]
+     Exit on or before: failure
+
+──────────────────────────────────────────────────────────────────────────
+      1,445  total observations
+          0  exclusions
+──────────────────────────────────────────────────────────────────────────
+      1,445  observations remaining, representing
+      1,445  subjects
+        552  failures in single-failure-per-subject data
+     80,013  total analysis time at risk and under observation
+                                                At risk from t =         0
+                                     Earliest observed entry t =         0
+                                          Last observed exit t =        81
+
+. stsplit year, at(12 24 36 48 60 100) // max is 81
+(5,273 observations (episodes) created)
+
+. replace year = year/12 
+(5,273 real changes made)
+
+. local x workprg priors tserved felon alcohol drugs ///
+>     black married educ age
+
+. streg i.year `x', distribution(exponential) nohr
+
+        Failure _d: fail
+  Analysis time _t: durat
+       ID variable: id
+
+Iteration 0:   log likelihood = -1739.8944  
+Iteration 1:   log likelihood = -1653.6678  
+Iteration 2:   log likelihood = -1587.2575  
+Iteration 3:   log likelihood = -1583.7542  
+Iteration 4:   log likelihood = -1583.7129  
+Iteration 5:   log likelihood = -1583.7129  
+
+Exponential PH regression
+
+No. of subjects =  1,445                                Number of obs =  6,718
+No. of failures =    552
+Time at risk    = 80,013
+                                                        LR chi2(15)   = 312.36
+Log likelihood = -1583.7129                             Prob > chi2   = 0.0000
+
+─────────────┬────────────────────────────────────────────────────────────────
+          _t │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+        year │
+          1  │    .036532   .1093659     0.33   0.738    -.1778212    .2508851
+          2  │  -.3738156   .1296172    -2.88   0.004    -.6278607   -.1197706
+          3  │  -.8115436   .1564067    -5.19   0.000    -1.118095   -.5049921
+          4  │  -.9382311   .1683272    -5.57   0.000    -1.268146   -.6083159
+          5  │  -1.547178   .2033594    -7.61   0.000    -1.945755   -1.148601
+             │
+     workprg │   .0838291   .0907983     0.92   0.356    -.0941324    .2617906
+      priors │   .0872458   .0134763     6.47   0.000     .0608327     .113659
+     tserved │   .0130089   .0016863     7.71   0.000     .0097039    .0163139
+       felon │  -.2839252   .1061534    -2.67   0.007     -.491982   -.0758685
+     alcohol │   .4324425   .1057254     4.09   0.000     .2252245    .6396605
+       drugs │   .2747141   .0978667     2.81   0.005     .0828989    .4665293
+       black │   .4335559   .0883658     4.91   0.000     .2603622    .6067497
+     married │  -.1540477   .1092154    -1.41   0.158    -.3681059    .0600104
+        educ │  -.0214162   .0194453    -1.10   0.271    -.0595283     .016696
+         age │    -.00358   .0005223    -6.85   0.000    -.0046037   -.0025563
+       _cons │  -3.830127    .280282   -13.67   0.000     -4.37947   -3.280785
+─────────────┴────────────────────────────────────────────────────────────────
+
+. estimates store pwe
+</pre>
+<pre class='r'>> library(haven)
+> library(survival)
+> library(dplyr)
+> recid &lt;- read_dta("https://www.stata.com/data/jwooldridge/eacsap/recid.dta")    
+> recid$fail &lt;- 1 - recid$cens
+> recidx &lt;- survSplit(recid, cut = seq(12, 60, 12), 
++     start = "t0", end = "durat", event = "fail", episode = "interval")
+> labels &lt;- paste("(",seq(0,60,12),",",c(seq(12,60,12),81), "]",sep="")    
+> recidx &lt;- mutate(recidx, 
++     exposure = durat - t0, 
++     interval = factor(interval + 1, labels = labels))
+> mf &lt;-  fail ~  interval + workprg + priors + tserved + felon +
++     alcohol + drugs + black + married + educ + age
+> pwe &lt;- glm(mf, offset = log(exposure), data = recidx, family = poisson)
+> coef(summary(pwe))
+                    Estimate  Std. Error     z value     Pr(>|z|)
+(Intercept)     -3.830127469 0.280267334 -13.6659789 1.621090e-42
+interval(12,24]  0.036531989 0.109361775   0.3340471 7.383440e-01
+interval(24,36] -0.373815644 0.129611909  -2.8841150 3.925154e-03
+interval(36,48] -0.811543632 0.156401452  -5.1888497 2.115971e-07
+interval(48,60] -0.938231113 0.168321156  -5.5740534 2.488794e-08
+interval(60,81] -1.547177936 0.203348918  -7.6084886 2.773196e-14
+workprg          0.083829106 0.090794162   0.9232874 3.558575e-01
+priors           0.087245826 0.013473463   6.4753825 9.457203e-11
+tserved          0.013008862 0.001685901   7.7162667 1.197865e-14
+felon           -0.283925203 0.106148770  -2.6747856 7.477705e-03
+alcohol          0.432442493 0.105721133   4.0904073 4.306163e-05
+drugs            0.274714115 0.097863462   2.8071162 4.998720e-03
+black            0.433555955 0.088362277   4.9065729 9.268154e-07
+married         -0.154047742 0.109211869  -1.4105403 1.583802e-01
+educ            -0.021416177 0.019444026  -1.1014271 2.707108e-01
+age             -0.003580003 0.000522249  -6.8549738 7.132557e-12
+</pre>
+<p>The estimates are very close to those obtained using a Cox model.</p>
+<h3 id="a-logit-model">A Logit Model</h3>
+<p>For a discrete-time survival analysis we have to make sure we only
+include intervals with complete exposure, where we can classify the
+outcome as failure or survival. The convicts were released between July
+1, 1977 and June 30, 1978 and the data were collected in April 1984, so
+the length of observation ranges between 70 and 81 months. We therefore
+restrict our attention to 5 years or 60 months. (We could go up to 6
+years or 72 months for some convicts, but unfortunately we don’t have
+the date of release, so we can’t identify these cases and must censor
+everyone at 60.)</p>
+<pre class='stata'>. drop if _t0 >= 60
+(921 observations deleted)
+
+. logit _d i.year `x'
+
+Iteration 0:   log likelihood = -1759.0583  
+Iteration 1:   log likelihood = -1654.9242  
+Iteration 2:   log likelihood = -1637.1916  
+Iteration 3:   log likelihood = -1637.1267  
+Iteration 4:   log likelihood = -1637.1267  
+
+Logistic regression                                     Number of obs =  5,797
+                                                        LR chi2(14)   = 243.86
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -1637.1267                             Pseudo R2     = 0.0693
+
+─────────────┬────────────────────────────────────────────────────────────────
+          _d │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+        year │
+          1  │   .0305282   .1193583     0.26   0.798    -.2034098    .2644661
+          2  │  -.4131403   .1384065    -2.98   0.003    -.6844119   -.1418686
+          3  │  -.8641487   .1639958    -5.27   0.000    -1.185575   -.5427229
+          4  │  -.9936625   .1756322    -5.66   0.000    -1.337895   -.6494297
+             │
+     workprg │   .1109887   .1003087     1.11   0.269    -.0856129    .3075902
+      priors │   .0992921   .0164654     6.03   0.000     .0670205    .1315636
+     tserved │   .0149221   .0021429     6.96   0.000     .0107221    .0191222
+       felon │  -.3196621   .1178117    -2.71   0.007    -.5505687   -.0887555
+     alcohol │   .4724998   .1184177     3.99   0.000     .2404055    .7045941
+       drugs │    .316729   .1086092     2.92   0.004     .1038589    .5295992
+       black │   .4580275   .0973977     4.70   0.000     .2671315    .6489235
+     married │  -.2048073   .1204593    -1.70   0.089    -.4409032    .0312885
+        educ │  -.0267259   .0215052    -1.24   0.214    -.0688754    .0154235
+         age │  -.0040231    .000584    -6.89   0.000    -.0051678   -.0028784
+       _cons │  -1.140803   .3084159    -3.70   0.000    -1.745287   -.5363185
+─────────────┴────────────────────────────────────────────────────────────────
+
+. estimates store logit
+</pre>
+<pre class='r'>> recidx &lt;- filter(recidx, interval != "(60,81]")
+> logit &lt;- glm(mf, data = recidx, family = binomial)  # no offset
+> coef(summary(logit))
+                    Estimate   Std. Error    z value     Pr(>|z|)
+(Intercept)     -1.140802599 0.3084159337 -3.6989094 2.165279e-04
+interval(12,24]  0.030528163 0.1193582701  0.2557692 7.981291e-01
+interval(24,36] -0.413140262 0.1384064532 -2.9849783 2.835984e-03
+interval(36,48] -0.864148699 0.1639957690 -5.2693353 1.369186e-07
+interval(48,60] -0.993662524 0.1756321916 -5.6576332 1.534747e-08
+workprg          0.110988653 0.1003087410  1.1064704 2.685230e-01
+priors           0.099292063 0.0164653717  6.0303566 1.635983e-09
+tserved          0.014922136 0.0021429307  6.9634244 3.320994e-12
+felon           -0.319662098 0.1178116529 -2.7133318 6.661038e-03
+alcohol          0.472499810 0.1184176515  3.9901130 6.604183e-05
+drugs            0.316729032 0.1086092071  2.9162264 3.542934e-03
+black            0.458027506 0.0973977193  4.7026512 2.568049e-06
+married         -0.204807338 0.1204592720 -1.7002206 8.908944e-02
+educ            -0.026725931 0.0215052145 -1.2427651 2.139544e-01
+age             -0.004023087 0.0005840427 -6.8883431 5.644594e-12
+</pre>
+<p>We will compare all estimates below.</p>
+<h3 id="a-complementary-log-log-model">A Complementary Log-log
+Model</h3>
+<p>Finally we use a complementary log-log link</p>
+<pre class='stata'>. glm _d i.year `x', family(binomial) link(cloglog)
+
+Iteration 0:   log likelihood = -1818.8831  
+Iteration 1:   log likelihood = -1640.7899  
+Iteration 2:   log likelihood = -1637.5235  
+Iteration 3:   log likelihood = -1637.5083  
+Iteration 4:   log likelihood = -1637.5083  
+
+Generalized linear models                         Number of obs   =      5,797
+Optimization     : ML                             Residual df     =      5,782
+                                                  Scale parameter =          1
+Deviance         =  3275.016541                   (1/df) Deviance =   .5664159
+Pearson          =  5908.117581                   (1/df) Pearson  =   1.021812
+
+Variance function: V(u) = u*(1-u)                 [Bernoulli]
+Link function    : g(u) = ln(-ln(1-u))            [Complementary log-log]
+
+                                                  AIC             =   .5701253
+Log likelihood   =  -1637.50827                   BIC             =  -46826.57
+
+─────────────┬────────────────────────────────────────────────────────────────
+             │                 OIM
+          _d │ Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+        year │
+          1  │   .0216127   .1095455     0.20   0.844    -.1930925    .2363179
+          2  │  -.3926148   .1296978    -3.03   0.002    -.6468179   -.1384117
+          3  │  -.8249973   .1564479    -5.27   0.000    -1.131629   -.5183651
+          4  │  -.9483385   .1683997    -5.63   0.000    -1.278396   -.6182811
+             │
+     workprg │   .1044651   .0932517     1.12   0.263    -.0783049    .2872351
+      priors │   .0887063   .0139849     6.34   0.000     .0612964    .1161163
+     tserved │    .013267   .0017417     7.62   0.000     .0098534    .0166806
+       felon │  -.2885449   .1091355    -2.64   0.008    -.5024465   -.0746433
+     alcohol │   .4397795   .1090665     4.03   0.000      .226013    .6535459
+       drugs │   .2991025   .1002774     2.98   0.003     .1025625    .4956425
+       black │   .4272096   .0909458     4.70   0.000      .248959    .6054602
+     married │  -.1830403   .1137539    -1.61   0.108     -.405994    .0399133
+        educ │  -.0233346   .0201545    -1.16   0.247    -.0628367    .0161674
+         age │   -.003851   .0005466    -7.04   0.000    -.0049224   -.0027796
+       _cons │  -1.238797   .2893845    -4.28   0.000     -1.80598   -.6716138
+─────────────┴────────────────────────────────────────────────────────────────
+
+. estimates store cloglog
+</pre>
+<pre class='r'>> cloglog &lt;- glm(mf, data = recidx, family = binomial(link = cloglog))
+> coef(summary(cloglog))
+                    Estimate   Std. Error    z value     Pr(>|z|)
+(Intercept)     -1.238795113 0.2893607427 -4.2811444 1.859347e-05
+interval(12,24]  0.021613951 0.1095604758  0.1972787 8.436094e-01
+interval(24,36] -0.392613793 0.1297681301 -3.0255024 2.482204e-03
+interval(36,48] -0.824996440 0.1566132100 -5.2677321 1.381194e-07
+interval(48,60] -0.948338328 0.1684247392 -5.6306356 1.795467e-08
+workprg          0.104466422 0.0934228228  1.1182109 2.634769e-01
+priors           0.088706984 0.0145113085  6.1129556 9.780261e-10
+tserved          0.013266906 0.0018142064  7.3127875 2.616567e-13
+felon           -0.288542238 0.1096491770 -2.6315039 8.500789e-03
+alcohol          0.439780479 0.1090998881  4.0309893 5.554258e-05
+drugs            0.299102966 0.1003895869  2.9794222 2.887925e-03
+black            0.427210098 0.0910947168  4.6897352 2.735589e-06
+married         -0.183040394 0.1136073451 -1.6111669 1.071433e-01
+educ            -0.023334468 0.0202349457 -1.1531767 2.488379e-01
+age             -0.003851008 0.0005486362 -7.0192372 2.230827e-12
+</pre>
+<h3 id="comparison-of-estimates">Comparison of Estimates</h3>
+<p>All that remains is to compare the estimates</p>
+<pre class='stata'>. estimates table pwe cloglog logit, eq(1:1:1)
+
+─────────────┬───────────────────────────────────────
+    Variable │    pwe        cloglog       logit     
+─────────────┼───────────────────────────────────────
+        year │
+          1  │  .03653199    .02161269    .03052816  
+          2  │ -.37381564   -.39261481   -.41314026  
+          3  │ -.81154363   -.82499726    -.8641487  
+          4  │ -.93823111   -.94833849   -.99366251  
+          5  │ -1.5471779                            
+             │
+     workprg │   .0838291     .1044651    .11098865  
+      priors │  .08724582    .08870634    .09929206  
+     tserved │  .01300886    .01326703    .01492214  
+       felon │ -.28392523   -.28854488    -.3196621  
+     alcohol │  .43244249    .43977945    .47249981  
+       drugs │  .27471411    .29910246    .31672903  
+       black │  .43355595    .42720963     .4580275  
+     married │ -.15404774   -.18304032   -.20480734  
+        educ │ -.02141618   -.02333462   -.02672593  
+         age │    -.00358   -.00385099   -.00402309  
+       _cons │ -3.8301275    -1.238797   -1.1408026  
+─────────────┴───────────────────────────────────────
+</pre>
+<pre class='r'>> cbind(coef(pwe)[-6], coef(cloglog), coef(logit))
+                        [,1]         [,2]         [,3]
+(Intercept)     -3.830127469 -1.238795113 -1.140802599
+interval(12,24]  0.036531989  0.021613951  0.030528163
+interval(24,36] -0.373815644 -0.392613793 -0.413140262
+interval(36,48] -0.811543632 -0.824996440 -0.864148699
+interval(48,60] -0.938231113 -0.948338328 -0.993662524
+workprg          0.083829106  0.104466422  0.110988653
+priors           0.087245826  0.088706984  0.099292063
+tserved          0.013008862  0.013266906  0.014922136
+felon           -0.283925203 -0.288542238 -0.319662098
+alcohol          0.432442493  0.439780479  0.472499810
+drugs            0.274714115  0.299102966  0.316729032
+black            0.433555955  0.427210098  0.458027506
+married         -0.154047742 -0.183040394 -0.204807338
+educ            -0.021416177 -0.023334468 -0.026725931
+age             -0.003580003 -0.003851008 -0.004023087
+</pre>
+<p>As one would expect, the estimates of the relative risks based on the
+c-log-log link are closer to the continuous time estimates than those
+based on the logit link.</p>
+<p>This result makes sense because the piece wise exponential and
+c-log-log link models are estimating the same continuous time hazard,
+one from continuous and one from grouped data, while the logit model is
+estimating a discrete time hazard.</p>
+<p>Recall that in a continuous time model the relative risk multiplies
+the hazard or instantaneous failure rate, whereas in a discrete time
+logit model it multiplies the conditional odds of failure at a given
+time (or in a given time interval) given survival to that time (or the
+start of the interval). Interpretation of the results should take this
+fact into account.</p>
+<p>All three approaches, however, lead to similar predicted survival
+probabilities.</p>
+

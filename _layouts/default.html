@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">   
+	<title>GR's Website</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/assets/css/data.css" rel="stylesheet"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="/assets/js/bootstrap.min.js"></script>
+<!-- 
+    removed Google Analytics in local copy 
+-->
+{% if page.mathjax %}
+<script type="text/javascript" id="MathJax-script" async
+ src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js?config=TeX-AMS_HTML-full"></script>
+{% endif %}
+</head>
+<body>
+<div id="topbar" style="width:100%">
+ 
+<!-- nav xs -->
+<div id="nav-xs" class="visible-xs">
+  <button class="btn btn-clear" type="button"> / </button>
+  <div class="btn-group"> 
+  <button class="btn btn-clear dropdown-toggle" type="button" id="courses" 
+  data-toggle="dropdown" aria-expanded="true">
+    Courses
+  <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu" role="menu" aria-labelledby="courses">
+    <li role="presentation"><a role="menuitem" tabindex="-1" href="/glms">GLMs</a></li>
+    <li role="presentation"><a role="menuitem" tabindex="-1" href="/multilevel">Multilevel</a></li>
+    <li role="presentation"><a role="menuitem" tabindex="-1" href="/survival">Survival</a></li>
+    <li role="presentation"><a role="menuitem" tabindex="-1" href="/demography">Demography</a></li>
+  </ul></div>
+  <div class="btn-group">
+  <button class="btn btn-clear dropdown-toggle" type="button" id="tutorials" 
+  data-toggle="dropdown" aria-expanded="true">
+    Software
+  <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu" role="menu" aria-labelledby="tutorials">
+      <li role="presentation"><a role="menuitem" tabindex="-1" href="/stata">Stata</a></li>
+      <li role="presentation"><a role="menuitem" tabindex="-1" href="/R"> R </a></li>
+      <li role="presentation"><a role="menuitem" tabindex="-1" href="https://grodri.github.io/markstat">Markstat</a></li>
+  </ul>  
+  </div>
+</div> 
+
+<!-- nav sm+ -->	
+<div id="nav-sm" class="hidden-sx">
+    <ul class="topnav">
+        <li><a href="/">/</a></li>
+        <li><a href="/glms">GLMs</a></li>
+        <li><a href="/multilevel">Multilevel</a></li>
+        <li><a href="/survival">Survival</a></li>
+        <li><a href="/demography">Demography</a></li>
+        <li><a href="/stata">Stata</a></li>
+        <li><a href="/R"> R </a></li>
+        <li><a href="https://grodri.github.io/markstat">Markstat</a></li>
+    </ul>      
+</div>
+
+<!-- google cse -->
+
+<!-- cse toggle -->
+
+</div><!--/ top navigation -->
+
+<!-- banner -->
+<div id="mid" class="container-fluid" style="position:relative; 
+	background-color:#0D6EFD; color:white; text-align:center;
+	height:40px;max-height:40px;box-shadow: 0px 0px 24px 2px rgba(0,0,0,0.3)">
+<div id="gr" style="font-size:20px">Germ&aacute;n Rodr&iacute;guez</div>
+<span id="site" style="font-size:28px">{{ site.data.titles[page.section] }}</span>
+<span id="pu" style="font-size:14px">Princeton University</span>
+</div></div>
+
+
+{% if page.pager or page.toc %}
+<a class="pull-right" style="margin-right:1em;margin-top:1ex" href="https://github.com/grodri/websrc/blob/main/{{ page.section }}/">
+  <img src="/images/github.png" width="24px" title="View source"/></a>
+{% endif %}
+
+<div class="container" style="max-width:768px; margin-top:2ex">
+
+{% if page.tab %}
+  <div id="tabs" class="hidden-xs">
+    <ul class="nav nav-tabs">
+    {% assign tabs = site.data.tabs[page.section] %}
+    {% for tab in tabs %}
+        <li {% if tab.label == page.tab %}class="active"{% endif %}>
+        <a href="{{ tab.url }}">{{ tab.label }}</a></li>
+    {% endfor %}
+    </ul>
+  </div>
+  <p></p>
+{% endif %}
+
+{% if page.pager %}
+<div id="pager" class="pull-right" style="margin-top:1ex">
+ <div class="btn-group btn-group-sm">
+  <a id="pager_previous" class="btn btn-default" href="#">
+   <i class="glyphicon glyphicon-triangle-left"></i></a>
+  <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#toc">
+   <i class="glyphicon glyphicon-menu-hamburger"></i></button>
+  <a id="pager_next" class="btn btn-default" href="#">
+   <i class="glyphicon glyphicon-triangle-right"></i></a>  
+ </div>
+</div>
+{% endif %}
+
+{{ content }}
+  
+{% if page.mathjax %}
+<div class='pull-left'>
+  Math rendered by <a href='https://www.mathjax.org'>
+  <img src='https://cdn.mathjax.org/mathjax/badge/mj_logo_60x12.png' border='0' />
+  </a>
+</div>
+{% endif %}
+
+{% if page.pager %}
+<script src="/assets/js/pager.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(function(){
+    // download toc and render (haven't done continue with)
+    var page = location.href.split('/').slice(-1)
+    var url = location.href.replace(page, "toc.json");
+    console.log("getting Json from " + url);
+    $.getJSON(url, function(data){
+        toc.chapters = data;
+        toc.pager();
+        toc.render();
+    })
+})
+</script>    
+{% endif %}
+
+</div><!--/container-->
+<footer id="footer">
+<p style="text-align:center;margin:0">&copy; 2022 
+  Germán Rodríguez, Princeton University</p>
+</footer>
+</body>
+</html>

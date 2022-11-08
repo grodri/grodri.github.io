@@ -1,0 +1,10 @@
+<script src="/assets/js/pager.js" type="text/javascript"></script>
+<script>
+$(function(){
+	$.getJSON("toc.json", function(data){
+		toc.chapters = data
+		toc.parse(); // just to get number of pages for split!
+		toc.render()
+	})
+})
+</script>

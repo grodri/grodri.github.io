@@ -1,0 +1,109 @@
+﻿/*  
+	CSS for Data using Bootstrap
+	G. Rodríguez <grodri@Princeton.edu> April 2015
+*/	
+
+/* Header and Footer */
+
+html { position:relative; min-height:100%; }
+body { margin-bottom:24px; }
+
+#topbar { height:34px; min-height:34px; margin-bottom:0; }
+
+.topnav {display:inline-block; list-style:none; -webkit-padding-start:0; margin:0; }
+.topnav li {display:inline-block; line-height:32px; padding-top:0}
+.topnav li a, 
+.topnav li a:visited { padding:7px 14px; color:#333; }
+.topnav li a:hover {text-decoration: none; background-color:#efefef;}
+
+#pu { position:absolute; right:14px; top:0; display:none; }
+#mid {width:100%; min-height:80px; padding:14px;}
+
+@media (min-width:992px) {
+	#mid {line-height:80px; padding:0;}
+	#gr { position:absolute; left:14px; top:0;}
+	#pu {display:inline-block;}
+}
+footer { position:absolute; width:100%; height:24px; bottom:0;
+	color:white; background-color:#3366cc; line-height:24px;}
+
+/* Tabs, Toc and Pager */
+
+.nav-tabs li a {color:#333; padding:7px 14px;}
+#tabs, #tabs-ellipsis { margin-top:7px; }
+
+#pager { margin-top:20px; } 
+#pager a, #pager button { color: #333; }
+#toc {line-height: 1.5;}
+#toc a { color:#333; padding-left:10px; }
+#toc .panel-heading { background-color:white; }
+.toc { font-size:1.2em;} /* color:#3366cc; }*/
+
+
+/* Headings */
+
+h1, h2, h3, h4 { color:#3366cc; margin-top:20px; }
+h5, .em { font-weight:bold; color:#3366cc; }
+
+/* Code and Pre */
+
+pre, pre.stata, pre.r { 
+	overflow: auto; word-wrap: normal;  white-space: pre;
+	padding:5px 10px; background-color:#fafafa; border-color:#ccc; 
+}
+pre.stata {
+	font-family: "Lucida Console", monospace;
+	font-size: 13px; line-height:13px;
+}
+code { color: #333; background-color:#fafafa; font-size:100%; padding:0 2px; }
+
+/* Tables from markstat */
+
+table { margin:2ex auto; border-collapse:collapse; }
+table caption { margin-bottom:1ex;}
+td {padding:0 0 0 0} /* override */
+table:not([class]) th { padding:4px 6px } 
+table:not([class]) td { padding:4px 6px } 
+table:not([class]) thead tr:first-child th {border-top:1px solid black; padding-top:6px}
+table:not([class]) thead tr:last-child  th {padding-bottom:6px}
+table:not([class]) tbody tr:first-child td {border-top:1px solid black; padding-top:6px}
+table:not([class]) tbody tr:last-child  td {padding-bottom:6px;}
+table:not([class]) tbody:last-child tr:last-child td {border-bottom:1px solid black;}
+
+
+/* Older tables */
+
+.table-centered { width:auto; margin:auto; margin-bottom:10px; }
+.table-framed { width:auto; margin:auto; margin-bottom:10px; border:1px solid #ccc; }
+.table-framed th { padding:7px; border-bottom:1px solid #ccc; color:#3366cc }
+.table-framed td { padding:7px; }
+
+/* borders */
+
+.bt {border-top: 1px solid black;}
+.bb {border-bottom: 1px solid black;}
+.bl {border-left: 1px solid black;}
+.br {border-right: 1px solid black;}
+
+/* Misc */
+
+.pull-down { margin-top:20px; }
+.btn-clear { background-color:transparent; border-color:transparent; }
+.double-spaced li { margin-bottom:10px; }
+
+/* MathJax */
+
+.tex-table {margin:auto; margin-bottom:10px;}
+.tex-table td {padding:3px 6px;}
+.tex-table tr.bt { border-top:1px solid black;}
+.tex-table tr.bb { border-bottom:1px solid black;}
+.tex-table tr.bt td { padding-top:4px;}
+.tex-table tr.bb td { padding-bottom:4px;}
+.tex-table td.ar {text-align:right;}
+.tex-table td.al {text-align:left;}
+
+.tex-list td {padding:3px 6px;}
+
+/* Images */
+
+.img-center {display:block; margin:auto;}

@@ -1,0 +1,480 @@
+---
+layout: default
+section: survival
+tab: "Parametric"
+pager: true
+---
+
+<h2 id="weibull-and-log-normal-models">Weibull and Log-Normal
+Models</h2>
+<p>The dataset considered here is analyzed in Wooldridge (2002) and
+credited to Chung, Schmidt and Witte (1991). The data pertain to a
+random sample of convicts released from prison between July 1, 1977 and
+June 30, 1978. Of interest is the time until they return to prison. The
+information was collected retrospectively by looking at records in April
+1984, so the maximum possible length of observation is 81 months.</p>
+<p>Wooldridge fits Weibull and log-normal models using the following
+predictors:</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">workprg</td>
+<td style="text-align: left;">an indicator of participation in a work
+program</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">priors</td>
+<td style="text-align: left;">the number of previous convictions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">tserved</td>
+<td style="text-align: left;">the time served rounded to months</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">felon</td>
+<td style="text-align: left;">and indicator of felony sentences</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">alcohol</td>
+<td style="text-align: left;">an indicator of alcohol problems</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">drugs</td>
+<td style="text-align: left;">an indicator of drug use history</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">black</td>
+<td style="text-align: left;">an indicator for African Americans</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">married</td>
+<td style="text-align: left;">an indicator if married when
+incarcerated</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">educ</td>
+<td style="text-align: left;">the number of years of schooling, and</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">age</td>
+<td style="text-align: left;">in months</td>
+</tr>
+</tbody>
+</table>
+<p>We will reproduce his results using R and Stata. The data are
+available in binary format from the Stata website and consists of 1445
+observations on 18 variables. The duration variable is called
+<code>durat</code> and represents time in months until return to prison
+or end of follow up. The censoring indicator is called <code>cens</code>
+and is coded 1 if the observation was censored (i.e. the individual had
+<em>not</em> returned to prison).</p>
+
+{% include srtabs.html %}
+
+<p>We create a new variable <code>fail</code> coded 1 for failures.</p>
+<pre class='stata'>. use https://www.stata.com/data/jwooldridge/eacsap/recid, clear
+
+. desc, short
+
+Contains data from https://www.stata.com/data/jwooldridge/eacsap/recid.dta
+ Observations:         1,445                  
+    Variables:            18                  28 Sep 1998 13:28
+Sorted by: 
+
+. gen fail = 1 - cens
+</pre>
+<pre class='r'>> library(haven)
+> library(dplyr)
+> recid &lt;- read_dta("https://www.stata.com/data/jwooldridge/eacsap/recid.dta")
+> recid &lt;- mutate(recid, fail = 1 - cens)
+> head(recid)
+# A tibble: 6 × 19
+  black alcohol drugs super married felon workprg property person priors  educ
+  &lt;dbl>   &lt;dbl> &lt;dbl> &lt;dbl>   &lt;dbl> &lt;dbl>   &lt;dbl>    &lt;dbl>  &lt;dbl>  &lt;dbl> &lt;dbl>
+1     0       1     0     1       1     0       1        0      0      0     7
+2     1       0     0     1       0     1       1        1      0      0    12
+3     0       0     0     0       0     0       1        1      0      0     9
+4     0       0     1     1       0     1       1        1      0      2     9
+5     0       0     1     1       0     0       0        0      0      0     9
+6     1       0     0     1       0     0       1        0      0      1    12
+# … with 8 more variables: rules &lt;dbl>, age &lt;dbl>, tserved &lt;dbl>, follow &lt;dbl>,
+#   durat &lt;dbl>, cens &lt;dbl>, ldurat &lt;dbl>, fail &lt;dbl>
+</pre>
+<h3 id="a-proportional-hazards-weibull-model">A Proportional Hazards
+Weibull Model</h3>
+<p>Let us first fit a proportional hazards model with a Weibull
+baseline, <span class="stata">using <code>stset</code> to set the data
+and <code>survreg</code> to fit the model. To avoid repetition we will
+save the predictors in a macro.</span> <span class="r">which we can do
+using <code>survreg</code> with <code>dist</code> set to “weibull”. For
+convenience we save the model formula so we can reuse it
+later.</span></p>
+<pre class='stata'>. stset durat, failure(fail)
+
+Survival-time data settings
+
+         Failure event: fail!=0 &amp; fail&lt;.
+Observed time interval: (0, durat]
+     Exit on or before: failure
+
+──────────────────────────────────────────────────────────────────────────
+      1,445  total observations
+          0  exclusions
+──────────────────────────────────────────────────────────────────────────
+      1,445  observations remaining, representing
+        552  failures in single-record/single-failure data
+     80,013  total analysis time at risk and under observation
+                                                At risk from t =         0
+                                     Earliest observed entry t =         0
+                                          Last observed exit t =        81
+
+. local predictors workprg priors tserved felon alcohol drugs ///
+>     black married educ age
+
+. streg `predictors', distrib(weibull) nolog
+
+        Failure _d: fail
+  Analysis time _t: durat
+
+Weibull PH regression
+
+No. of subjects =  1,445                                Number of obs =  1,445
+No. of failures =    552
+Time at risk    = 80,013
+                                                        LR chi2(10)   = 165.48
+Log likelihood = -1633.0325                             Prob > chi2   = 0.0000
+
+─────────────┬────────────────────────────────────────────────────────────────
+          _t │ Haz. ratio   Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+     workprg │   1.095148   .0992728     1.00   0.316     .9168814    1.308074
+      priors │   1.092848    .014683     6.61   0.000     1.064445    1.122008
+     tserved │   1.013655   .0017037     8.07   0.000     1.010321       1.017
+       felon │   .7412054   .0785485    -2.83   0.005     .6021898    .9123128
+     alcohol │   1.564179    .165389     4.23   0.000     1.271406     1.92437
+       drugs │   1.325064   .1296765     2.88   0.004     1.093791    1.605237
+       black │   1.574149   .1390031     5.14   0.000      1.32398    1.871587
+     married │   .8593436   .0938794    -1.39   0.165     .6937084    1.064527
+        educ │   .9769709   .0189724    -1.20   0.230     .9404845    1.014873
+         age │   .9962823    .000523    -7.09   0.000     .9952577     .997308
+       _cons │   .0333035   .0100249   -11.30   0.000     .0184613    .0600781
+─────────────┼────────────────────────────────────────────────────────────────
+       /ln_p │  -.2158398   .0389149    -5.55   0.000    -.2921115   -.1395681
+─────────────┼────────────────────────────────────────────────────────────────
+           p │   .8058644   .0313601                      .7466852    .8697338
+         1/p │   1.240904   .0482896                      1.149777    1.339252
+─────────────┴────────────────────────────────────────────────────────────────
+Note: _cons estimates baseline hazard.
+</pre>
+<div class="stata">
+<p>By default Stata exponentiates the coefficients to show relative
+risks. Use the option <code>nohr</code> for <em>no</em> hazard ratios to
+obtain the coefficients.</p>
+</div>
+<pre class='stata'>.  streg, nohr
+
+Weibull PH regression
+
+No. of subjects =  1,445                                Number of obs =  1,445
+No. of failures =    552
+Time at risk    = 80,013
+                                                        LR chi2(10)   = 165.48
+Log likelihood = -1633.0325                             Prob > chi2   = 0.0000
+
+─────────────┬────────────────────────────────────────────────────────────────
+          _t │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+     workprg │   .0908893   .0906478     1.00   0.316    -.0867772    .2685558
+      priors │   .0887867   .0134355     6.61   0.000     .0624535    .1151198
+     tserved │   .0135625   .0016808     8.07   0.000     .0102682    .0168567
+       felon │  -.2994775    .105974    -2.83   0.005    -.5071826   -.0917723
+     alcohol │   .4473611   .1057353     4.23   0.000     .2401236    .6545985
+       drugs │   .2814605   .0978644     2.88   0.004     .0896499    .4732711
+       black │   .4537147   .0883037     5.14   0.000     .2806426    .6267867
+     married │  -.1515864   .1092454    -1.39   0.165    -.3657035    .0625307
+        educ │  -.0232984   .0194196    -1.20   0.230    -.0613601    .0147633
+         age │  -.0037246    .000525    -7.09   0.000    -.0047536   -.0026956
+       _cons │  -3.402094   .3010177   -11.30   0.000    -3.992077    -2.81211
+─────────────┼────────────────────────────────────────────────────────────────
+       /ln_p │  -.2158398   .0389149    -5.55   0.000    -.2921115   -.1395681
+─────────────┼────────────────────────────────────────────────────────────────
+           p │   .8058644   .0313601                      .7466852    .8697338
+         1/p │   1.240904   .0482896                      1.149777    1.339252
+─────────────┴────────────────────────────────────────────────────────────────
+</pre>
+<pre class='r'>> library(survival)
+> mf &lt;- Surv(durat, fail) ~  workprg + priors + tserved + felon +
++     alcohol + drugs + black + married + educ + age
+> wf &lt;- survreg(mf, data=recid, dist="weibull")
+</pre>
+<div class="r">
+<p>By default R reports coefficients in the accelerated failure time
+metric. I wrote a simple function to convert them to a proportional
+hazards metric, which you can download from this website as shown below.
+I also work with <em>p = 1/scale</em>.</p>
+</div>
+<pre class='r'>> source("https://grodri.github.io/survival/aft2ph.R")
+> phfit &lt;- aft2ph(wf); phfit
+          term     estimate    std.error  statistic      p.value
+1  (Intercept) -3.402093509 0.3010177314 -11.301970 1.283063e-29
+2      workprg  0.090889277 0.0906478280   1.002664 3.160232e-01
+3       priors  0.088786675 0.0134355280   6.608350 3.886262e-11
+4      tserved  0.013562467 0.0016807811   8.069145 7.079190e-16
+5        felon -0.299477494 0.1059739596  -2.825954 4.714009e-03
+6      alcohol  0.447361071 0.1057353368   4.230951 2.327050e-05
+7        drugs  0.281460523 0.0978643554   2.876027 4.027153e-03
+8        black  0.453714680 0.0883036888   5.138117 2.775052e-07
+9      married -0.151586401 0.1092454397  -1.387576 1.652661e-01
+10        educ -0.023298411 0.0194196040  -1.199737 2.302416e-01
+11         age -0.003724612 0.0005249981  -7.094526 1.297959e-12
+12       log.p -0.215839833 0.0389148545  -5.546464 2.915049e-08
+</pre>
+<p>This reproduces Table 22.1 in Wooldridge.
+<!-- 20.1 in first edition --> All but three of the predictors have
+significant coefficients, the exceptions being participation in a work
+program, marital status, and education.</p>
+<div class="r">
+<p>To obtain <em>hazard ratios</em> we exponentiate the coefficients. We
+also report the Weibull parameter <em>p</em>, while R uses scale =
+1/p.</p>
+</div>
+<pre class='r'>> transmute(phfit, term, hazard.ratio = exp(estimate))
+          term hazard.ratio
+1  (Intercept)   0.03330348
+2      workprg   1.09514774
+3       priors   1.09284750
+4      tserved   1.01365485
+5        felon   0.74120540
+6      alcohol   1.56417898
+7        drugs   1.32506369
+8        black   1.57414880
+9      married   0.85934363
+10        educ   0.97697090
+11         age   0.99628232
+12       log.p   0.80586436
+> exp(tail(phfit,1)$estimate)
+[1] 0.8058644
+</pre>
+<p>The Weibull parameter <em>p</em> is 0.8, indicating that the risk of
+recidivism declines over time, about 21% per month. The hypothesis that
+the risk is constant over time would be soundly rejected.</p>
+<p>The exponentiated coefficient of drugs indicates that former inmates
+with a history of drug use have 32.5% higher risk or returning to jail
+at any given time than peers with identical characteristics but no
+history of drug use.</p>
+<h3 id="accelerated-failure-time-weibull">Accelerated Failure Time
+Weibull</h3>
+<p>We can also work with the Weibull model in an accelerated failure
+time framework, <span class="stata">which we can do by simply adding the
+<code>time</code> option:</span> <span class="r">which is in fact the
+default in R. We’ll use the <code>summary()</code> function. (An
+alternative is to use <code>tidy</code> to produce a data
+frame.</span></p>
+<pre class='stata'>. streg `predictors', distrib(weibull) time nolog
+
+        Failure _d: fail
+  Analysis time _t: durat
+
+Weibull AFT regression
+
+No. of subjects =  1,445                                Number of obs =  1,445
+No. of failures =    552
+Time at risk    = 80,013
+                                                        LR chi2(10)   = 165.48
+Log likelihood = -1633.0325                             Prob > chi2   = 0.0000
+
+─────────────┬────────────────────────────────────────────────────────────────
+          _t │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+     workprg │  -.1127848   .1125346    -1.00   0.316    -.3333486     .107779
+      priors │  -.1101757   .0170675    -6.46   0.000    -.1436273   -.0767241
+     tserved │  -.0168297   .0021303    -7.90   0.000     -.021005   -.0126544
+       felon │   .3716227   .1319951     2.82   0.005      .112917    .6303284
+     alcohol │   -.555132   .1322427    -4.20   0.000    -.8143229    -.295941
+       drugs │  -.3492654   .1218801    -2.87   0.004    -.5881461   -.1103847
+       black │  -.5630162    .110817    -5.08   0.000    -.7802135   -.3458189
+     married │   .1881041   .1357519     1.39   0.166    -.0779647    .4541729
+        educ │   .0289111   .0241153     1.20   0.231    -.0183541    .0761763
+         age │   .0046219   .0006648     6.95   0.000     .0033189    .0059249
+       _cons │    4.22167   .3413114    12.37   0.000     3.552712    4.890628
+─────────────┼────────────────────────────────────────────────────────────────
+       /ln_p │  -.2158398   .0389149    -5.55   0.000    -.2921115   -.1395681
+─────────────┼────────────────────────────────────────────────────────────────
+           p │   .8058644   .0313601                      .7466852    .8697338
+         1/p │   1.240904   .0482896                      1.149777    1.339252
+─────────────┴────────────────────────────────────────────────────────────────
+</pre>
+<pre class='r'>> summary(wf)
+
+Call:
+survreg(formula = mf, data = recid, dist = "weibull")
+                Value Std. Error     z       p
+(Intercept)  4.221670   0.341311 12.37 &lt; 2e-16
+workprg     -0.112785   0.112535 -1.00  0.3162
+priors      -0.110176   0.017067 -6.46 1.1e-10
+tserved     -0.016830   0.002130 -7.90 2.8e-15
+felon        0.371623   0.131995  2.82  0.0049
+alcohol     -0.555132   0.132243 -4.20 2.7e-05
+drugs       -0.349265   0.121880 -2.87  0.0042
+black       -0.563016   0.110817 -5.08 3.8e-07
+married      0.188104   0.135752  1.39  0.1659
+educ         0.028911   0.024115  1.20  0.2306
+age          0.004622   0.000665  6.95 3.6e-12
+Log(scale)   0.215840   0.038915  5.55 2.9e-08
+
+Scale= 1.24 
+
+Weibull distribution
+Loglik(model)= -3192.1   Loglik(intercept only)= -3274.8
+	Chisq= 165.48 on 10 degrees of freedom, p= 2.4e-30 
+Number of Newton-Raphson Iterations: 5 
+n= 1445 
+</pre>
+<p>The substantive results are the same as before, which is not
+surprising given that it is really the same model. You may want to
+verity that the AFT parameters are exactly the same as the PH parameters
+with opposite sign and divided by <em>p</em>. For example the
+coefficient for drugs is -0.28/0.8 = -0.35.</p>
+<p>The coefficients may be exponentiated, which allows interpreting them
+in terms of <em>time ratios</em>. <span class="stata">You can do this in
+Stata using the <code>tr</code> option. We will focus on one
+coefficient.</span></p>
+<pre class='r'>> exp(coef(wf))
+(Intercept)     workprg      priors     tserved       felon     alcohol 
+ 68.1472035   0.8933429   0.8956767   0.9833111   1.4500858   0.5739965 
+      drugs       black     married        educ         age 
+  0.7052060   0.5694888   1.2069592   1.0293331   1.0046326 
+</pre>
+<p>Exponentiating the drug coefficient that see that former inmates with
+a history of drug use spend 29% less time out of prison than peers with
+the same observed characteristics by no history of drug use. This is
+easier to see substracting one from the exponentiated coefficient</p>
+<pre class='stata'>. di exp(_b[drugs]) - 1
+-.29479404
+</pre>
+<pre class='r'>> exp(coef(wf)["drugs"]) - 1
+    drugs 
+-0.294794 
+</pre>
+<p>We can also say that time outside of prison passes 42% faster for
+former inmates with a history of drug use than for those without,
+everything else being equal, which you can verify by changing signs and
+exponentiating:</p>
+<pre class='stata'>. di exp(-_b[drugs]) - 1
+.41802546
+</pre>
+<pre class='r'>> exp(-coef(wf)["drugs"]) - 1
+    drugs 
+0.4180255 
+</pre>
+<p>The two interpretations are, of course, equivalent.</p>
+<h3 id="a-log-normal-aft-model">A Log-Normal AFT Model</h3>
+<p>The Weibull model allows the hazard to increase or decrease with
+time, but at a constant rate. Wooldridge notes that the log-normal
+distribution provides a better fit to the data. We can fit a log-normal
+model with the same tools, just by changing the distribution to
+“lognormal”.</p>
+<pre class='stata'>. streg `predictors', distrib(lognormal) nolog
+
+        Failure _d: fail
+  Analysis time _t: durat
+
+Lognormal AFT regression
+
+No. of subjects =  1,445                                Number of obs =  1,445
+No. of failures =    552
+Time at risk    = 80,013
+                                                        LR chi2(10)   = 166.74
+Log likelihood = -1597.059                              Prob > chi2   = 0.0000
+
+─────────────┬────────────────────────────────────────────────────────────────
+          _t │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+     workprg │  -.0625714   .1200369    -0.52   0.602    -.2978394    .1726965
+      priors │  -.1372528   .0214587    -6.40   0.000     -.179311   -.0951946
+     tserved │  -.0193305   .0029779    -6.49   0.000    -.0251671   -.0134939
+       felon │   .4439944   .1450865     3.06   0.002     .1596302    .7283586
+     alcohol │  -.6349088   .1442165    -4.40   0.000    -.9175681   -.3522496
+       drugs │  -.2981599   .1327355    -2.25   0.025    -.5583168   -.0380031
+       black │  -.5427175   .1174427    -4.62   0.000     -.772901    -.312534
+     married │   .3406835    .139843     2.44   0.015     .0665962    .6147707
+        educ │   .0229195   .0253974     0.90   0.367    -.0268584    .0726975
+         age │   .0039103   .0006062     6.45   0.000     .0027221    .0050984
+       _cons │   4.099386   .3475349    11.80   0.000      3.41823    4.780542
+─────────────┼────────────────────────────────────────────────────────────────
+    /lnsigma │   .5935861   .0344122    17.25   0.000     .5261395    .6610327
+─────────────┼────────────────────────────────────────────────────────────────
+       sigma │   1.810469   .0623022                      1.692386    1.936791
+─────────────┴────────────────────────────────────────────────────────────────
+</pre>
+<div class="stata">
+<p>We do not need to specify <code>time</code>, as this distribution is
+only available in the AFT metric.</p>
+</div>
+<pre class='r'>> lnf &lt;- survreg(mf, data=recid, dist="lognormal")  
+> summary(lnf)
+
+Call:
+survreg(formula = mf, data = recid, dist = "lognormal")
+                Value Std. Error     z       p
+(Intercept)  4.099386   0.347535 11.80 &lt; 2e-16
+workprg     -0.062572   0.120037 -0.52  0.6022
+priors      -0.137253   0.021459 -6.40 1.6e-10
+tserved     -0.019331   0.002978 -6.49 8.5e-11
+felon        0.443995   0.145087  3.06  0.0022
+alcohol     -0.634909   0.144217 -4.40 1.1e-05
+drugs       -0.298160   0.132736 -2.25  0.0247
+black       -0.542718   0.117443 -4.62 3.8e-06
+married      0.340684   0.139843  2.44  0.0148
+educ         0.022920   0.025397  0.90  0.3668
+age          0.003910   0.000606  6.45 1.1e-10
+Log(scale)   0.593586   0.034412 17.25 &lt; 2e-16
+
+Scale= 1.81 
+
+Log Normal distribution
+Loglik(model)= -3156.1   Loglik(intercept only)= -3239.5
+	Chisq= 166.74 on 10 degrees of freedom, p= 1.3e-30 
+Number of Newton-Raphson Iterations: 4 
+n= 1445 
+</pre>
+<p>We see that the log-likelihood is indeed higher for the log-normal
+model, <span class="stata">-1597.1 compared to -1633.0</span><span
+class="r">-3156.1 compared to -3192.1</span> for the Weibull, so we now
+have a better fit to the data.</p>
+<p>You may be interested to know that Stata and R report different
+log-likelihoods. For example the log-normal log-likelihood is -1597.1 in
+Stata and -3156.1 in R. This is because R works with the distribution of
+<em>time</em> and Stata with the distribution of <em>log(time)</em>. The
+difference turns out to be the Jacobian of the transformation, which is
+the sum of <em>log(t)</em> over all failures, or 1559.1. Differences
+between log-likelihood are not affected by this constant term.</p>
+<p>Most of the effects are robust to the choice of distribution, but
+note that the protective effect of marriage is now significant. The
+coefficient for drugs, at -0.30, is smaller in magnituded and less
+significant than before.</p>
+<h3 id="other-parametric-models">Other Parametric Models</h3>
+<p>Fitting a generalized gamma model leads to similar conclusions,
+except that the effect of drugs is no longer significant. This result
+suggest that there may be an interaction between drug history and
+duration, as the effect depends on how the hazard is specified. We will
+return to this issue later.</p>
+<p>The generalized gama model is <span class="stata">available in Stata
+as part of <code>streg</code>.</span> <span class="r"><em>not</em>
+available in R’s <code>survival</code> package, but you will find it in
+the package <code>flexsurv</code>, which also allows fitting Gompertz
+models.</span></p>
+<h3 id="references">References</h3>
+<p>Wooldridge, Jeffrey M. (2010). <em>Econometric Analysis of Cross
+Section and Panel Data</em>. 2nd Edition. Cambridge, Massachusetts: The
+MIT Press.</p>
+<p>Chung, C-F, P. Schmidt and A.D. Witte (1991). “Survival Analysis: A
+Survey”. <em>Journal of Quantitative Criminology</em>
+<strong>7</strong>:59-98.</p>
+

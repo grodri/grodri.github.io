@@ -1,0 +1,28 @@
+---
+layout: default
+section: survival
+tab: "Heterogeneity"
+pager: true
+---
+
+<h2 id="a-heterogeneity-shiny-app">A Heterogeneity Shiny App</h2>
+<p>The figure below shows age-specific mortality rates for black and
+white males using U.S. data from 2002. You will notice that the
+population-average hazard is higher for blacks fror every age up to 87,
+but then the curves cross over.</p>
+<p>To illustrate how this type of pattern could be the result of
+unobserved heterogeneity I will treat these synthetic-cohort rates as if
+they applied to real heterogeneous cohorts where frailty has a gamma
+distribution. The initial curves use homogeneous cohorts, but using the
+slider you can change the variance of heterogeneity from 0 to 1.</p>
+<iframe src="https://grodri.shinyapps.io/heterogeneity/" style="border:0; width:100%;height:600px">
+</iframe>
+<p>You will notice that increasing heterogeneity eventually leads to the
+subject-specific hazard curves to uncross, showing that the observed
+pattern could result from black males experiencing more selection as a
+result of higher mortality rates. However, the variance needed to remove
+the crossover is very high. An alternative explanation may lie in age
+misreporting.</p>
+<p>Code for the underlying calculations in Stata or R may be found <a
+href="/demography/heterogeneity">here</a>.</p>
+

@@ -1,0 +1,343 @@
+---
+layout: default
+section: survival
+tab: "Multivariate"
+pager: true
+---
+
+<h2 id="a-shared-frailty-model">A Shared Frailty Model</h2>
+<p>We will show how to fit a shared frailty model using data on child
+mortality in Guatemala. The data come from a retrospective survey
+conducted in 1974-76 by the <em>Instituto de Nutrición de Centroamérica
+y Panamá</em> (INCAP) and RAND, and include data on multiple children
+per family.</p>
+<p>The data were first analyzed ignoring the clustering by Pebley and
+Stupp (1987) Reproductive Patterns and Child Mortality in Guatemala.
+<em>Demography</em>,24:43-60 <a
+href="https://www.jstor.org/stable/2061507">[1]</a>. (This link requires
+access to JSTOR.)</p>
+<p>The data were then reanalized by Guo and Rodríguez (1992), Estimating
+a Multivariate Proportional Hazards Model for Clustered Data Using the
+EM Algorithm, with an Application to Child Survival in Guatemala,
+<em>Journal of the American Statistical Association</em>, 87:969-976 <a
+href="https://www.jstor.org/stable/2290633">[2]</a>, using what we now
+call a shared frailty model.</p>
+<p>The dataset is available as a Stata file in long format (one record
+per child):</p>
+<pre class='stata'>. use https://grodri.github.io/datasets/pebleystupp, clear
+(Child mortality in Guatemala)
+
+. describe
+
+Contains data from https://grodri.github.io/datasets/pebleystupp.dta
+ Observations:         3,120                  Child mortality in Guatemala
+    Variables:            19                  8 Mar 2005 20:48
+                                              (_dta has notes)
+────────────────────────────────────────────────────────────────────────────────
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+────────────────────────────────────────────────────────────────────────────────
+momid           float   %9.0g                 
+kid             byte    %9.0g                 
+kids            byte    %8.0g                 
+time            float   %9.0g                 
+income          float   %9.0g                 
+death           byte    %8.0g                 
+sex             byte    %8.0g                 
+mage            float   %9.0g                 
+borde           float   %9.0g                 
+home            byte    %8.0g                 
+pdead           byte    %8.0g                 
+edyears         float   %9.0g                 
+p0014           byte    %8.0g                 
+p1523           byte    %8.0g                 
+p2435           byte    %8.0g                 
+p36up           byte    %8.0g                 
+f0011           byte    %8.0g                 
+f1223           byte    %8.0g                 
+kidid           float   %9.0g                 
+────────────────────────────────────────────────────────────────────────────────
+Sorted by: momid  kid
+</pre>
+<h3 id="a-piece-wise-exponential-model">A Piece-wise Exponential
+Model</h3>
+<p>The first step is to reproduce exactly the results in Pebley and
+Stupp. We start by <code>stset</code>ing the data, noting that
+<code>time</code>’ is age at death or at interview, <code>death</code>
+is an indicator of whether the child died, and <code>kidid</code>’
+uniquely identifies each kid. (This is 10 times the <code>momid</code>
+in the original dataset plus the kid number.)</p>
+<pre class='stata'>. stset time, fail(death) id(kidid)
+
+Survival-time data settings
+
+           ID variable: kidid
+         Failure event: death!=0 &amp; death&lt;.
+Observed time interval: (time[_n-1], time]
+     Exit on or before: failure
+
+──────────────────────────────────────────────────────────────────────────
+      3,120  total observations
+          0  exclusions
+──────────────────────────────────────────────────────────────────────────
+      3,120  observations remaining, representing
+      3,120  subjects
+        403  failures in single-failure-per-subject data
+  131,512.5  total analysis time at risk and under observation
+                                                At risk from t =         0
+                                     Earliest observed entry t =         0
+                                          Last observed exit t =        60
+</pre>
+<p>Pebley and Stupp used a piece-wise exponential model where the hazard
+is constant in intervals with boundaries at 1, 6, 12 and 24 months. We
+can fit that kind of model in Stata using the standard Poisson trick, or
+using <code>streg</code>’ to fit an exponential model with dummy
+variables for the duration categories. We will do the latter because it
+allows us to introduce gamma frailty later. So we <code>stsplit</code>
+the dataset and generate dummies for all categories. (Note that the
+original paper shows the hazard for each age, so we generate dummies for
+all age categories and omit the constant.)</p>
+<pre class='stata'>. stsplit dur, at(0 1 6 12 24 60)
+(10,474 observations (episodes) created)
+
+. gen a0      = dur==0
+
+. gen a1to5   = dur==1
+
+. gen a6to11  = dur==6
+
+. gen a12to23 = dur==12
+
+. gen a24up   = dur==24
+
+. local age "a0 a1to5 a6to11 a12to23 a24up"
+</pre>
+<p>The model includes mother’s age and age squared, a linear term on
+birth order, and an indicator of whether the previous kid in the family
+died. There are also indicators for the length of the previous birth
+interval with categories 0-14, 15-23, 24-35 and 36 or more, with first
+births serving as the reference cell. We need to compute only one of
+these variables. It is useful to create macros for all:</p>
+<pre class='stata'>. gen mage2 = mage^2
+
+. local fixed "mage mage2 borde pdead"
+
+. local previous "p0014 p1523 p2435 p36up"
+</pre>
+<p>The model also includes a time-varying covariate with time-varying
+effects. The variable in question is the length of the following birth
+interval, with indicators <code>f0011</code>’ for intervals under a year
+and <code>f1223</code>’ for intervals of one to two years. These dummies
+capture very short and short intervals, where a child would face
+competition from a subsequent sibling. Pebley and Stupp treat these as
+time-varying covariates because a sibling is assumed to affect the life
+of the index child only after it is born. So we consider very short
+intervals (&lt; 12) only at ages 12 months and higher, and short
+intervals (12-23 months) only at ages 24 months and higher. This is the
+time-varying part. But the effect of very short intervals is also
+allowed to vary, with intervals &lt; 12 having different effects at ages
+12-23 and 24 or more. This means that we need to create three variables
+that interact the length of the following interval with the age of the
+child:</p>
+<pre class='stata'>. gen i011a1223 = f0011 * (dur == 12)
+
+. gen i011a24p  = f0011 * (dur == 24)
+
+. gen i1223a24p = f1223 * (dur == 24)
+
+. local follow "i011a1223 i011a24p i1223a24p"
+</pre>
+<p>We are now ready to fit the model. You should verify that this
+reproduces exactly the results in Pebley and Stupp, which is quite
+remarkable.</p>
+<pre class='stata'>. streg `age' `fixed' `previous' `follow', dist(exponential) noconstant
+
+        Failure _d: death
+  Analysis time _t: time
+       ID variable: kidid
+
+Iteration 0:   log likelihood =  -2819.899  
+Iteration 1:   log likelihood = -2115.6375  
+Iteration 2:   log likelihood = -1864.5861  
+Iteration 3:   log likelihood = -1849.9913  
+Iteration 4:   log likelihood = -1848.7872  
+Iteration 5:   log likelihood = -1848.7838  
+Iteration 6:   log likelihood = -1848.7838  
+
+Exponential PH regression
+
+No. of subjects =     3,120                            Number of obs =  13,594
+No. of failures =       403
+Time at risk    = 131,512.5
+                                                       Wald chi2(16) = 9905.61
+Log likelihood = -1848.7838                            Prob > chi2   =  0.0000
+
+─────────────┬────────────────────────────────────────────────────────────────
+          _t │ Haz. ratio   Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+          a0 │   .3375566   .2532262    -1.45   0.148     .0775884    1.468575
+       a1to5 │   .0245332   .0186095    -4.89   0.000     .0055473    .1084995
+      a6to11 │   .0303346   .0229222    -4.63   0.000     .0068981    .1333968
+     a12to23 │   .0180935   .0136752    -5.31   0.000     .0041132    .0795915
+       a24up │   .0032229   .0025034    -7.39   0.000     .0007032    .0147712
+        mage │   .8612339   .0501274    -2.57   0.010     .7683828    .9653051
+       mage2 │   1.002581    .001035     2.50   0.013     1.000555    1.004612
+       borde │   1.063634   .0355569     1.85   0.065     .9961777    1.135658
+       pdead │   1.103248   .1649263     0.66   0.511     .8230493    1.478839
+       p0014 │    1.71365   .3640741     2.54   0.011     1.130004     2.59875
+       p1523 │   .8845005   .1648386    -0.66   0.510     .6138541    1.274474
+       p2435 │   .7718101   .1424211    -1.40   0.160     .5375754    1.108107
+       p36up │   .6764905    .141174    -1.87   0.061     .4493947    1.018346
+   i011a1223 │   2.246906   1.609712     1.13   0.258     .5517892    9.149482
+    i011a24p │   4.933551   3.633516     2.17   0.030     1.164816    20.89594
+   i1223a24p │    1.07556   .4053648     0.19   0.847     .5138396    2.251343
+─────────────┴────────────────────────────────────────────────────────────────
+Note: No constant term was estimated in the main equation.
+
+. estimates store pwe
+</pre>
+<h3 id="a-shared-frailty-model-1">A Shared-Frailty Model</h3>
+<p>We now introduce a shared frailty term at the mother’s level to allow
+for intra-family correlation in child survival. Following standard
+practice, we assume that the frailty term has a gamma distribution
+independent of observed covariates. Guo and Rodriguez derive an EM
+algorithm to fit this model (and Guo’s dissertation includes the Fortran
+program used to fit the model). I now show how to reproduce their
+results using <code>streg</code>. All we need to do is specify the
+frailty distribution and the variable that identifies the clusters:</p>
+<pre class='stata'>. streg `age' `fixed' `previous' `follow', dist(exponential) noconstant ///
+>     frailty(gamma) shared(momid)
+
+        Failure _d: death
+  Analysis time _t: time
+       ID variable: kidid
+
+Fitting exponential model ...
+
+Fitting full model:
+Iteration 0:   log likelihood = -1864.1367  
+Iteration 1:   log likelihood = -1848.4841  
+Iteration 2:   log likelihood = -1847.2191  
+Iteration 3:   log likelihood =  -1847.139  
+Iteration 4:   log likelihood = -1847.1382  
+Iteration 5:   log likelihood = -1847.1382  
+
+Exponential PH regression
+Gamma shared frailty                               Number of obs     =  13,594
+Group variable: momid                              Number of groups  =     851
+                                                   Obs per group:   
+No. of subjects =     3,120                                      min =       1
+No. of failures =       403                                      avg =      16
+Time at risk    = 131,512.5                                      max =      40
+                                                   Wald chi2(16)     = 8796.54
+Log likelihood = -1847.1382                        Prob > chi2       =  0.0000
+
+─────────────┬────────────────────────────────────────────────────────────────
+          _t │ Haz. ratio   Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+          a0 │   .3710262   .2874212    -1.28   0.201     .0812846    1.693562
+       a1to5 │   .0271691   .0212782    -4.60   0.000     .0058538    .1261004
+      a6to11 │   .0337345   .0263341    -4.34   0.000     .0073047    .1557928
+     a12to23 │   .0202894   .0158516    -4.99   0.000     .0043878    .0938193
+       a24up │   .0036443   .0029231    -7.00   0.000     .0007566    .0175539
+        mage │   .8559554   .0514063    -2.59   0.010     .7609048    .9628796
+       mage2 │   1.002689   .0010689     2.52   0.012     1.000596    1.004786
+       borde │   1.059148   .0376965     1.61   0.106     .9877825     1.13567
+       pdead │   .9272842   .1655893    -0.42   0.672     .6534463    1.315878
+       p0014 │     1.7738   .3859226     2.63   0.008     1.158004    2.717059
+       p1523 │   .9075818   .1718846    -0.51   0.609     .6261508    1.315505
+       p2435 │   .7960679    .149776    -1.21   0.225     .5505554    1.151063
+       p36up │   .6898139   .1463948    -1.75   0.080     .4550791    1.045628
+   i011a1223 │   2.210407   1.593665     1.10   0.271     .5379858    9.081837
+    i011a24p │   4.959532   3.677954     2.16   0.031       1.1593    21.21708
+   i1223a24p │   1.076996   .4067595     0.20   0.844     .5137269    2.257852
+─────────────┼────────────────────────────────────────────────────────────────
+    /lntheta │  -1.540714    .632364    -2.44   0.015    -2.780125   -.3013038
+─────────────┼────────────────────────────────────────────────────────────────
+       theta │    .214228   .1354701                      .0620307     .739853
+─────────────┴────────────────────────────────────────────────────────────────
+Note: Estimates are transformed only in the first equation to hazard ratios.
+LR test of theta=0: chibar2(01) = 3.29                 Prob >= chibar2 = 0.035
+Note: No constant term was estimated in the main equation.
+
+. estimates store gamma
+</pre>
+<p>You may verify that the results agree quite closely with the paper.
+(The labels for the complex interaction terms involving the following
+birth interval are out of order in the published paper, but OK in Guo’s
+dissertation.)</p>
+<p>The estimated variance of frailty of 0.21 (or 0.22 in the paper)
+implies modest association between the lifetimes of siblings. Following
+Oakes, it corresponds to a rank correlation of 0.09. Even this small
+association, however, translates into substantial hazard ratios in the
+sense of Clayton. The conditional hazard for a child knowing that a
+sibling died at age a is 22% higher than if the sibling survived to age
+<em>a</em>, holding all covariates constant. Knowing that two siblings
+died raises the hazard by 44%. Note that to test the significance of the
+variance we have to be careful because the test is on a boundary of the
+parameter space. In the JASA paper we obtain a t-ratio of 1.6 for the
+variance, which agrees with Stata (0.214/0.135 = 1.6, although working
+in the log-scale would be better). Stata’s likelihood ratio test gives a
+chi-squared of 3.3 with an estimated p-value of 0.035, essentially the
+same result.</p>
+<pre class='stata'>. estimates table pwe gamma, t eform
+
+─────────────┬──────────────────────────
+    Variable │    pwe         gamma     
+─────────────┼──────────────────────────
+_t           │
+          a0 │  .33755656    .37102625  
+             │      -1.45        -1.28  
+       a1to5 │  .02453322    .02716914  
+             │      -4.89        -4.60  
+      a6to11 │  .03033465    .03373445  
+             │      -4.63        -4.34  
+     a12to23 │  .01809347    .02028935  
+             │      -5.31        -4.99  
+       a24up │  .00322289    .00364434  
+             │      -7.39        -7.00  
+        mage │  .86123393    .85595543  
+             │      -2.57        -2.59  
+       mage2 │  1.0025814    1.0026886  
+             │       2.50         2.52  
+       borde │  1.0636339    1.0591481  
+             │       1.85         1.61  
+       pdead │  1.1032484    .92728419  
+             │       0.66        -0.42  
+       p0014 │  1.7136501    1.7737999  
+             │       2.54         2.63  
+       p1523 │  .88450054    .90758181  
+             │      -0.66        -0.51  
+       p2435 │  .77181013    .79606791  
+             │      -1.40        -1.21  
+       p36up │  .67649048    .68981395  
+             │      -1.87        -1.75  
+   i011a1223 │  2.2469057    2.2104071  
+             │       1.13         1.10  
+    i011a24p │  4.9335514    4.9595321  
+             │       2.17         2.16  
+   i1223a24p │  1.0755599    1.0769956  
+             │       0.19         0.20  
+─────────────┼──────────────────────────
+    /lntheta │                 .214228  
+             │                   -2.44  
+─────────────┴──────────────────────────
+                             Legend: b/t
+</pre>
+<p>The other aspect of interest in the results is that the estimates of
+the covariate effects are remarkably stable. The one change worth
+mentioning is the coefficient for ‘previous child died’, which changes
+sign. This variable was clearly acting as a proxy for unobserved family
+effects. Note also that the t-ratios for observed covariate effects have
+generally declined in magnitude, which is consistent with the notion
+that correlated observations have less information than independent
+observations.</p>
+<p>Guo and Rodríguez also fit a non-parametric frailty model using a
+two-point distribution. This distribution is not built into Stata, but
+the model can be fit in Stata with only modest effort by following the
+method described in Section 3.2 of the paper. Details are left as an
+exercise for the reader.</p>
+<p>We continue our analysis of this dataset with a discussion of <a
+href="frailty2">model interpretation</a>, including calculation of
+predicted risks and probabilities.</p>
+

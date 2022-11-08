@@ -1,0 +1,79 @@
+glms:
+  - url: /glms/index
+    label: Home
+  - url: /glms/notes
+    label: "Lecture Notes"
+  - url: /glms/stata
+    label: "Stata Logs"
+  - url: /glms/r
+    label: "R Logs"
+  - url: /glms/datasets
+    label: Datasets
+  - url: /glms/sets
+    label: "Problem Sets"
+multilevel:
+  - url: index
+    label: Home
+  - url: lang1
+    label: "2 levels"
+  - url: egm   
+    label: "3 levels"
+  - url: hospmle 
+    label: Logit
+  - url: lips   
+    label: Poisson
+  - url: hospbugs
+    label: Bayes
+  - url: mln   
+    label: MLwiN
+survival:
+  - url: index
+    label: Home
+  - url: us2013
+    label: Parametric
+  - url: recid1
+    label: "Non-Parametric"
+  - url: justices
+    label: "Competing Risks"
+  - url: frailtyApp
+    label: Heterogeneity
+  - url: frailty
+    label: Multivariate
+demography:
+  - url: index
+    label: Home
+  - url: grdt
+    label: Rates
+  - url: periodlt
+    label: Mortality
+  - url: cstatus
+    label: Nuptiality
+  - url: asfr
+    label: Fertility
+  - url: project
+    label: Projections    
+stata:
+  - url: index
+    label: Introduction
+  - url: dataManagement
+    label: "Data Management"
+  - url: tables
+    label: Tables
+  - url: graphics
+    label: Graphics
+  - url: programming
+    label: Programming
+R:
+  - url: index
+    label: Introduction
+  - url: gettingStarted
+    label: "Getting Started"
+  - url: readingData
+    label: "Reading Data"
+  - url: linearModels
+    label: "Linear Models"
+  - url: glms
+    label: GLMs
+  - url: conclusion
+    label: Conclusion
+
