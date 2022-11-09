@@ -1,0 +1,13 @@
+v 3
+d myers: Myers' blended index of digit preference
+d G. Rodriguez <grodri@princeton.edu> and T. Pullum.
+d distribution-date: 08feb2006
+d
+d This command implements Myers' index of terminal digit preference
+d often used to study age heaping. The command has an option that
+d allows application to duration data expressed in months, and an
+d option to specify the range of values to be blended. A standard
+d reference is Siegel and Swanson (2004).
+
+f myers.ado
+f myers.hlp

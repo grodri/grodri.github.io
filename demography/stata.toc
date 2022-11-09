@@ -1,0 +1,7 @@
+v 3
+d Stata Commands For Use in Demography - Spring 2006
+
+p ddrate - decomposition of a difference between two rates
+p myers  - Myers's blended index of digit preference
+p nuptfer - a collection of egen extensions for nuptiality and fertility
+

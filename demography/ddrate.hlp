@@ -1,0 +1,71 @@
+{smcl}
+{* 07feb2006}{...}
+{cmd:help ddrate} 
+{hline}
+
+{title:Title}
+
+    {hi:Decomposition of a Difference Between Two Rates}
+
+{title:Syntax}
+
+{p 8 17 2}
+{cmd: ddrate} {it:expo1 events1 expo2 events2} [, {opt n:ames(name1 name2)} {opt r:ates}]
+
+{title:Description}
+
+{pstd}
+{cmd:ddrate} decomposes a difference between two crude rates into
+additive components due to differences in age composition and 
+differences in age-specific rates, where age is just an example of
+a possible stratification variable.
+
+{pstd}
+The arguments to the command are the names of four variables representing 
+exposure (for example mid-year population)
+and 
+number of events (for example deaths) 
+in that order,in each of two populations.
+
+{pstd}
+The results include the {it:crude rates}, 
+computed by combining each population's composition with its own rates; 
+rates that reflect {it:compositional effects}, 
+computed using each population's composition with the average rates; 
+and {it:standardized rates}, 
+computed using each population's rates with the average composition.
+
+{title:Options}
+
+{pstd}
+{opt n:ames(name1 name2)} lets you specify 
+labels for the two populations. The default is to number them 1 and 2.
+
+{pstd}
+{opt r:ates} tells the command that the input is in the form of
+stratum-specific rates and proportions in each stratum
+
+{title:Remarks}
+
+{pstd}
+For detailed information on the method used see 
+Preston, S. H., Heuveline, P. and Guillot, M. (2001). 
+{it:Demography: Measuring and Modeling Population Processes.}
+Blackwell Publishing.
+
+{title:Example}
+
+{pstd}
+These commands reproduce the results in Preston et al.
+
+	{cmd:. infile i str5 age swpop swdeaths kzpop kzdeaths using ///}
+    	    {cmd:https://grodri.github.io/datasets/preston.dat}
+	
+	{cmd:. ddrate swpop swdeaths kzpop kzdeaths, names(Sweden Kazakhstan)}
+	
+
+{title:Author}
+
+{pstd}
+	G. Rodríguez <grodri@princeton.edu>
+

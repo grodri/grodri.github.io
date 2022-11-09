@@ -1,0 +1,38 @@
+[{"title":"1. Rates and Standardization", "sections":[
+  {"url":"grdt", "title":"Growth Rates and Doubling Time"},
+  {"url":"std", "title":"Rates and Standardization"}]},
+{"title":"2. Interpolation and Graduation", "sections":[
+  {"url":"digitpref", "title":"Age Heaping and Myer's Index"},
+  {"url":"smoothing1", "title":"Running Means and Lines"},
+  {"url":"smoothing2", "title":"Regression Splines"},
+  {"url":"interpolation", "title":"Spline Interpolation"}]},
+{"title":"3. Life Tables", "sections":[
+  {"url":"periodlt", "title":"Period Life Table Construction"},
+  {"url":"relationallogit", "title":"Brass's Relational Logit Model"},
+  {"url":"mortmods", "title":"Modified Logit and Log-Quadratic"}]},
+{"title":"4. Survival", "sections":[
+  {"url":"us2002gompertz", "title":"Gompertz Fit to Adult Survival"},
+  {"url":"kaplanmeier", "title":"Kaplan-Meier Survival"},
+  {"url":"coxmodel", "title":"Cox Proportional Hazards"}]},
+{"title":"5. Unobserved Heterogeneity", "sections":[
+  {"url":"heterogeneity", "title":"Heterogeneity and Mortality Crossovers"}]},
+{"title":"6. Competing Risks", "sections":[
+  {"url":"neoplasms", "title":"Multiple-Decrement and Cause-Deletion"},
+  {"url":"tietze", "title":"Increment-Decrement LIfe Tables"}]},
+{"title":"7. Nuptiality", "sections":[
+  {"url":"cstatus", "title":"Current Status Life Tables"},
+  {"url":"nuptiality", "title":"Coale-McNeil and Hernes Models"}]},
+{"title":"8. Fertility Rates", "sections":[
+  {"url":"asfr", "title":"Age-Specific Fertility Rates"},
+  {"url":"brostrom", "title":"Coale's Model of Marital Fertility"},
+  {"url":"page", "title":"Page's Model of Fertility"}]},
+{"title":"9. Birth Intervals", "sections":[
+  {"url":"cobint", "title":"Birth Interval Analysis"}]},
+{"title":"10. Tempo Effects", "sections":[
+  {"url":"heuser", "title":"Ryder's Translation and Bongaarts-Feeney"}]},
+{"title":"11. Population Projections", "sections":[
+  {"url":"project", "title":"The Cohort Component Method"},
+  {"url":"leecarter", "title":"The Lee-Carter Forecasting Modesl"}]},
+{"title":"12. Stable Populations", "sections":[
+  {"url":"stablepop", "title":"Lotka's r and the Stable Age Distribution"},
+  {"url":"momentum", "title":"Population Momentum using Preston-Guillot"}]}]

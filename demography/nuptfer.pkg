@@ -1,0 +1,28 @@
+v 3
+d A package of nuptiality and fertility functions
+d G. Rodriguez <grodri@princeton.edu>
+d
+d distribution-date: 12apr2006
+d This package includes eight extensions to egen that can be used
+d to compute:
+d
+d  Cumulative probabilities and quantiles for the
+d  Coale-McNeil and Hernes models of nuptiality, 
+d
+d  Henry's schedule of natural fertility by age, 
+d  Coale's schedule of fertility control by age, 
+d  Coale's model of marital fertility by age, and
+d  Coale-Trussell's model of general fertility by age.
+d
+d For a description of these commands see
+d http://data.princeton.edu/eco572/nuptfer.html.
+
+f _gpnupt.ado
+f _gqnupt.ado
+f _gphernes.ado
+f _gqhernes.ado
+f _gnatfer.ado
+f _gconfer.ado
+f _gmarfer.ado
+f _ggenfer.ado
+f lnuptfer.mlib

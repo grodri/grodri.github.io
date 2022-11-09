@@ -1,0 +1,101 @@
+{smcl}
+{* 07feb2006}{...}
+{cmd:help myers} 
+{hline}
+
+{title:Title}
+
+    {hi:Myers' Blended Index of Digit Preference}
+
+{title:Syntax}
+
+{p 8 17 2}
+{cmd: myers} {varname} {weight} {ifin} [,{opt r:ange(bot top)} {opt m:onths} {opt g:enerate(newvarname)}]
+
+{title:Description}
+
+{pstd}
+{cmd:myers} computes Myers' digit preference index, a classical 
+measure of age heaping. 
+One could just tabulate the last digit of age and see if the
+distribution is uniform, 
+but population counts show sharp declines with age.
+
+{pstd}
+Myers adjusts by tabulating the last digit ten times
+with different starting values. 
+For example one could work with ages 0-89, 1-90, 2-91, ..., 9-98 
+and sum the frequencies to obtain a "blended" population.
+
+{pstd}
+In the absence of digit preference one would expect 10% in
+each terminal digit. Myers's index is half the sum of absolute
+deviations from 10%. Division by two is done so the index
+represents the proportion of cases that would need to be
+reclassified to obtain a uniform distribution.
+
+{title:Arguments}
+
+{phang}
+{varname} is a required argument specifying the variable
+of interest, for example age.
+
+{phang}
+{weight} is an optional specification of frequency weights,
+which is useful if you are computing the index from aggregate
+data.
+
+{phang}
+{ifin} can be used to restrict computation to a subset of the
+data.
+
+{title:Options}
+
+{phang}
+{opt r:ange(bot top)} specifies the (initial) range of values to be used. 
+For example {opt range(0 89)} will tabulate using ages 0-89 to 9-98.
+The range should always span a multiple of 10 (or 12); 
+it is an error to specify {opt range(0 90)} because that would include 
+the digit 0 eleven times and all others ten. 
+The range should always stop (at least) 9 years (or 11 months) short of the 
+maximum observed value. 
+If this is not the case the command does the calculations as if the
+frequencies beyond the observed range were 0 (assuming, for example,
+that there are no people over 99) and prints a warning.
+
+{phang}
+{opt m:onths} specifies that the data are in months, so interest lies in
+multiples of twelve, such as 12, 24, and 36 and the "last digit" (in a
+slight abuse of language) is the remainder after dividing by 12, 
+so 0 indicates an exact multiple of 12.
+
+{phang}
+{opt g:enerate(newvarname)} allows saving the weights used to calculate the
+index, which are the product of the user-specified weights (if any) and what
+we call the Myers weight, which counts how many times an observation goes
+into the index.
+
+{title:Remarks}
+
+{pstd}
+FOr a description of the method see Siegel and Swanson (2004). Editors.
+{it:The Methods and Materials of Demography}. Elsevier Academic Press.
+
+{title:Example}
+
+{pstd}
+These commands reproduce the results in Siegel and Siegel (page 139),
+using data from the Philippines.
+The published results treat all counts above age 99 as zero.
+
+	{cmd:. infile age pop using ///}
+	    {cmd:https://grodri.github.io/datasets/phpop1990.dat}
+	
+	{cmd:. myers age [fw=pop], range(10 99)}
+
+{title:Authors}
+
+{pstd}
+	G. Rodríguez <grodri@princeton.edu> and  T. Pullum.
+
+

@@ -1,0 +1,12 @@
+v 3
+d ddrate: decomposition of a difference between two rates
+d G. Rodriguez <grodri@princeton.edu>.
+d distribution-date: 08feb2006
+d
+d A simple command to decompose a difference between two crude rates
+d into differences due to age composition and differences due to
+d age-specific rates, using the method described in Preston, Heuveline,
+d and Guillot (2001).
+
+f ddrate.ado
+f ddrate.hlp
