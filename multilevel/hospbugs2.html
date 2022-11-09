@@ -1,0 +1,133 @@
+---
+layout: default
+section: multilevel
+tab: "Bayes"
+pager: true
+---
+
+<h2 class="first" id="WinBUGS2">Running WinBUGS in Batch Mode</h2>
+<p>Pointing and clicking following the instructions in a compound
+document such as <a href="hospBUGS">hospBUGS</a> is fine for becoming
+familiar with the software, but for serious work you will want to create
+a script that documents all the steps. That’s our task here.</p>
+<p>It is possible to run WinBUGS from Stata or from R, and then import
+the results for further analysis. Here I’ll focus on running WinBUGS
+directly. See Thompson et al. (2006) for Stata, and Sturtz, Ligges and
+Gelman (2005) for R.</p>
+<div style="border-left:2px solid #3366cc; padding-left:1em">
+<p><em>Note</em>. WinBUGS works with local files. You may want to start
+by downloading <code>hospital.dat</code>, <code>hospModel.txt</code>,
+<code>hospList.txt</code>, <code>hospInits.txt</code>, and
+<code>hospScript.txt</code>. The code below assumes that these files are
+in <code>d:\temp</code>, but you will need to change that.</p>
+</div>
+<h4 id="model-and-data-files">Model and Data Files</h4>
+<p>We start by saving the model into a text file. For the hospital data
+I created <code>hospModel.txt</code>, with the following contents.</p>
+<pre><code>model {
+    # N observations
+    for (i in 1:N) {
+        hospital[i] ~ dbern(p[i])
+        logit(p[i]) &lt;- bcons + bloginc*loginc[i] + bdistance*distance[i] + 
+            bdropout*dropout[i] + bcollege*college[i] + u[group[i]] 
+    }
+    # M groups
+    for (j in 1:M) {
+        u[j] ~ dnorm(0,tau)
+    }
+    # Priors
+    bcons     ~ dnorm(0.0,1.0E-6)
+    bloginc   ~ dnorm(0.0,1.0E-6)
+    bdistance ~ dnorm(0.0,1.0E-6)
+    bdropout  ~ dnorm(0.0,1.0E-6)
+    bcollege  ~ dnorm(0.0,1.0E-6)
+    # Hyperprior
+    tau ~ dgamma(0.001,0.001)
+}</code></pre>
+<p>Next I saved the list with the number of units per level in a file
+called <code>hospList.txt</code> which looks like this:</p>
+<pre><code>list(N=1060,M=501)</code></pre>
+<p>The data themselves, of course, are already in a file called
+<code>hospital.txt</code>. Click <a href="hospital.txt">here</a> to see
+it.</p>
+<p>At this point we add a file with the initial values, which I called
+<code>hospInits.txt</code> and which looks like this:</p>
+<pre><code>list(bcons=-2.69517150,bloginc=0.45852520,bdistance=-0.07627492,
+    bdropout=-1.57007674,bcollege=0.82072827,tau=1)</code></pre>
+<h4 id="the-script-file">The Script File</h4>
+<p>Wih these four files, all we need is the following script, which I
+saved in a file called <code>hospScript.txt</code>:</p>
+<pre><code>display(&#39;log&#39;)
+check(&#39;d:/temp/hospModel.txt&#39;)
+data(&#39;d:/temp/hospList.txt&#39;)
+data(&#39;d:/temp/hospital.txt&#39;)
+compile(1)
+inits(1,&#39;d:/temp/hospInits.txt&#39;)
+gen.inits()
+update(500)
+set(bcons)
+set(bloginc)
+set(bdistance)
+set(bdropout)
+set(bcollege)
+set(tau)
+update(5000)
+coda(*,&#39;d:/temp/hospOut&#39;)</code></pre>
+<p>Each of the commands listed above corresponds to one of the actions
+we performed before: checking the model, reading the data, compiling,
+reading initial values for the parameters, generating initial values for
+the random effects, running a burn-in, setting the nodes to be traced,
+updating, and finally writing the output to a file for further
+analysis.</p>
+<p>Note that all file names are specified to WinBUGS using forwards
+slashes, although the path separator in Windows is a backslash. That’s
+why we write <code>d:/temp</code> rather than <code>d:\temp</code>.</p>
+<p>You can open the script file in WinBUGS (make sure you say it is of
+type “text” before you open it) and then select Model | Script in the
+menu or press Alt-M-C, or even better, on Windows press Start and type
+cmd in the search box to open a command window, and then type</p>
+<p><code>D:\WinBUGS\WinBUGS14.exe /PAR d:/temp/hospScript.txt</code></p>
+<p>Make sure you type the path and name of the WinBUGS executable in
+your system (I installed my copy in a folder called
+<code>D:\WinBUGS</code>. The executable itself is called
+<code>WinBUGS14.exe</code>) and the name of the script file.</p>
+<h4 id="the-coda-output">The CODA Output</h4>
+<p>CODA is a popular program for convergence diagnostics written for R.
+WinBUGS produces output that can be read by CODA in a simple format. The
+command <code>coda(*,'d:/temp/hospOut')</code> in our script generates
+two files: an index and a data file.</p>
+<p>The <em>index</em> file has a name consisting of the stem we
+specified and the postfix “Index.txt”, so in our case the file is called
+“D:\temp\hospOutIndex.txt” and looks like this</p>
+<pre><code>bcons     1        5000
+bloginc   5001    10000
+bdistance 10001   15000
+bdropout  15001   20000
+bcollege  20001   25000
+tau      25001   30000</code></pre>
+<p>The <em>data</em> file has a name consisting of the stem we specified
+and the postfix “1.txt” where 1 stands for chain 1, so in our case the
+file is called “D:\temp\hospOut1.txt” and looks like this (I show only
+the first two lines and the last one)</p>
+<pre><code>501     -3.038
+502     -2.795
+...
+5500    0.7913</code></pre>
+<p>This file simply has the sample number and the value of the parameter
+for each draw, in the order specified in the index file. In our case
+lines 1 to 5000 are the values of <code>bcons</code>, lines 5001 to
+10000 are the values of <code>bloginc</code>, and so on.</p>
+<p>Obviously reading this file into Stata or R for further analysis is
+not hard.</p>
+<h2 id="references">References</h2>
+<p>Thompson J., T. Palmer and S. Moreno (2006). Bayesian analysis in
+Stata with Win BUGS. <em>The Stata Journal</em> <strong>6</strong>(4):
+530-540. <a
+href="https://www.stata-journal.com/article.html?article=st0115">See in
+SJ site</a>.</p>
+<p>Sturtz, S, U. Ligges and A. Gelman (2005). <code>R2WinBUGS</code>: A
+Package for Running <code>WinBUGS</code> from <code>R</code>.”
+<em>Journal of Statistical Software</em>, <strong>12</strong>(3): 1–16.
+Updated vignette at <a
+href="https://cran.r-project.org/web/packages/R2WinBUGS/vignettes/R2WinBUGS.pdf">CRAN</a>.</p>
+

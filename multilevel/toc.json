@@ -1,0 +1,24 @@
+[{"title":"1. Linear Models", "sections":[
+  {"url":"lang1", "title":"Variance Components"},
+  {"url":"lang2", "title":"Random Intercepts and Slopes"},
+  {"url":"lang3", "title":"Modeling Intercepts and Slopes"},
+  {"url":"oxboys", "title":"A Growth Curve Model"},
+  {"url":"egm", "title":"3-Level Models"},
+  {"url":"egmequations", "title":"Multilevel Model Equations"}]},
+{"title":"2. Logit Models", "sections":[
+  {"url":"hospmle", "title":"Random Effects Logit Models"},
+  {"url":"bangladesh", "title":"Contraceptive Use in Bangladesh"},
+  {"url":"mlogitstan", "title":"Random Effects Multinomial Logits"}]},
+{"title":"3. Poisson Models", "sections":[
+  {"url":"lips", "title":"A Random-Intercept Poisson Model"},
+  {"url":"kenyaicm", "title":"Infant and Child Mortality in Kenya"}]},
+{"title":"4. Bayesian Estimation", "sections":[
+  {"url":"hospbugs", "title":"Random Effects Logits using WinBUGS"},
+  {"url":"hospbugs2", "title":"Running WinBUGS in Batch Mode"},
+  {"url":"hospjags", "title":"Gibbs Sampling Using JAGS"},
+  {"url":"hospstan", "title":"Random Effects Logistic Regression using Stan"},
+  {"url":"hospbayesmh", "title":"Metropolis-Hastings in Stata"}]},
+{"title":"5. MLwiN Scripts", "sections":[
+  {"url":"mln", "title":"Using MLwiN's Command Interface"},
+  {"url":"mln2", "title":"Repeated Measurement Models"},
+  {"url":"mln3", "title":"A Model With Serial Correlation"}]}]  

@@ -1,0 +1,427 @@
+---
+layout: default
+section: multilevel
+tab: "Logit"
+pager: true
+---
+
+<h1 id="random-effects-logit-models">Random-Effects Logit Models</h1>
+<p>We will illustrate random intercept logit models using data from
+Lillard and Panis (2000) on 1060 births to 501 mothers. The outcome of
+interest is whether the birth was delivered in a hospital or elsewhere.
+The predictors include the log of income <code>loginc</code>, the
+distance to the nearest hospital <code>distance</code>, and two
+indicators of mothers’s education: <code>dropout</code> for less than
+high school and <code>college</code> for college graduates, so high
+school or some college is the reference cell.</p>
+
+{% include srtabs.html %}
+
+<p>First we read the data from the course website</p>
+<pre class='stata'>. infile hosp loginc distance dropout college mother ///
+>     using https://grodri.github.io/datasets/hospital.dat, clear
+(1,060 observations read)
+</pre>
+<pre class='r'>> hosp &lt;- read.table("https://grodri.github.io/datasets/hospital.dat", 
++   header = FALSE)
+> names(hosp) &lt;- c("hosp","loginc","distance","dropout","college","mother")
+</pre>
+<h2 id="fitting-the-model">Fitting the Model</h2>
+<p>To fit a model with a woman-level random effect <span
+class="stata">we can use <code>xtlogit</code></span><span class="r">we
+use <code>glmer()</code> in the <code>lme4</code> package</span></p>
+<pre class='stata'>. xtlogit hosp loginc distance dropout college, i(mother) re
+
+Fitting comparison model:
+
+Iteration 0:   log likelihood = -644.95401  
+Iteration 1:   log likelihood = -541.44886  
+Iteration 2:   log likelihood =  -537.4711  
+Iteration 3:   log likelihood = -537.45771  
+Iteration 4:   log likelihood = -537.45771  
+
+Fitting full model:
+
+tau =  0.0     log likelihood = -537.45771
+tau =  0.1     log likelihood = -534.03315
+tau =  0.2     log likelihood = -530.99872
+tau =  0.3     log likelihood = -528.53741
+tau =  0.4     log likelihood = -526.88308
+tau =  0.5     log likelihood = -526.38822
+tau =  0.6     log likelihood = -527.67382
+
+Iteration 0:   log likelihood =  -526.3876  
+Iteration 1:   log likelihood = -522.68442  
+Iteration 2:   log likelihood = -522.65042  
+Iteration 3:   log likelihood = -522.65042  
+
+Random-effects logistic regression                   Number of obs    =  1,060
+Group variable: mother                               Number of groups =    501
+
+Random effects u_i ~ Gaussian                        Obs per group:
+                                                                  min =      1
+                                                                  avg =    2.1
+                                                                  max =     10
+
+Integration method: mvaghermite                      Integration pts. =     12
+
+                                                     Wald chi2(4)     = 110.06
+Log likelihood = -522.65042                          Prob > chi2      = 0.0000
+
+─────────────┬────────────────────────────────────────────────────────────────
+        hosp │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+      loginc │   .5622009   .0727497     7.73   0.000     .4196141    .7047876
+    distance │  -.0765915   .0323473    -2.37   0.018    -.1399911    -.013192
+     dropout │  -1.997753   .2556249    -7.82   0.000    -2.498769   -1.496737
+     college │    1.03363   .3884851     2.66   0.008     .2722135    1.795047
+       _cons │   -3.36984   .4794505    -7.03   0.000    -4.309546   -2.430134
+─────────────┼────────────────────────────────────────────────────────────────
+    /lnsig2u │   .4372018   .3161192                     -.1823805    1.056784
+─────────────┼────────────────────────────────────────────────────────────────
+     sigma_u │   1.244335   .1966791                       .912844    1.696203
+         rho │   .3200274   .0687907                      .2020988    .4665343
+─────────────┴────────────────────────────────────────────────────────────────
+LR test of rho=0: chibar2(01) = 29.61                  Prob >= chibar2 = 0.000
+
+. estimates store xt
+</pre>
+<p><span class="stata">By default Stata uses Gauss-Hermite adaptive
+quadrature using the mean and variance with 12 integration
+points.</span></p>
+<p><span class="stata">The same model can be fit using
+<code>melogit</code>, which by default uses only 7 integration points.
+We can change the number to 12 to get better correspondence.</span></p>
+<pre class='stata'>. melogit hosp loginc distance dropout college || mother:, intpoints(12)
+
+Fitting fixed-effects model:
+
+Iteration 0:   log likelihood = -539.11554  
+Iteration 1:   log likelihood = -537.46251  
+Iteration 2:   log likelihood = -537.45771  
+Iteration 3:   log likelihood = -537.45771  
+
+Refining starting values:
+
+Grid node 0:   log likelihood =  -526.3876
+
+Fitting full model:
+
+Iteration 0:   log likelihood =  -526.3876  
+Iteration 1:   log likelihood = -522.74579  
+Iteration 2:   log likelihood = -522.65053  
+Iteration 3:   log likelihood = -522.65042  
+Iteration 4:   log likelihood = -522.65042  
+
+Mixed-effects logistic regression               Number of obs     =      1,060
+Group variable: mother                          Number of groups  =        501
+
+                                                Obs per group:
+                                                              min =          1
+                                                              avg =        2.1
+                                                              max =         10
+
+Integration method: mvaghermite                 Integration pts.  =         12
+
+                                                Wald chi2(4)      =     110.06
+Log likelihood = -522.65042                     Prob > chi2       =     0.0000
+─────────────┬────────────────────────────────────────────────────────────────
+        hosp │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+      loginc │   .5622029   .0727497     7.73   0.000      .419616    .7047898
+    distance │  -.0765916   .0323474    -2.37   0.018    -.1399914   -.0131919
+     dropout │  -1.997762   .2556281    -7.82   0.000    -2.498784    -1.49674
+     college │   1.033635   .3884878     2.66   0.008     .2722127    1.795057
+       _cons │  -3.369853   .4794516    -7.03   0.000    -4.309561   -2.430145
+─────────────┼────────────────────────────────────────────────────────────────
+mother       │
+   var(_cons)│   1.548407   .4894986                      .8332867    2.877238
+─────────────┴────────────────────────────────────────────────────────────────
+LR test vs. logistic model: chibar2(01) = 29.61       Prob >= chibar2 = 0.0000
+
+. estimates store me
+
+. estimates table xt me
+
+─────────────┬──────────────────────────
+    Variable │     xt           me      
+─────────────┼──────────────────────────
+hosp         │
+      loginc │  .56220088    .56220292  
+    distance │ -.07659154   -.07659161  
+     dropout │ -1.9977529   -1.9977619  
+     college │  1.0336304    1.0336349  
+       _cons │   -3.36984    -3.369853  
+─────────────┼──────────────────────────
+    /lnsig2u │   .4372018               
+        var( │
+_cons[mot~r])│               1.5484071  
+─────────────┴──────────────────────────
+</pre>
+<p><span class="stata">Note that <code>xtlogit</code> reports the logged
+variance (and the standard deviation) whereas <code>melogit</code>
+reports the variance, but the results are equivalent. The other
+estimates are all very close.</span></p>
+<pre class='r'>> library(lme4)
+> pql &lt;- glmer(hosp ~ loginc + distance + dropout + college + 
++     (1 | mother), data = hosp, family=binomial)
+> summary(pql, corr = FALSE)
+Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: binomial  ( logit )
+Formula: hosp ~ loginc + distance + dropout + college + (1 | mother)
+   Data: hosp
+
+     AIC      BIC   logLik deviance df.resid 
+  1061.2   1091.0   -524.6   1049.2     1054 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.6758 -0.4606 -0.2779  0.5255  4.4536 
+
+Random effects:
+ Groups Name        Variance Std.Dev.
+ mother (Intercept) 1.251    1.118   
+Number of obs: 1060, groups:  mother, 501
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -3.29448    0.46666  -7.060 1.67e-12 ***
+loginc       0.55040    0.07094   7.759 8.59e-15 ***
+distance    -0.07742    0.03169  -2.443  0.01456 *  
+dropout     -1.94727    0.24439  -7.968 1.61e-15 ***
+college      1.02322    0.37259   2.746  0.00603 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+</pre>
+<p><span class="r">By default R uses the PQL approximation, which is not
+always accurate. Let us specify 12-point adaptive Gaussian quadrature
+instead, and then compare the estimates:</span></p>
+<pre class='r'>> agq &lt;- glmer(hosp ~ loginc + distance + dropout + college + 
++   (1 | mother), data = hosp, family=binomial, nAGQ = 12)
+> summary(agq, corr = FALSE)    
+Generalized linear mixed model fit by maximum likelihood (Adaptive
+  Gauss-Hermite Quadrature, nAGQ = 12) [glmerMod]
+ Family: binomial  ( logit )
+Formula: hosp ~ loginc + distance + dropout + college + (1 | mother)
+   Data: hosp
+
+     AIC      BIC   logLik deviance df.resid 
+  1057.3   1087.1   -522.7   1045.3     1054 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.8085 -0.4497 -0.2659  0.4938  4.5728 
+
+Random effects:
+ Groups Name        Variance Std.Dev.
+ mother (Intercept) 1.548    1.244   
+Number of obs: 1060, groups:  mother, 501
+
+Fixed effects:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -3.36986    0.47945  -7.029 2.09e-12 ***
+loginc       0.56220    0.07275   7.728 1.09e-14 ***
+distance    -0.07659    0.03235  -2.368   0.0179 *  
+dropout     -1.99775    0.25563  -7.815 5.49e-15 ***
+college      1.03365    0.38849   2.661   0.0078 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+> cbind(fixef(pql), fixef(agq))
+                   [,1]       [,2]
+(Intercept) -3.29448256 -3.3698604
+loginc       0.55039538  0.5622039
+distance    -0.07741503 -0.0765922
+dropout     -1.94726835 -1.9977473
+college      1.02321857  1.0336453
+> c(unlist(VarCorr(pql)), unlist(VarCorr(agq)))
+  mother   mother 
+1.250605 1.548383 
+</pre>
+<p><span class="r">We see that the fixed effects are similar, but PQL
+underestimates the variance at the mother level. By the way a simple
+quadrature check is to increase the number of quadrature points and
+verify that all estimates remain essentially unchanged.</span></p>
+<h2 id="interpreting-the-estimates">Interpreting the Estimates</h2>
+<p>The estimated fixed effects may be exponentiated and interpreted as
+odds ratios in the usual way. For example the coefficient of college,
+which exponentiated is 2.81, means that the odds of hospital delivery
+for a college graduate are 2.81 times those of a high school graduate
+with the same observed and unobserved characteristics, including income,
+distance to the hospital, and the mother-specific residual.</p>
+<p>The standard deviation of the random effect may be interpreted
+exactly the same way, by treating it as the coefficient of a standard
+normal random effect. In this case the standard deviation of 1.24
+exponentiated becomes 3.47, so the odds of hospital delivery for a woman
+whose unobserved characteristics put her one standard deviation above
+the mean, are three-and-a-half times those of an average woman with the
+same observed characteristics, including income, education, and distance
+to the hospital.</p>
+<h2 id="intra-class-correlation">Intra-class correlation</h2>
+<p><span class="stata">Stata’s <code>xtlogit</code> reports the
+intra-class correlation “rho” in the <em>latent</em> scale as 0.32. We
+can verify this result</span> <span class="r">We can compute the
+intra-class correlation in the <em>latent</em> scale</span> using the
+estimated variance at the mother level and recalling that the level-1
+variance is p<sup>2</sup>/3:</p>
+<pre class='stata'>. estimates restore xt    
+(results xt are active now)
+
+. scalar v2 = exp(_b[/lnsig2u])
+
+. di v2/(v2 + _pi^2/3)
+.32002744
+</pre>
+<pre class='r'>> v &lt;- unlist(VarCorr(agq))
+> v / (v + pi^2/3)
+   mother 
+0.3200294 
+</pre>
+<p>The intraclass correlation of 0.32 reflects the correlation between
+the latent propensity to deliver in a hospital for two births of the
+same mother. It also means that about one third of the variance in the
+latent propensity to deliver in a hospital, beyond that explained by
+income, education and distance to the hospital, can be attributed to
+other characteristics of the mothers.</p>
+<p>We can also calculate the <em>manifest</em> correlation at the median
+linear predictor, which requires “integrating out” the random effect.
+<span class="stata">The <code>xtrho</code> command can calculate this
+for us at the median or other quantiles. This command is only available
+after <code>xtlogit</code>, <code>xtprobit</code> or
+<code>xtcloglog</code>. Fortunately our current estimate is from
+<code>xtlogit</code>.</span> <span class="r">We can do this by first
+calculating the median linear predictor and then computing the average
+probability of one and two hospital deliveries using the
+<code>gauher()</code> function to integrate out the random effect. The
+function can be sourced directly from this website as shown
+below.</span></p>
+<pre class='stata'>. xtrho
+
+Measures of intra-class manifest association in random-effects logit
+Evaluated at median linear predictor
+
+Measure          │    Estimate     [95% Conf.Interval]
+─────────────────┼────────────────────────────────────
+Marginal prob.   │     .239252     .217793     .268467
+Joint prob.      │     .093807     .067841     .132652
+Odds ratio       │     2.72847     1.90755     4.28414
+Pearson's r      │     .200894     .119788     .308453
+Yule's Q         │     .463586     .312136     .621509
+</pre>
+<pre class='r'>> X &lt;- model.matrix(agq)
+> xb &lt;- X %*% fixef(agq)
+> md &lt;- median(xb)
+> source("https://grodri.github.io/multilevel/gauher.R")
+> ghi &lt;- function(f, gq = gauher(12)) {
++     sum(f(gq$z) * gq$w)
++ }    
+> m1  &lt;- ghi(function(z) plogis(md + sqrt(v)*z));   m1  # margin
+[1] 0.2392533
+> m11 &lt;- ghi(function(z) plogis(md + sqrt(v)*z)^2); m11 # joint
+[1] 0.09381011
+> M &lt;- matrix(c(m11, m1 - m11, m1 - m11, 1 - 2*m1 + m11), 2, 2)
+> or &lt;- M[1,1]*M[2,2]/(M[1,2]*M[2,1]) ; or # odds ratio
+[1] 2.72868
+> r  &lt;- (m11 - m1^2)/(m1 * (1-m1))    ; r  # Pearson's r
+[1] 0.2009107
+> Q  &lt;- (or - 1)/(or + 1)             ; Q  # Yule's Q
+[1] 0.4636171
+</pre>
+<p><span class="r">The probability of one birth delivered in a hospital
+is 23.9% and the probability of two is 9.38%. The code builds a 2x2
+table from the joint and marginal distributions and then computes three
+correlation measures.</span></p>
+<p>We see that the correlation between the actual place of delivery for
+two births of the same woman, if she has median characteristics, is
+equivalent to a Pearson’s <em>r</em> of 0.20, a Yule’s <em>Q</em> of
+0.46, or perhaps in more familiar terms an odds ratio of 2.73. This
+means that the odds of hospital delivery for a woman who delivered a
+previous birth at a hospital are 2.73 times those of a comparable woman
+who delivered the previous birth elsewhere.</p>
+<h2 id="population-average-effects">Population Average Effects</h2>
+<p>Earlier we noted that the effect of education implies that the odds
+of hospital delivery for a college graduate are 2.8 times those of a
+high school graduate with the same observed and unobserved
+characteristics. This is a <em>subject specific</em> effect, comparing
+the odds of hospital delivery for essentially the same woman under two
+different education scenarios. It is also a conditional effect given a
+fixed value of the random effect.</p>
+<p>We can also compute a <em>population average</em> effect by averaging
+or “integrating out” the random effect. Essentially this entails
+computing the effect at different values of the random effect and
+averaging, and it can be computed by numerical integration or by
+simulation. Let us find the effect of education at the mean distance of
+3.74 and the mean log income of 5.88 using Gauss-Hermite integration
+<span class="stata">with the built-in function
+<code>_gauss_hermite_nodes()</code>.</span></p>
+<pre class='stata'>. egen first = tag(mother)
+
+. quietly sum dist if first
+
+. scalar mdist = r(mean)
+
+. quietly sum loginc if first
+
+. scalar mloginc = r(mean)
+
+. di mdist, mloginc
+3.7377246 5.882525
+
+. scalar xb = _b[_cons] + _b[loginc] * mloginc + _b[dist] * mdist    
+
+. scalar sigma = exp(_b[/lnsig2u]/2)
+
+. scalar bcollege = _b[college]
+
+. mata:         
+───────────────────────────────────────────────── mata (type end to exit) ──────
+:   xb = st_numscalar("xb")
+
+:   sigma = st_numscalar("sigma")
+
+:   b = st_numscalar("bcollege")
+
+:   gh = _gauss_hermite_nodes(12)'   // transpose
+
+:   gh[,1] = gh[, 1] :* sqrt(2)      // change of variables
+
+:   gh[,2] = gh[, 2] :/ sqrt(pi())   // to standard normal
+
+:   p1 = sum( invlogit(xb :+ b :+ gh[,1] :* sigma) :* gh[,2])
+
+:   p0 = sum( invlogit(xb      :+ gh[,1] :* sigma) :* gh[,2])
+
+:   (p1/(1-p1))/(p0/(1-p0))
+  2.21217867
+
+: end
+────────────────────────────────────────────────────────────────────────────────
+</pre>
+<pre class='r'>> library(dplyr)
+> x &lt;- summarize(hosp, loginc = mean(loginc), distance= mean(distance)); x
+    loginc distance
+1 5.987951 3.918396
+> b &lt;- fixef(agq)
+> xb &lt;- as.numeric(b[1] + x["loginc"] * b["loginc"] + x["distance"]* b["distance"])
+> p1 &lt;- ghi(function(z) plogis(xb + b["college"] + sqrt(v)*z)) 
+> p0 &lt;- ghi(function(z) plogis(xb +                sqrt(v)*z)) 
+> (p1/(1 - p1)) / (p0/(1-p0))
+[1] 2.212816
+</pre>
+<p>We get an odds ratio of 2.21. This is smaller in magnitude than the
+subject-specific odds ratio of 2.81.</p>
+<h2 id="other-approaches-to-estimation">Other Approaches to
+Estimation</h2>
+<p>You will find on this website analyses of the same data using three
+Bayesian methods:</p>
+<ul>
+<li><p>Gibbs sampling with <a href="hospBUGS">winBUGS</a>, and <a
+href="hospJags">Jags</a></p></li>
+<li><p>Hamiltonian MCMC using <a href="hospStan">Stan</a>, and</p></li>
+<li><p>Metropolis-Hastings + Gibbs using Stata’s <a
+href="hospBayesmh">bayesmh</a>.</p></li>
+</ul>
+<p>The last entry includes a comparison of estimates with all four
+methods.</p>
+<p>Last updated 12 April 2018</p>
+

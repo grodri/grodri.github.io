@@ -1,0 +1,257 @@
+---
+layout: default
+section: multilevel
+tab: "3 Levels"
+pager: true
+---
+
+<h2 id="multilevel-model-equations">Multilevel Model Equations</h2>
+<p>We write down the equations for the growth curve models of
+mathematics achievement fitted in <a href="egm">this page</a>. Equations
+for other models may be found in the class slides for random coefficient
+models <a href="pop510slides3.pdf">here</a>.</p>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+ type="text/javascript"></script>
+ 
+<p>Let <span
+class="math inline"><em>Y</em><sub><em>i</em><em>j</em><em>k</em></sub></span>
+be the outcome at time <span class="math inline"><em>k</em></span> for
+child <span class="math inline"><em>j</em></span> in school <span
+class="math inline"><em>i</em></span>, with <span
+class="math inline"><em>t</em><sub><em>i</em><em>j</em><em>k</em></sub></span>
+as the corresponding time (study year).</p>
+<h3 id="growth-curves">Growth Curves</h3>
+<p>The growth curve model with random intercepts and slopes is <span
+class="math display"><em>Y</em><sub><em>i</em><em>j</em><em>k</em></sub> = (<em>α</em>+<em>a</em><sub><em>i</em></sub>+<em>a</em><sub><em>i</em><em>j</em></sub>) + (<em>β</em>+<em>b</em><sub><em>i</em></sub>+<em>b</em><sub><em>i</em><em>j</em></sub>)<em>t</em><sub><em>i</em><em>j</em><em>k</em></sub> + <em>e</em><sub><em>i</em><em>j</em><em>k</em></sub></span></p>
+<p>where <span
+class="math inline"><em>e</em><sub><em>i</em><em>j</em><em>k</em></sub> ∼ <em>N</em>(0,<em>σ</em><sup>2</sup>)</span>
+is the error term, <span
+class="math inline">(<em>a</em><sub><em>i</em><em>j</em></sub>,<em>b</em><sub><em>i</em><em>j</em></sub>) ∼ <em>N</em>(0,<em>Σ</em>)</span>}
+are the intercept and slope random effects at the child level, with
+unstructured (free) covariance matrix <span class="math display">$$
+\Sigma = \begin{bmatrix} \sigma^2_{a} &amp; \sigma_{ab} \\
+                         \sigma_{ab}  &amp; \sigma^2_{b} \end{bmatrix}
+$$</span><br />
+and <span
+class="math inline">(<em>a</em><sub><em>i</em></sub>,<em>b</em><sub><em>i</em></sub>) ∼ <em>N</em>(0,<em>Φ</em>)</span>
+are the intercept and slope random effects at the school level, with
+unstructured covariance matrix <span class="math display">$$
+\Phi = \begin{bmatrix} \varphi^2_{a} &amp; \varphi_{ab} \\
+                       \varphi_{ab}  &amp; \varphi^2_{b} \end{bmatrix}
+$$</span> This model has 2 fixed parameters (intercept and slope) and 6
+variances and covariances of random effects (3 at each at levels 3 and
+2), plus the variance of the error term.</p>
+<p>The parameters and the estimates from fitting the model match as
+follows. First the fixed effects</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: left;">Name</th>
+<th style="text-align: right;">Estimate</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="math inline"><em>α</em></span></td>
+<td style="text-align: left;">constant</td>
+<td style="text-align: right;">-0.7793</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="math inline"><em>β</em></span></td>
+<td style="text-align: left;">study year</td>
+<td style="text-align: right;">0.7630</td>
+</tr>
+</tbody>
+</table>
+<p>And next the variances and covariances of the random effects</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: left;">Name</th>
+<th style="text-align: right;">Estimate</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">child:</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="math inline"><em>σ</em><sub><em>a</em></sub><sup>2</sup></span></td>
+<td style="text-align: left;">var(cons)</td>
+<td style="text-align: right;">0.6405</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="math inline"><em>σ</em><sub><em>b</em></sub><sup>2</sup></span></td>
+<td style="text-align: left;">var(year)</td>
+<td style="text-align: right;">0.0113</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="math inline"><em>σ</em><sub><em>a</em><em>b</em></sub></span></td>
+<td style="text-align: left;">cov(year, cons)</td>
+<td style="text-align: right;">0.0458</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">school:</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="math inline"><em>φ</em><sub><em>a</em></sub><sup>2</sup></span></td>
+<td style="text-align: left;">var(cons)</td>
+<td style="text-align: right;">0.1653</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="math inline"><em>φ</em><sub><em>b</em></sub><sup>2</sup></span></td>
+<td style="text-align: left;">var(year)</td>
+<td style="text-align: right;">0.0110</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="math inline"><em>φ</em><sub><em>a</em><em>b</em></sub></span></td>
+<td style="text-align: left;">cov(year, cons)</td>
+<td style="text-align: right;">0.0170</td>
+</tr>
+</tbody>
+</table>
+<p>Note that Stata reports level 3 and then level 2, and puts the
+constant at the end. R starts with the constant and reports level 2 and
+then level 3, as I have done here.</p>
+<h3 id="growth-curve-predictors">Growth Curve Predictors</h3>
+<p>Let <span
+class="math inline"><em>x</em><sub>2<em>i</em><em>j</em></sub></span>
+and <span
+class="math inline"><em>x</em><sub>3<em>i</em><em>j</em></sub></span> be
+the indicators of black and hispanic ethnicity for child <span
+class="math inline"><em>j</em></span> in school <span
+class="math inline"><em>i</em></span> and let <span
+class="math inline"><em>z</em><sub><em>i</em></sub></span> be the
+percent of low-income students in school <span
+class="math inline"><em>i</em></span>.</p>
+<p>There are two-ways of writing the model. Let us start with
+level-specific models. For each child in a given occassion <span
+class="math display"><em>Y</em><sub><em>i</em><em>j</em><em>k</em></sub> = <em>A</em><sub><em>i</em><em>j</em></sub> + <em>B</em><sub><em>i</em><em>j</em></sub><em>t</em><sub><em>i</em><em>j</em><em>k</em></sub> + <em>e</em><sub><em>i</em><em>j</em><em>k</em></sub></span><br />
+where the error term <span
+class="math inline"><em>e</em><sub><em>i</em><em>j</em><em>k</em></sub></span>
+is as before, and the intercept <span
+class="math inline"><em>A</em><sub><em>i</em><em>j</em></sub></span> and
+slope <span
+class="math inline"><em>B</em><sub><em>i</em><em>j</em></sub></span> are
+specific to each child. These follow their own models depending on child
+ethnicity <span class="math display">$$
+\begin{align}
+  A_{ij} = A_i + \alpha_1 x_{1ij} + \alpha_2 x_{2ij} + a_{ij} \\
+  B_{ij} = B_i + \beta_1  x_{1ij} + \beta_2  x_{2ij} + b_{ij}
+\end{align}
+$$</span></p>
+<p>where the intercept <span
+class="math inline"><em>A</em><sub><em>i</em></sub></span> and slope
+<span class="math inline"><em>B</em><sub><em>i</em></sub></span> are
+specific to each school, and follow their own models depending on the
+percent of low-income students <span class="math display">$$
+\begin{align} A_i = \alpha + \alpha_3 z_i + a_i \\
+              B_i = \beta +  \beta_3  z_i + b_i \end{align}
+$$</span> Here the residuals <span
+class="math inline">(<em>a</em><sub><em>i</em></sub>,<em>b</em><sub><em>i</em></sub>)</span>
+at level 3 and <span
+class="math inline">(<em>a</em><sub><em>i</em><em>j</em></sub>,<em>b</em><sub><em>i</em><em>j</em></sub>)</span>
+at level 2 follow bivariate normal distributions as shown in the
+previous section.</p>
+<p>If we substitute the level 3 and level 2 equations on the level 1
+model we obtain <span class="math display">$$
+\begin{align} Y_{ijk} =
+  &amp; (\alpha + \alpha_1 x_{1ij} +
+    \alpha_2 x_{2ij} + \alpha_3 z_i + a_i + a_{ij}) + \\
+  &amp; ( \beta + \beta_1 x_{1ij} + \beta_2 x_{2ij} + \beta_3 z_i +
+    b_i + b_{ij}) t_{ijk} + e_{ijk} \end{align}
+$$</span><br />
+which shows that the fixed effects include main effects of black,
+hispanic, low-income and year, as well as the interactions of black,
+hispanic and low-income with year, which enter as cross-products.
+Carrying out the multiplication by <span
+class="math inline"><em>t</em><sub><em>i</em><em>j</em><em>k</em></sub></span>
+and reordering a bit helps make this clear: <span
+class="math display">$$
+\begin{align} Y_{ijk} = &amp; \alpha + \alpha_1 x_{1ij} +
+  \alpha_2 x_{2ij} + \alpha_3 z_i + \beta t_{ijk} + \\
+  &amp; \beta_1 x_{1ij} t_{ijk} + \beta_2 x_{2ij} t_{ijk} +
+    \beta_3 z_i t_{ijk} + \\
+  &amp; a_i + a_{ij} + b_i t_{ijk} + b_{ij} t_{ijk} + e_{ijk}
+\end{align}
+$$</span></p>
+<p>The three lines here correspond to main effects, interactions, and
+random effects.</p>
+<p>Here are the fixed effect parameters with their names and
+estimates</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: left;">Name</th>
+<th style="text-align: right;">Estimate</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="math inline"><em>α</em></span></td>
+<td style="text-align: left;">Constant</td>
+<td style="text-align: right;">0.1406</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="math inline"><em>α</em><sub>1</sub></span></td>
+<td style="text-align: left;">Black</td>
+<td style="text-align: right;">-0.5021</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="math inline"><em>α</em><sub>2</sub></span></td>
+<td style="text-align: left;">Hispanic</td>
+<td style="text-align: right;">-0.3194</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="math inline"><em>α</em><sub>3</sub></span></td>
+<td style="text-align: left;">Low-income</td>
+<td style="text-align: right;">-0.0076</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="math inline"><em>β</em></span></td>
+<td style="text-align: left;">Time</td>
+<td style="text-align: right;">0.8745</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="math inline"><em>β</em><sub>1</sub></span></td>
+<td style="text-align: left;">Black × Time</td>
+<td style="text-align: right;">-0.0309</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span
+class="math inline"><em>β</em><sub>2</sub></span></td>
+<td style="text-align: left;">Hispanic × Time</td>
+<td style="text-align: right;">0.0431</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span
+class="math inline"><em>β</em><sub>3</sub></span></td>
+<td style="text-align: left;">Low-income × Time</td>
+<td style="text-align: right;">-0.0014</td>
+</tr>
+</tbody>
+</table>
+<p>The names of the variances and covariances of the random effects are
+the same as in the previous section.</p>
+

@@ -1,0 +1,381 @@
+---
+layout: default
+section: multilevel
+tab: "Logit"
+pager: true
+---
+
+<h2 id="random-effects-multinomial-logits">Random Effects Multinomial
+Logits</h2>
+<p>This page collects some notes on fitting multinomial logit models
+with (and without) random effects using Stata and Stan.</p>
+<h3 id="the-data">The Data</h3>
+<p>I use data from Hedeker (1999) “MIXNO: a computer program for
+mixed-effects nominal logistic regression” (see JSS 4(5)), although the
+models I fit are not exactly the same as his. The data pertain to a
+panel study of mentally ill homeless individuals. The outcome is housing
+<code>status</code> (0=street, 1=community, 2=independent). Individuals
+were randomly assigned to a treatment group with access to Section 8
+housing certificates and a control group without such access, and were
+assessed at the baseline and at 6, 12 and 24-month follow ups. The
+predictors of interest are <code>time</code>’ (coded 0-3) and
+<code>sec8</code>, a dummy variable coded 1 for the treatment group.
+Below we read the data and check totals by group and time</p>
+<pre class='stata'>. use https://grodri.github.io/datasets/sdhouse, clear
+(McKinney Homeless Research Project from Hedeker's MIXNO)
+
+. tab sec8 time
+
+           │                    time
+      sec8 │         0          1          2          3 │     Total
+───────────┼────────────────────────────────────────────┼──────────
+         0 │       180        161        146        145 │       632 
+         1 │       181        161        157        158 │       657 
+───────────┼────────────────────────────────────────────┼──────────
+     Total │       361        322        303        303 │     1,289 
+</pre>
+<h3 id="multinomial-logits">Multinomial Logits</h3>
+<p>For comparison I fit a standard multinomial logit model in Stata:</p>
+<pre class='stata'>. mlogit status c.sec8##c.time, base(0)
+
+Iteration 0:   log likelihood = -1381.4444  
+Iteration 1:   log likelihood = -1227.7024  
+Iteration 2:   log likelihood = -1223.1853  
+Iteration 3:   log likelihood =   -1223.16  
+Iteration 4:   log likelihood =   -1223.16  
+
+Multinomial logistic regression                         Number of obs =  1,289
+                                                        LR chi2(6)    = 316.57
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -1223.16                               Pseudo R2     = 0.1146
+
+──────────────┬────────────────────────────────────────────────────────────────
+       status │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+──────────────┼────────────────────────────────────────────────────────────────
+street        │  (base outcome)
+──────────────┼────────────────────────────────────────────────────────────────
+community     │
+         sec8 │   .2395584   .2130131     1.12   0.261    -.1779395    .6570564
+         time │   .7961881   .1075957     7.40   0.000     .5853045    1.007072
+              │
+c.sec8#c.time │  -.5180044   .1576099    -3.29   0.001    -.8269142   -.2090947
+              │
+        _cons │  -.2109418   .1428502    -1.48   0.140    -.4909231    .0690395
+──────────────┼────────────────────────────────────────────────────────────────
+independent   │
+         sec8 │   1.157348   .2551718     4.54   0.000     .6572208    1.657476
+         time │   1.138287    .123074     9.25   0.000     .8970665    1.379508
+              │
+c.sec8#c.time │  -.2308719   .1637933    -1.41   0.159    -.5519008     .090157
+              │
+        _cons │  -1.405489   .1964876    -7.15   0.000    -1.790598    -1.02038
+──────────────┴────────────────────────────────────────────────────────────────
+</pre>
+<p>To fit this model in Stan one can follow the example in Section 9.5
+of the Stan manual. That model, however, is “typically only identified
+if there is a suitable prior on the coefficients”. I found that it ran,
+and if I then calculated the differences between the coefficients for
+categories 1 and 2 compared with 0 (actually coded 2 and 3 compared with
+1) the results were similar to maximum likelihood.</p>
+<p>A better(and faster) alternative is to work with only k-1 equations
+for k response categories. I defined the coefficients to be estimated as
+a k-1 by p matrix <code>beta</code>, and the coefficients used to
+compute the actual probabilities as a k by p matrix <code>betap</code>
+(for beta-plus) such that the first column is zero and the others are
+filled by beta. (Obviously this assumes that the first category is the
+baseline. The code could be generalized to use any of the categories as
+baseline.)</p>
+<p>I first defined the <code>betap</code>’ in a transformed parameters
+block, but then the output includes both <code>beta</code> and
+<code>betap</code>, which is redundant. A better approach turned out to
+be creating a local block as part of the model definition, and then
+create the expanded parameters there.</p>
+<p>So here’s the code to read the data and prepare them for use by
+<code>rstan</code>:</p>
+<pre><code>require(haven)
+sd &lt;- read_dta(&quot;http://grodri.github.io/datasets//sdhouse.dta&quot;)
+y &lt;- as.numeric(sd$status) + 1
+x &lt;- model.matrix(~sec8*time, data=sd)
+sd_data &lt;- list(N=length(y), K=3, K1=2, P=ncol(x), y=y, x=x)</code></pre>
+<p>Cautionary note: the outcome is coded 0,1,2 in Stata with labels
+“street”, “community” and “independent”. I treat it as numeric and add 1
+to obtain 1,2,3. The next step is to define the model:</p>
+<pre><code>sd_model &lt;- &quot;
+  data {
+    int K;   // number of outcome categories
+    int K1;  // K-1
+    int N;   // number of observations
+    int P;   // number of predictors a.k.a. D 
+    int y[N];// outcome, coded 1 to K for each obs
+    vector[P] x[N]; // predictors, including constant
+  }
+  parameters {
+    matrix[K1,P] beta;
+  }
+  model {    
+    // prior for beta (vectorized)
+    for(k in 1:K1) {     
+        beta[k] ~ normal(0,5);     
+    }
+    { // separate block for transformation
+      matrix[K,P] betap;
+      for(p in 1:P) {
+          betap[1,p] &lt;- 0;
+          for(k in 2:K) {
+            betap[k,p] &lt;- beta[k-1,p];
+          }
+      }
+      // likelihood of outcome
+      for(n in 1:N) {
+        y[n] ~ categorical(softmax(betap * x[n]));
+      }
+    }
+  }
+&quot;</code></pre>
+<p>The parameter <code>beta</code>’ is a k1 by P matrix. The expression
+<code>beta[k]</code>’ refers to the k-th row. The prior is vectorized,
+so each element is <code>normal(0,5)</code>. The expansion to add a
+column of zeroes is included in a local block. Here’s an actual run</p>
+<pre><code>&gt; sf1 &lt;- stan(model_code=sd_model,data=sd_data,iter=100,chains=1)
+
+TRANSLATING MODEL &#39;sd_model&#39; FROM Stan CODE TO C++ CODE NOW.
+COMPILING THE C++ CODE FOR MODEL &#39;sd_model&#39; NOW.
+...
+Iteration: 100 / 100 [100%]  (Sampling)
+Elapsed Time: 4.059 seconds (Warm-up)
+              4.762 seconds (Sampling)
+              8.821 seconds (Total)</code></pre>
+<p>This model run much faster than the over-parametrized version. To
+print results in a more compact format I defined my own function</p>
+<pre><code>stan.print&lt;-function(fit) {
+  print(fit, probs=c(0.5), digits_summary=3)
+}
+&gt; stan.print(sf1)
+Inference for Stan model: sd_model.
+1 chains, each with iter=100; warmup=50; thin=1; 
+post-warmup draws per chain=50, total post-warmup draws=50.
+
+               mean se_mean    sd       50% n_eff  Rhat
+beta[1,1]    -0.163   0.038 0.129    -0.145    11 1.199
+beta[1,2]     0.169   0.031 0.174     0.172    31 1.017
+beta[1,3]     0.756   0.026 0.105     0.756    16 1.072
+beta[1,4]    -0.462   0.029 0.168    -0.450    33 0.980
+beta[2,1]    -1.375   0.044 0.169    -1.351    15 0.980
+beta[2,2]     1.112   0.055 0.232     1.119    18 1.030
+beta[2,3]     1.099   0.029 0.130     1.102    20 0.980
+beta[2,4]    -0.171   0.037 0.185    -0.149    25 1.037
+lp__      -1226.875   0.305 1.387 -1226.857    21 1.062</code></pre>
+<p>This model obviously needs to run much longer, we only have 50 draws!
+But the numbers are all in the right ballpark. When you compare results
+with Stata note that <code>beta[e,1]</code> is the constant for equation
+e.</p>
+<h3 id="random-intercept-multinomial-logits">Random-Intercept
+Multinomial Logits</h3>
+<p>Now on to the random intercept model. Stata 17 added an
+<code>xtmlogit</code> command. Users of earlier versions of Stata can
+fit this model <code>gsem</code>, as explained by Rebecca Pope in the
+Stata Newsletter for Apr-Jun 2014.</p>
+<pre class='stata'>. //v&lt;17 gsem (1.status &lt;- sec8 time secXtime RI1[id]) ///
+. //          (2.status &lt;- sec8 time secXtime RI2[id]), mlogit
+. xtmlogit status c.sec8##c.time, i(id) base(0) covariance(unstructured)
+
+Fitting comparison model ...
+
+Refining starting values:
+
+Grid node 0:   log likelihood = -1178.1888
+Grid node 1:   log likelihood = -1201.0323
+
+Fitting full model:
+
+Iteration 0:   log likelihood = -1178.1888  
+Iteration 1:   log likelihood = -1163.1103  
+Iteration 2:   log likelihood = -1157.7496  
+Iteration 3:   log likelihood = -1157.6259  
+Iteration 4:   log likelihood = -1157.6253  
+Iteration 5:   log likelihood = -1157.6253  
+
+Random-effects multinomial logistic regression       Number of obs    =  1,289
+Group variable: id                                   Number of groups =    361
+
+Random effects u_i ~ Gaussian                        Obs per group:
+                                                                  min =      1
+                                                                  avg =    3.6
+                                                                  max =      4
+
+Integration method: mvaghermite                      Integration pts. =      7
+
+                                                     Wald chi2(6)     = 210.34
+Log likelihood = -1157.6253                          Prob > chi2      = 0.0000
+
+──────────────┬────────────────────────────────────────────────────────────────
+       status │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+──────────────┼────────────────────────────────────────────────────────────────
+street        │  (base outcome)
+──────────────┼────────────────────────────────────────────────────────────────
+community     │
+         sec8 │   .3835373   .2829853     1.36   0.175    -.1711037    .9381783
+         time │   1.015074   .1329061     7.64   0.000     .7545826    1.275565
+              │
+c.sec8#c.time │  -.5786798    .181297    -3.19   0.001    -.9340153   -.2233442
+              │
+        _cons │  -.2063278   .1926945    -1.07   0.284    -.5840022    .1713466
+──────────────┼────────────────────────────────────────────────────────────────
+independent   │
+         sec8 │    1.60725   .3791572     4.24   0.000     .8641157    2.350384
+         time │   1.530787   .1579142     9.69   0.000     1.221281    1.840293
+              │
+c.sec8#c.time │  -.2223493   .1998801    -1.11   0.266    -.6141072    .1694085
+              │
+        _cons │  -2.047767   .3034708    -6.75   0.000    -2.642559   -1.452975
+──────────────┼────────────────────────────────────────────────────────────────
+       var(u1)│   1.744592   .4753894                      1.022697    2.976052
+       var(u2)│   3.818815   .7779019                       2.56175    5.692728
+──────────────┼────────────────────────────────────────────────────────────────
+    cov(u1,u2)│   1.701683   .5029326     3.38   0.001     .7159536    2.687413
+──────────────┴────────────────────────────────────────────────────────────────
+LR test vs. multinomial logit: chi2(3) = 131.07           Prob > chi2 = 0.0000
+
+Note: LR test is conservative and provided only for reference.
+
+. di 1.701683/sqrt(1.744592*3.818815)
+.65927622
+
+. di sqrt(1.744592),sqrt(3.818815)
+1.32083 1.9541789
+</pre>
+<p>Getting this model to run in Stan is fun. Basically all we need to do
+is add the random effects, which depend on the subject id. To this end
+we expand the data to include the number of groups (individuals) and a
+mapping of observations to groups (individuals):</p>
+<pre><code>sd_data &lt;- list(N=length(y),K=3,K1=2,P=ncol(x),y=y,x=x,
+            G=362,map=sd$id)</code></pre>
+<p>The model builds on the previous run. In the data block we add the
+number of groups <code>G</code>’ and an integer array map to lookup the
+groups. To define the prior for the random effects we need a
+<code>K1</code>-vector of zeroes. Turns out the best way to define this
+is in a transformed data block. Let me put the model out here and then
+comment on each part.</p>
+<pre><code>sd_model &lt;- &quot;
+  data {
+    int K;   // number of outcome categories
+    int K1;  // K-1
+    int N;   // number of observations
+    int P;   // number of predictors a.k.a. D 
+    int y[N];// outcome, coded 1 to K for each obs
+    vector[P] x[N]; // predictors, including constant
+    int G;   // number of groups    
+    int map[N]; //map obs to groups
+  }
+
+  transformed data {
+    vector[K1] zero;
+    for(k in 1:K1) {
+      zero[k] &lt;- 0;
+    }
+  }  
+  parameters {
+    matrix[K1,P] beta;        // fixed effects
+    corr_matrix[K1] omega;    // ranef correlations
+    vector[K1] tau;  // ranef scales
+    vector[K1] u[G];          // random intercepts
+  }
+  model {    
+    matrix[K1,K1] sigma;
+    // prior for fixed effects (vectorized)
+    for(k in 1:K1) {
+        beta[k] ~ normal(0,5);
+    }
+    // prior/hyper prior for random effects
+    sigma &lt;- diag_matrix(tau) * omega * diag_matrix(tau);
+    tau ~ cauchy(0,2.5);
+    omega ~ lkj_corr(2);
+    for(g in 1:G) {
+      u[g] ~ multi_normal(zero,sigma);
+    }
+    { // local block for linear predictor
+      vector[K] xbs;
+      vector[K1] xb;
+      xbs[1] &lt;- 0;
+      for(n in 1:N) {
+          xb &lt;- beta*x[n] + u[map[n]]; // a K1 vector
+          for(k in 2:K) {
+            xbs[k] &lt;- xb[k-1];
+          }          
+          y[n] ~ categorical(softmax(xbs));
+      }
+    }
+  }
+&quot;</code></pre>
+<p>To define correlated multivariate normal random effects I looked
+carefully at section 9.9, which described multivariate priors for
+hierarchical models. The basic idea is that each individual will have a
+random intercept for each equation, drawn from a bivariate normal
+distribution. The code, however, allows any number of categories, so we
+work with a multivariate normal. The advice here is to work with a
+correlation matrix <code>omega</code> and a set of scale factors or
+standard deviations <code>tau</code>, and then define the covariance
+matrix <code>sigma</code> as Σ = diag(τ) Ω diag(τ).</p>
+<p>I do this by defining the matrices and vectors in the parameters
+block, and the priors in the model block. Following the advice in the
+Stan manual I let τ be <code>cauchy(0,2.5)</code>’ and Ω have a
+<code>lkj_corr(2)</code> prior. See the manual for details on these
+priors.</p>
+<p>The final hurdle is to define the probabilities. Rather than expand
+both the fixed effects <code>beta</code> and the random effects
+<code>u</code> to add zeroes for the omitted category, I decided to
+compute a linear predictor, adding the <code>k</code>-1 fixed and random
+effects, and then expand that by adding a zero. This is all done in a
+local block. The final code follows below.</p>
+<p>Here’s an actual run:</p>
+<pre><code>&gt; sf2 &lt;- stan(model_code=sd_model,data=sd_data,iter=100,chains=1)
+TRANSLATING MODEL &#39;sd_model&#39; FROM Stan CODE TO C++ CODE NOW.
+COMPILING THE C++ CODE FOR MODEL &#39;sd_model&#39; NOW.
+... output supressed, including informational messages ...
+... warning about non-positive definite matrices ...
+Iteration: 100 / 100 [100%]  (Sampling)
+Elapsed Time: 138.088 seconds (Warm-up)
+              106.526 seconds (Sampling)
+              244.614 seconds (Total)
+&gt; stan.print(sf2)
+&gt; stan.print(sf2)
+Inference for Stan model: sd_model.
+1 chains, each with iter=100; warmup=50; thin=1; 
+post-warmup draws per chain=50, total post-warmup draws=50.
+
+                mean se_mean     sd       50% n_eff  Rhat
+beta[1,1]     -0.214   0.028  0.195    -0.212    50 0.986
+beta[1,2]      0.378   0.041  0.289     0.414    50 0.980
+beta[1,3]      1.017   0.018  0.129     1.010    50 1.011
+beta[1,4]     -0.589   0.027  0.193    -0.582    50 0.980
+beta[2,1]     -2.017   0.059  0.265    -2.047    20 1.078
+beta[2,2]      1.540   0.056  0.398     1.567    50 0.984
+beta[2,3]      1.521   0.022  0.132     1.513    37 0.982
+beta[2,4]     -0.205   0.029  0.208    -0.187    50 0.990
+omega[1,1]     1.000   0.000  0.000     1.000    50   NaN
+omega[1,2]     0.623   0.013  0.073     0.624    31 1.145
+omega[2,1]     0.623   0.013  0.073     0.624    31 1.145
+omega[2,2]     1.000   0.000  0.000     1.000    41 0.980
+tau[1]         1.345   0.043  0.133     1.354    10 1.114
+tau[2]         1.917   0.040  0.141     1.903    12 1.242
+u[1,1]         0.747   0.206  1.455     0.755    50 0.990
+u[1,2]         1.524   0.232  1.643     1.604    50 0.996
+... supressing the estimates of the random effects ...
+u[362,1]       0.880   0.117  0.829     0.815    50 0.980
+u[362,2]      -0.175   0.159  1.114    -0.158    49 1.011
+lp__       -1552.537  20.623 41.317 -1548.684     4 1.698
+
+Samples were drawn using NUTS(diag_e) at Thu May 29 13:29:19 2014.
+For each parameter, n_eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor on split chains (at 
+convergence, Rhat=1).</code></pre>
+<p>Again, we need to run this model much longer, but the preliminary
+results are pretty close to the Stata estimates. In particular, note the
+correlation of 0.623 compared to 0.659 and the standard deviations of
+1.345 and 1.917, compared to 1.321 and 1.954, which is remarkable
+agreement for only 50 samples.</p>
+<p>Extension to crossed random effects would require defining two maps,
+one for each grouping factor, and then two sets random effects, each
+with its own <code>omega</code> and <code>tau</code> (and hence
+<code>sigma</code>).</p>
+

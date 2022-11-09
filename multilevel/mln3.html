@@ -1,0 +1,161 @@
+---
+layout: default
+section: multilevel
+tab: "MLwiN"
+pager: true
+---
+
+<h2 class="first" id="mlwin3">A Model With Serial Correlation</h2>
+<p>Repeated measurements often exhibit serial correlation, with outcomes
+closer it time more highly correlated that outcomes further apart.
+Multilevel models have an exchangeable error structure, where all
+outcomes in a group are equally correlated, but may be adapted to
+accomodate serial correlation.</p>
+<p>We will analyze the example in Goldstein (1995, Sections 6.4 and 6.5
+starting on page 91) using the MLwiN macros described in Yang et al
+(2001) <em>MLwiN Macros for advanced multilevel modelling</em>, which
+you may download from <a
+href="https://www.bristol.ac.uk/cmm/software/mlwin/download/macros.html">MLwiN
+macros</a>.</p>
+<h3 id="a-seasonal-growth-model">A Seasonal Growth Model</h3>
+<p>The data are available in a worksheet supplied with MLwiN,
+<code>oxboys.ws2</code>, containing height measurements on 26 boys
+measured on nine occassions between the ages of 11 and 14. The data have
+already been stacked in <em>long</em> format. The variables of interest
+are height and age, which is modelled using a fourth-degree polynomial.
+Variable <code>occ</code> indicates the occassions and <code>seas</code>
+is the month when measures were taken.</p>
+<p>If you retrieve the worksheet you will note that it already has
+defined the two-level structure and has fitted a simple 2-level model
+with a fourth-degree polynomial on age. You may want to type
+<code>fixed</code> and <code>random</code> and compare the results with
+Yang et al (2001). I will start from scratch to document all steps. Make
+sure you use the actual location of MLwiN on your computer.</p>
+<pre class="mlwin"><code>retrieve c:\program files\mlwin1.10\oxboys.ws2
+response &quot;height&quot;
+ident 1 &quot;occ&quot; 2 &quot;id&quot;
+expla 1 &quot;cons&quot; &quot;age&quot; &quot;age2&quot; &quot;age3&quot; &quot;age4&quot;
+setv 1 &quot;cons&quot;
+setv 2 &quot;cons&quot; &quot;age&quot; &quot;age2&quot;</code></pre>
+<p>Note that only the constant, linear and square terms on age are
+random at the student level. You may want to fit this model and compare
+your results with Yang et al (2001). I will go ahead and add a
+seasonality term. As noted in Goldstein (1995, p.92), if the seasonal
+component has amplitude a and phase g we can write</p>
+<p><em>a cos(t+g) = a<sub>1</sub>cos(t) - a<sub>2</sub>sin(t).</em></p>
+<p>For this data the second coefficient is very close to zero and will
+be omitted.</p>
+<pre class="mlwin"><code>note add the seasonal term:
+calc c10 = 3.1416 * &#39;seas&#39;/6
+cos c10 c11
+name c11 &#39;cos&#39;
+expl 1 &#39;cos&#39;
+batch 1
+start
+fixed 
+random</code></pre>
+<p>These are my results, reproducing Table 6.4 in Goldstein (1995,
+p.93)</p>
+<pre><code>fixed 
+  PARAMETER            ESTIMATE     S. ERROR(U)   PREV. ESTIMATE
+cons                      148.9         1.54              148.9 
+age                       6.189       0.3485              6.187 
+age2                      2.167       0.4504              2.167 
+age3                     0.3918       0.1565             0.3918 
+age4                     -1.553       0.4423             -1.553 
+cos                     -0.2367      0.06769            -0.2367 
+ 
+random 
+LEV.  PARAMETER       (NCONV)    ESTIMATE    S. ERROR(U)  PREV. ESTIM     CORR.
+-------------------------------------------------------------------------------
+ 2    cons     /cons     ( 2)       61.51           17.1        61.61         1
+ 2    age      /cons     ( 2)       7.979           3.02        7.999     0.613
+ 2    age      /age      ( 2)       2.754         0.7794        2.758         1
+ 2    age2     /cons     ( 2)       1.349          1.414        1.356     0.213
+ 2    age2     /age      ( 1)      0.8776         0.3432       0.8788     0.654
+ 2    age2     /age2     ( 1)      0.6547         0.2272       0.6549         1
+-------------------------------------------------------------------------------
+ 1    cons     /cons     ( 1)      0.1991        0.02254       0.1991 </code></pre>
+<h3 id="adding-serial-correlation">Adding Serial Correlation</h3>
+<p>We will now consider a model where level-1 residuals for the same
+individual are correlated and the magnitude of the correlation depends
+on the time difference between the measurements. Specifically we will
+assume that</p>
+<p><em>cov(e<sub>t,j</sub>,e<sub>t-s,j</sub>) =
+s<sup>2</sup><sub>e</sub> exp{- g s}</em></p>
+<p>So the correlation between residuals <em>s</em> time-units apart is
+<em>exp{- g s}</em> and decays exponentially with <em>s</em>. (The
+correlation between outcomes will also involve level-2 residuals.)</p>
+<p>To fit this model make sure you have downloaded the TS macros, and
+have adjusted the MLwiN settings to use the right files. As usual I will
+provide a script instead of using the GUI. First I define the folder
+where the macros are located and the files to be used for pre and post
+estimation. The time-series macros require the time variable to be
+called T. The other commands are explained in comments:</p>
+<pre class="mlwin"><code>note the time variable must be called T
+name c2 &quot;T&quot;
+note define the location of the pre and post macros
+fpath c:\program files\mlwiN1.10\ts
+prefile pre.ts
+postfile post.ts
+note turn on time series switch
+set b10 1
+note put power in c185 (we use 1)
+join c185 1 c185
+note put the starting value in c201 (we use 20)
+join c201 20 c201
+note turn off switches for other models
+set b11 0
+set b12 0
+set b13 0
+note set maximum number of iterations to 50
+maxi 50</code></pre>
+<p>At this stage I fitted the model interactively by pressing the Start
+button. The procedure did four iterations. The results are not all shown
+in the Equation window, so you have to use <code>random</code> to look
+at the random parameters. To ensure that <code>s1</code> has converged
+press More and use <code>random</code> a couple of times.</p>
+<p>Here are my results, in general agreement with Table 6.5 in Goldstein
+(1995, p. 93).</p>
+<pre><code>fixed 
+  PARAMETER            ESTIMATE     S. ERROR(U)   PREV. ESTIMATE
+cons                      148.9        1.539              148.9 
+t                         6.191       0.3509              6.191 
+age2                      2.163       0.4494              2.163 
+age3                     0.3863        0.169             0.3863 
+age4                     -1.548       0.4294             -1.548 
+cos                      -0.236      0.06733             -0.236 
+ 
+random 
+LEV.  PARAMETER       (NCONV)    ESTIMATE    S. ERROR(U)  PREV. ESTIM     CORR.
+-------------------------------------------------------------------------------
+ 2    cons     /cons     ( 8)       61.48          17.07        61.48         1
+ 2    t        /cons     ( 8)        7.93          2.992         7.93     0.618
+ 2    t        /t        ( 6)        2.68         0.7655         2.68         1
+ 2    age2     /cons     ( 5)       1.479          1.402        1.479     0.249
+ 2    age2     /t        ( 5)      0.8525         0.3357       0.8525     0.687
+ 2    age2     /age2     ( 5)      0.5745         0.2284       0.5746         1
+ 2    t(0)     *         ( 5)      0.2346         0.0433       0.2346 
+ 2    s1       *         ( 4)       6.908          2.082         6.91 
+-------------------------------------------------------------------------------
+ 1    cons     /cons     ( 5)      0.2346         0.0433       0.2346 </code></pre>
+<p>The interesting parameter is 6.908. To see what this implies in terms
+of serial correlation we compute <em>exp{- g s}</em> for S=0.25, 0.50,
+0.75 and 1, which corresponds to observations 3, 6, 9 and 12 months
+apart:</p>
+<pre class="mlwin"><code>join c50 .25 .5 .75 1 c50
+calc c51 = expo(-6.908 * c50)
+print c51</code></pre>
+<p>The result is</p>
+<pre><code>print c51 
+
+{{1}}
+
+ N =      4       
+   1  0.17782      
+   2  0.031619     
+   3  0.0056224    
+   4  0.00099976</code></pre>
+<p>We see that the correlation is 0.18 for residuals three months apart,
+and declines to 0.03 for residuals six months apart.</p>
+
