@@ -1,0 +1,595 @@
+---
+layout: default
+title: "Stata Tutorial"
+section: stata
+tab: "Data Management"
+---
+
+<h1 class="first" id="s2">2 Data Management</h1>
+<p>In this section I describe Stata data files, discuss how to read raw
+data into Stata in free and fixed formats, how to create new variables,
+how to document a dataset labeling the variables and their values, and
+how to manage Stata system files.</p>
+<p>Stata 11 introduced a variables manager that allows editing variable
+names, labels, types, formats, and notes, as well as value labels, using
+an intuitive graphical user interface available under
+<u>D</u>ata|<u>V</u>ariables Manager in the menu system. While the
+manager is certainly convenient, I still prefer writing all commands in
+a do file to ensure research reproducibility. A nice feature of the
+manager, however, is that it generates the Stata commands needed to
+accomplish the changes, so it can be used as a learning tool and, as
+long as you are logging the session, leaves a record behind.</p>
+<h2 id="s21">2.1 Stata Files</h2>
+<p>Stata datasets are rectangular arrays with <em>n</em> observations on
+<em>m</em> variables. Unlike packages that read one observation at a
+time, Stata keeps all data in memory, which is one reason why it is so
+fast. There’s a limit of 2,047 variables in Stata/BE, 32,767 in
+Stata/SE, and 120,000 in Stata/MP. You can have as many observations as
+your computer’s memory will allow, provided you don’t go too far above 2
+billion cases with Stata/SE and 1 trillion with Stata/MP. (To find these
+limits type <code>help limits</code>.)</p>
+<h3 id="variable-names">2.1.1 Variable Names</h3>
+<p>Variable names can have up to 32 characters, but many commands print
+only 12, and shorter names are easier to type. Stata names are <em>case
+sensitive</em>, <code>Age</code> and <code>age</code> are different
+variables! It pays to develop a convention for naming variables and
+sticking to it. I prefer short lowercase names and tend to use single
+words or abbreviations rather than multi-word names, for example I
+prefer <code>effort</code> or <code>fpe</code> to
+<code>family_planning_effort or familyPlanningEffort,</code> although
+all four names are legal. Note the use of underscores or camel casing to
+separate words.</p>
+<h3 id="variable-types">2.1.2 Variable Types</h3>
+<p>Variables can contain numbers or strings. Numeric variables can be
+stored as integers (bytes, integers, or longs) or floating point (float
+or double). These types differ in the range or precision of the values
+they can hold, type <code>help datatype</code> for details.</p>
+<p>You usually don’t need to be concerned about the storage mode; Stata
+does all calculations using doubles, and the <code>compress</code>
+command will find the most economical way to store each variable in your
+dataset, type <code>help compress</code> to learn more.</p>
+<p>You <em>do</em> have to be careful with logical comparisons involving
+floating point types. If you store 0.1 in a float called x, you may be
+surprised to learn that x == 0.1 is never true. The reason is that 0.1
+is “rounded” to different binary numbers when stored as a float (the
+variable <code>x</code>) or as a double (the constant 0.1). This problem
+does not occur with integers or strings.</p>
+<p>String variables can have varying lengths up to 244 characters in
+Stata 12, or up to two billion characters in Stata 13 or higher, where
+you can use <code>str1...str2045</code> to define fixed-length strings
+of up to 2045 characters, and <code>strL</code> to define a long string,
+suitable for storing plain text or even binary large objects such as
+images or word processing documents, type <code>help strings</code> to
+learn more. Strings are ideally suited for id variables because they can
+be compared without problems.</p>
+<p>Sometimes you may need to convert between numeric and string
+variables. If a variable has been read as a string but really contains
+numbers you will want to use the command <code>destring</code> or the
+function <code>real()</code>. Otherwise, you can use <code>encode</code>
+to convert string data into a numeric variable or <code>decode</code> to
+convert numeric variables to strings. These commands rely on value
+labels, which are described below.</p>
+<h3 id="missing-values">2.1.3 Missing Values</h3>
+<p>Like other statistical packages, Stata distinguishes <em>missing</em>
+values. The basic missing value for numeric variables is represented by
+a dot <code>.</code> Starting with version 8 there are 26 additional
+missing-value codes denoted by <code>.a</code> to <code>.z</code>. These
+values are represented internally as very large numbers, so
+<em>valid_numbers</em> <code>&lt; . &lt; .a &lt; ... &lt; .z</code>.</p>
+<p>To check for missing you need to write <code>var &gt;= .</code> (not
+<code>var == .</code>). Stata has a function that can do this
+comparison, <code>missing(varname)</code> and I recommend it because it
+leads to more readable code, e.g. I prefer
+<code>list id if missing(age)</code> to
+<code>list id if age &gt;= .</code></p>
+<p>Missing values for string variables are denoted by ““, the empty
+string; not to be confused with a string that is all blanks, such as”
+“.</p>
+<p>Demographic survey data often use codes such as 88 for <em>not
+applicable</em> and 99 for <em>not ascertained</em>. For example age at
+marriage may be coded 88 for single women and 99 for women who are known
+to be married but did not report their age at marriage. You will often
+want to distinguish these two cases using different kinds of missing
+value codes. If you wanted to recode 88’s to <code>.n</code> (for “na”
+or not applicable) and 99’s to <code>.m</code> (for “missing”) you could
+use the code</p>
+<pre><code>replace ageAtMar = .n if ageAtMar == 88
+replace ageAtMar = .m if ageAtMar == 99</code></pre>
+<p>Sometimes you want to tabulate a variable including missing values
+but excluding not applicable cases. If you will be doing this often you
+may prefer to leave 99 as a regular code and define only 88 as missing.
+Just be careful if you then run a regression!</p>
+<p>Stata ships with a number of small datasets, type
+<code>sysuse dir</code> to get a list. You can use any of these by
+typing <code>sysuse name</code>. The Stata website is also a repository
+for datasets used in the Stata manuals and in a number of statistical
+books.</p>
+<h2 id="s22">2.2 Reading Data Into Stata</h2>
+<p>In this section we discuss how to read <em>raw</em> data files. If
+your data come from another statistical package, such as SAS or SPSS,
+you will be glad to know that starting with version 16 Stata can
+<code>import sas</code> and <code>import spss</code>. Older versions
+could read SAS transport or export files, using the command
+<code>fdause</code> (so-named because this is the format required by the
+Food and Drug Administration), later renamed to
+<code>import sasxport</code>. Stata can also import and export Excel
+spreadsheets, type <code>help import excel</code> for details, and can
+read data from relational databases, type <code>help odbc</code> for an
+introduction. For more alternatives consider using a tool such as
+Stat/Transfer (<a
+href="https://stattransfer.com/">stattransfer.com</a>).</p>
+<h3 id="free-format">2.2.1 Free Format</h3>
+<p>If your data are in free format, with variables separated by blanks,
+commas, or tabs, you can use the <code><u>inf</u>ile</code> command.</p>
+<p>For an example of a free format file see the family planning effort
+data available on the web at <a
+href="https://grodri.github.io/glms/datasets"
+class="uri">https://grodri.github.io/glms/datasets</a> (read the
+description and click on <code>effort.raw</code>). This is essentially a
+text file with four columns, one with country names and three with
+numeric variables, separated by white space. We can read the data into
+Stata using the command</p>
+<pre class='stata'>. clear
+
+. infile str14 country setting effort change using ///
+>     https://grodri.github.io/datasets/effort.raw
+(20 observations read)
+</pre>
+<p>The <code><u>inf</u>ile</code> command is followed by the names of
+the variables. Because the country name is a string rather than a
+numeric variable we precede the name with <code>str14</code>, which sets
+the type of the variable as a string of up to 14 characters. All other
+variables are numeric, which is the default type.</p>
+<p>The keyword <code>using</code> is followed by the name of the file,
+which can be a file on your computer, a local network, or the internet.
+In this example we are reading the file directly off the internet. And
+that’s all there is to it. For more information on this command type
+<code>help infile1</code>. To see what we got we can <code>list</code> a
+few cases</p>
+<pre class='stata'>. list in 1/3
+
+     ┌─────────────────────────────────────┐
+     │ country   setting   effort   change │
+     ├─────────────────────────────────────┤
+  1. │ Bolivia        46        0        1 │
+  2. │  Brazil        74        0       10 │
+  3. │   Chile        89       16       29 │
+     └─────────────────────────────────────┘
+</pre>
+<p>Spreadsheet packages such as Excel often export data separated by
+tabs or commas, with one observation per line. Sometimes the first line
+has the names of the variables. If your data are in this format you can
+read them using the <code>import delimited</code> command. This command
+superseeded the <code>insheet</code> command as of Stata 13. Type
+<code>help import delimited</code> to learn more.</p>
+<h3 id="fixed-format">2.2.2 Fixed Format</h3>
+<p>Survey data often come in fixed format, with one or more records per
+case and each variable in a fixed position in each record.</p>
+<p>The simplest way to read fixed-format data is using the
+<code>infix</code> command to specify the columns where each variable is
+located. As it happens, the effort data are neatly lined up in columns,
+so we could read them as follows:</p>
+<pre class='stata'>. infix str country 4-17 setting 23-24 effort 31-32 change 40-41 using ///
+>     https://grodri.github.io/datasets/effort.raw, clear
+(20 observations read)
+</pre>
+<p>This says to read the <code>country</code> name from columns 4-17,
+<code>setting</code> from columns 23-24, and so on. It is, of course,
+essential to read the correct columns. We specified that country was a
+string variable but didn’t have to specify the width, which was clear
+from the fact that the data are in columns 4-17. The <code>clear</code>
+option is used to overwrite the existing dataset in memory.</p>
+<p>If you have a large number of variables you should consider typing
+the names and locations on a separate file, called a
+<em>dictionary</em>, which you can then call from the <code>infix</code>
+command. Try typing the following dictionary into a file called
+<code>effort.dct</code>:</p>
+<pre><code>infix dictionary using https://grodri.github.io/datasets/effort.raw {
+  str country  4-17
+      setting 23-24
+      effort  31-32
+      change  40-41
+}</code></pre>
+<p>Dictionaries accept only <code>/* */</code> comments, and these must
+appear <em>after</em> the first line. After you save this file you can
+read the data using the command</p>
+<pre><code>infix using effort.dct, clear</code></pre>
+<p>Note that you now ‘use’ the dictionary, which in turn ‘uses’ the data
+file. Instead of specifying the name of the data file in the dictionary
+you could specify it as an option to the infix command, using the form
+<code>infix using dictionaryfile, using(datafile).</code> The first
+‘using’ specifies the dictionary and the second ‘using’ is an option
+specifying the data file. This is particularly useful if you want to use
+one dictionary to read several data files stored in the same format.</p>
+<p>If your observations span multiple records or lines, you can still
+read them using <code>infix</code> as long as all observations have the
+same number of records (not necessarily all of the same width). For more
+information see <code>help infix</code>.</p>
+<p>The <code>infile</code> command can also be used with fixed-format
+data and a dictionary. This is a very powerful command that gives you a
+number of options not available with <code>infix</code>; for example it
+lets you define variable labels right in the dictionary, but the syntax
+is a bit more complicated. See <code>help infile2</code>.</p>
+<p>In most cases you will find that you can read free-format data using
+<code>infile</code> and fixed-format data using <code>infix</code>. For
+more information on various ways to import data into Stata see
+<code>help import</code>.</p>
+<p>Data can also be typed directly into Stata using the
+<code>input</code> command, see <code>help input</code>, or using the
+built-in Stata data editor available through <u>D</u>ata|<u>D</u>ata
+editor on the menu system.</p>
+<h2 id="s23">2.3 Data Documentation</h2>
+<p>After you read your data into Stata it is important to prepare some
+documentation. In this section we will see how to create labels for your
+dataset, the variables, and their values, and how to create notes for
+the dataset and the variables.</p>
+<h3 id="data-label-and-notes">2.3.1 Data Label and Notes</h3>
+<p>Stata lets you label your dataset using the <code>label data</code>
+command followed by a label of up to 80 characters. You can also add
+notes of up to ~64K characters each using the <code>notes</code> command
+followed by a colon and then the text:</p>
+<pre class='stata'>. label data "Family Planning Effort Data"
+
+. notes:  Source P.W. Mauldin and B. Berelson (1978). ///
+>   Conditions of fertility decline in developing countries, 1965-75. ///
+>   Studies in Family Planning, 9:89-147
+</pre>
+<p>Users of the data can type <code>notes</code> to see your annotation.
+Documenting your data carefully always pays off.</p>
+<h3 id="variable-labels-and-notes">2.3.2 Variable Labels and Notes</h3>
+<p>You can (and should) label your variables using the
+<code>label variable</code> command followed by the name of the variable
+and a label of up to 80 characters enclosed in quotes. With the
+<code>infile</code> command you can add these labels to the dictionary,
+which is a natural home for them. Otherwise you should prepare a do file
+with all the labels. Here’s how to define labels for the three variables
+in our dataset:</p>
+<pre class='stata'>. label variable setting "Social Setting"
+
+. label variable effort  "Family Planning Effort"
+
+. label variable change  "Fertility Change"
+</pre>
+<p>Stata also lets you add notes to specific variables using the command
+<code>notes varname: text</code>. Note that the command is followed by a
+variable name and <em>then</em> a colon:</p>
+<pre class='stata'>. notes change: Percent decline in the crude birth rate (CBR) ///
+>   -the number of births per thousand population- between 1965 and 1975.
+</pre>
+<p>Type <code>describe</code> and then <code>notes</code> to check our
+work so far.</p>
+<h3 id="value-labels">2.3.3 Value Labels</h3>
+<p>You can also label the values of categorical variables. Our dataset
+doesn’t have any categorical variables, but let’s create one. We will
+make a copy of the family planning effort variable and then group it
+into three categories, 0-4, 5-14 and 15+, which represent weak, moderate
+and strong programs (the <code>generate</code> and <code>recode</code>
+used in the first two lines are described in the next section, where we
+also show how to accomplish all these steps with just one command):</p>
+<pre class='stata'>. generate effortg = effort 
+
+. recode effortg 0/4=1 5/14=2 15/max=3
+(20 changes made to effortg)
+
+. label define effortg 1 "Weak" 2 "Moderate" 3 "Strong", replace
+
+. label values effortg effortg
+
+. label variable effortg "Family Planning Effort (Grouped)"
+</pre>
+<p>Stata has a two-step approach to defining labels. First you define a
+<em>named label set</em> which associates integer codes with labels of
+up to 80 characters, using the label define command. Then you associate
+the set of labels with a variable, using the <code>label values</code>
+command. Often you use the same name for the label set and the variable,
+as we did in our example.</p>
+<p>One advantage of this approach is that you can use the same set of
+labels for several variables. The canonical example is
+<code>label define yesno 1 "yes" 0 "no"</code>, which can then be
+associated with all 0-1 variables in your dataset, using a command of
+the form <code>label values variablename yesno</code> for each one. When
+defining labels you can omit the quotes if the label is a single word,
+but I prefer to use them always for clarity.</p>
+<p>Label sets can be modified using the options <code>add</code> or
+<code>modify</code>, listed using <code>label dir</code> (lists only
+names) or <code>label list</code> (lists names and labels), and saved to
+a do file using <code>label save</code>. Type <code>help label</code> to
+learn more about these options and commands. You can also have labels in
+different languages as explained below.</p>
+<h3 id="multilingual-labels">2.3.4 Multilingual Labels*</h3>
+<p>(This sub-section can be skipped without loss of continuity.) A Stata
+file can store labels in several languages and you can move freely from
+one set to another. One limitation of multi-language support in version
+13 and earlier is that labels were restricted to 7-bit ascii characters,
+so you couldn’t include letters with diacritical marks such as accents.
+This limitation was removed with the introduction of Unicode support in
+Stata 14, so you can use diacritical marks and other non-ascii
+characters, not just in labels but throughout Stata.</p>
+<p>I’ll illustrate the idea by creating Spanish labels for our dataset.
+Following Stata recommendations we will use the ISO standard two-letter
+language codes, <strong>en</strong> for English and <strong>es</strong>
+for Spanish.</p>
+<p>First we use <code>label language</code> to rename the current
+language to <code>en</code>, and to create a new language set
+<code>es</code>:</p>
+<pre class='stata'>. label language en, rename
+(language default renamed en)
+
+. label language es, new
+(language es now current language)
+</pre>
+<p>If you type <code>desc</code> now you will discover that our
+variables have no labels! We could have copied the English ones by using
+the option <code>copy</code>, but that wouldn’t save us any work in this
+case. Here are Spanish versions of the data and variable labels:</p>
+<pre class='stata'>. label data "Datos de Mauldin y Berelson sobre Planificación Familiar"
+
+. label variable country "País"
+
+. label variable setting "Indice de Desarrollo Social"
+
+. label variable effort  "Esfuerzo en Planificación Familiar"
+
+. label variable effortg "Esfuerzo en Planificación Familiar (Agrupado)"
+
+. label variable change  "Cambio en la Tasa Bruta de Natalidad (%)"
+</pre>
+<p>These definitions do not overwrite the corresponding English labels,
+but coexist with them in a parallel Spanish universe. With value labels
+you have to be a bit more careful, however; you can’t just redefine the
+label set called <code>effortg</code> because it is only the association
+between a variable and a set of labels, not the labels themselves, that
+is stored in a language set. What you need to do is define a new label
+set; we’ll call it <code>effortg_es</code>, combining the old name and
+the new language code, and then associate it with the variable
+<code>effortg</code>:</p>
+<pre class='stata'>. label define effortg_es 1 "Débil" 2 "Moderado" 3 "Fuerte"
+
+. label values effortg effortg_es
+</pre>
+<p>You may want to try the <code>describe</code> command now. Try
+tabulating effort (output not shown).</p>
+<pre><code>table effortg</code></pre>
+<p>Next we change the language back to English and run the table
+again:</p>
+<pre><code>label language en
+table effortg</code></pre>
+<p>For more information type <code>help label_language.</code></p>
+<h2 id="s24">2.4 Creating New Variables</h2>
+<p>The most important Stata commands for creating new variables are
+<code>generate/replace</code> and <code>recode</code>, and they are
+often used together.</p>
+<h3 id="generate-and-replace">2.4.1 Generate and Replace</h3>
+<p>The <code><u>gen</u>erate</code> command creates a new variable using
+an expression that may combine constants, variables, functions, and
+arithmetic and logical operators. Let’s start with a simple example:
+here is how to create setting squared:</p>
+<pre class='stata'>. gen settingsq = setting^2.
+</pre>
+<p>If you are going to use this term in a regression you know that
+linear and quadratic terms are highly correlated. It may be a good idea
+to center the variable (by subtracting the mean) before squaring it.
+Here we run <code>summarize</code> using <code>quietly</code> to
+suppress the output and retrieve the mean from the stored result
+<code>r(mean)</code>:</p>
+<pre class='stata'>. quietly summarize setting
+
+. gen settingcsq = (setting - r(mean))^2
+</pre>
+<p>Note that I used a different name for this variable. Stata will not
+let you overwrite an existing variable using generate. If you really
+mean to replace the values of the old variable use <code>replace</code>
+instead. You can also use <code>drop var_names</code> to drop one or
+more variables from the dataset.</p>
+<h3 id="operators-and-expressions">2.4.2 Operators and Expressions</h3>
+<p>The following table shows the standard arithmetic, logical and
+relational operators you may use in expressions:</p>
+<table>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Arithmetic</strong></td>
+<td style="text-align: left;"><strong>Logical</strong></td>
+<td style="text-align: left;"><strong>Relational</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">+ add</td>
+<td style="text-align: left;">! not (also ~)</td>
+<td style="text-align: left;">== equal</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">- subtract</td>
+<td style="text-align: left;">| or</td>
+<td style="text-align: left;">!= not equal (also ~=)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">*</span>
+multiply</td>
+<td style="text-align: left;">&amp; and</td>
+<td style="text-align: left;">&lt; less than</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">/ divide</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">&lt;= less than or equal</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">^ raise to power</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">&gt; greater than</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">+ string concatenation</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">&gt;= greater than or equal</td>
+</tr>
+</tbody>
+</table>
+<p>Here’s how to create an indicator variable for countries with
+high-effort programs:</p>
+<pre><code>generate hieffort1 = effort &gt; 14</code></pre>
+<p>This is a common Stata idiom, taking advantage of the fact that
+logical expressions take the value 1 if true and 0 if false. A common
+alternative is to write</p>
+<pre><code>generate hieffort2 = 0
+replace  hieffort2 = 1 if effort &gt; 14</code></pre>
+<p>The two strategies yield exactly the same answer. Both will be wrong
+if there are missing values, which will be coded as high effort because
+missing value codes are very large values, as noted in Section 2.1
+above. You should develop a good habit of avoiding open ended
+comparisons. My preferred approach is to use</p>
+<pre><code>generate hieffort = effort &gt; 14 if !missing(effort)</code></pre>
+<p>which gives true for effort above 14, false for effort less than or
+equal to 14, and missing when effort is missing. Logical expressions may
+be combined using &amp; for “and” or | for “or”. Here’s how to create an
+indicator variable for effort between 5 and 14:</p>
+<pre><code>gen effort5to14 = (effort &gt;=5 &amp; effort &lt;= 14)</code></pre>
+<p>Here we don’t need to worry about missing values, they are excluded
+by the clause <code>effort &lt;= 14.</code></p>
+<h3 id="functions">2.4.3 Functions</h3>
+<p>Stata has a large number of functions, here are a few frequently-used
+mathematical functions, type <code>help mathfun</code> to see a complete
+list:</p>
+<table>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">abs(x)</td>
+<td style="text-align: left;">the absolute value of x</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">exp(x)</td>
+<td style="text-align: left;">the exponential function of x</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">int(x)</td>
+<td style="text-align: left;">the integer obtained by truncating x
+towards zero</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ln(x) or log(x)</td>
+<td style="text-align: left;">the natural logarithm of x if x&gt;0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">log10(x)</td>
+<td style="text-align: left;">the log base 10 of x (for x&gt;0)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">logit(x)</td>
+<td style="text-align: left;">the log of the odds for probability x:
+logit(x) = ln(x/(1-x))</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">max(x1,x2,…,xn)</td>
+<td style="text-align: left;">the maximum of x1, x2, …, xn, ignoring
+missing values</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">min(x1,x2,…,xn)</td>
+<td style="text-align: left;">the minimum of x1, x2, …, xn, ignoring
+missing values</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">round(x)</td>
+<td style="text-align: left;">x rounded to the nearest whole number</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">sqrt(x)</td>
+<td style="text-align: left;">the square root of x if x &gt;= 0</td>
+</tr>
+</tbody>
+</table>
+<p>These functions are automatically applied to all observations when
+the argument is a variable in your dataset.</p>
+<p>Stata also has a function to generate random numbers (useful in
+simulation), namely <code>uniform()</code>. It also has an extensive set
+of functions to compute probability distributions (needed for p-values)
+and their inverses (needed for critical values), including
+<code>normal()</code> for the normal cdf and <code>invnormal()</code>
+for its inverse, see <code>help density functions</code> for more
+information. To simulate normally distributed observations you can
+use</p>
+<pre><code>rnormal()   // or invnormal(uniform()) </code></pre>
+<p>There are also some specialized functions for working with strings,
+see <code>help string functions</code>, and with dates, see
+<code>help date functions</code>.</p>
+<h3 id="recoding-variables">2.4.4 Recoding Variables</h3>
+<p>The <code>recode</code> command is used to group a numeric variable
+into categories. Suppose for example a fertility survey has age in
+single years for women aged 15 to 49, and you would like to code it into
+5-year age groups. You could, of course, use something like</p>
+<pre><code>gen age5 = int((age-15)/5)+1 if !missing(age)</code></pre>
+<p>but this only works for regularly spaced intervals (and is a bit
+cryptic). The same result can be obtained using</p>
+<pre><code>recode age (15/19=1) (20/24=2) (25/29=3) (30/34=4) ///
+           (35/39=5) (40/44=6) (45/49=7), gen(age5)</code></pre>
+<p>Each expression in parenthesis is a recoding rule, and consist of a
+list or range of values, followed by an equal sign and a new value. A
+range, specified using a slash, includes the two boundaries, so 15/19 is
+15 to 19, which could also be specified as 15 16 17 18 19 or even 15 16
+17/19. You can use <code>min</code> to refer to the smallest value and
+<code>max</code> to refer to the largest value, as in
+<code>min/19</code> and <code>44/max</code>. The parentheses can be
+omitted when the rule has the form range=value, but they usually help
+make the command more readable.</p>
+<p>Values are assigned to the first category where they fall. Values
+that are never assigned to a category are kept as they are. You can use
+<code>else</code> (or *) as the last clause to refer to any value not
+yet assigned. Alternatively, you can use <code>missing</code> and
+<code>nonmissing</code> to refer to unassigned missing and nonmissing
+values; these must be the last two clauses and cannot be combined with
+else.</p>
+<p>In our example we also used the <code>gen()</code> option to generate
+a new variable, in this case <code>age5</code>; the default is to
+replace the values of the existing variable. I strongly recommend that
+you always use the <code>gen</code> option, or make a copy of the
+original variable before recoding it.</p>
+<p>You can also specify <em>value labels</em> in each recoding rule.
+This is simpler and less error prone that creating the labels in a
+separate statement. The option <code>label(label_name)</code> lets you
+assign a name to the labels created (the default is the same as the
+variable name). Here’s an example showing how to recode and label family
+planning effort in one step (compare with the four commands used in
+Section 2.4.2 above).</p>
+<pre><code>recode effort (0/4=1 Weak) (5/14=2 Moderate) (15/max=3 Strong) ///
+     , generate(efffortg) label(effortg)</code></pre>
+<p>It is often a good idea to cross-tabulate original and recoded
+variables to check that the transformation has worked as intended. (Of
+course this can only be done if you have generated a new variable!)</p>
+<h2 id="s25">2.5 Managing Stata Files</h2>
+<p>Once you have created a Stata system file you will want to save it on
+disk using <code>save filename, replace</code>, where the replace
+option, as usual, is needed only if the file already exists. To load a
+Stata file you have saved in a previous session you issue the command
+<code>use filename</code>.</p>
+<p>If there are temporary variables you do not need in the saved file
+you can drop them (before saving) using <code>drop varnames</code>.
+Alternatively, you may specify the variables you want to keep, using
+<code>keep varnames</code>. With large files you may want to
+<code>compress</code> them before saving; this command looks at the data
+and stores each variable in the smallest possible data type that will
+not result in loss of precision.</p>
+<p>It is possible to add variables or observations to a Stata file. To
+add <em>variables</em> you use the <code>merge</code> command, which
+requires two (or more) Stata files, usually with a common id so
+observations can be paired correctly. A typical application is to add
+household information to an individual data file. Type
+<code>help merge</code> to learn more.</p>
+<p>To add <em>observations</em> to a file you use the
+<code>append</code> command, which requires the data to be appended to
+be on a Stata file, usually containing the same variables as the dataset
+in memory. You may, for example, have data for patients in one clinic
+and may want to append similar data from another clinic. Type
+<code>help append</code> to learn more.</p>
+<p>A related but more specialized command is <code>joinby</code>, which
+forms all pairwise combinations of observations in memory with
+observations in an external dataset (see also <code>cross</code>).</p>
+<h2 id="s26">2.6 Data Frames</h2>
+<p>Stata 16 introduced <em>frames</em>, which allow it to keep more than
+one dataset in memory at the same time. Consider a situation where you
+have household and individual data on separate files, both with a common
+household id, and need to combine them. In previous versions of Stata
+you would have needed to <code>merge</code> the files. With Stata 16 you
+can store both datasets as frames, and <em>link</em> the household data
+to each individual. There are many more applications, type
+<code>help frames</code> to learn more.</p>
+
+<p class="pull-right">Continue with <a href="tables" class="btn btn-default">Tables</a></p>

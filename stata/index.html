@@ -1,0 +1,712 @@
+---
+layout: default
+title: "Stata Tutorial"
+section: stata
+tab: "Introduction"
+---
+
+<h1 class="first" id="s1">1 Introduction</h1>
+<p>Stata is a powerful statistical package with smart data-management
+facilities, a wide array of up-to-date statistical techniques, and an
+excellent system for producing publication-quality tables and graphs.
+Stata is fast and easy to use. In this tutorial I start with a quick
+introduction and overview, and then discuss data management, tables of
+various types, statistical graphs, and Stata programming.</p>
+<p><img src="icon17.png" align="left" style="padding:7px 7px 0 0"/> The
+tutorial has been updated for version 17, but most of the discussion
+applies to older versions. Version 17 introduced new commands for
+producing customizable tables, which are discussed in a new Section 3.
+Version 16 introduced frames, which allow keeping multiple datasets in
+memory, as noted in Section 2.6. Version 15 included, among many new
+features, graph color transparency or opacity, which we’ll use in
+Section 4.3. Version 14 added Unicode support, which will come handy
+when we discuss multilingual labels in Section 2.3.</p>
+<h2 id="s11">1.1 A Quick Tour of Stata</h2>
+<p>Stata is available for Windows, Unix, and Mac computers. This
+tutorial was created using the Windows version, but most of the contents
+applies to the other platforms as well. There are three editions: (1)
+Stata/BE, the basic edition (formerly intercooled), suitable for
+mid-size datasets with up to 2048 variables, (2) Stata/SE, the standard
+edition (formerly special edition), it can handle up to 32,766 variables
+as well as longer strings and matrices, and (3) Stata/MP, an edition for
+multicore/multiprocessor computers that allows processing very large
+datasets and is substantially faster. (The first two designations
+changed with Stata 17.) The number of observations is limited by your
+computer’s memory, as long as it doesn’t exceed about two billion in
+Stata/SE and about a trillion in Stata/MP. Starting with version 16
+Stata can be installed on 64-bit computers only; previous versions were
+available for both older 32-bit and newer 64-bit computers. All of these
+versions can read each other’s files within their size limits.</p>
+<h3 id="the-stata-interface">1.1.1 The Stata Interface</h3>
+<p>When Stata starts up you see five docked windows, initially arranged
+as shown in the figure below.</p>
+<p><img src="stata17.png" class="img-responsive center-block"/> </p>
+<p>The window labeled <em>Command</em> is where you type your commands.
+Stata then shows the results in the larger window immediately above,
+called appropriately enough <em>Results</em>. Your command is added to a
+list in the window labeled <em>History</em> on the left (called
+<em>Review</em> in earlier versions), so you can keep track of the
+commands you have used. The window labeled <em>Variables</em>, on the
+top right, lists the variables in your dataset. The <em>Properties</em>
+window immediately below that, introduced in version 12, displays
+properties of your variables and dataset.</p>
+<p>You can resize or even close some of these windows. Stata remembers
+its settings the next time it runs. You can also save (and then load)
+named preference sets using the menu <u>E</u>dit|<u>P</u>references. I
+happen to like the Compact Window Layout. You can also choose the font
+used in each window, just right click and select font from the context
+menu. Finally, it is possible to change the color scheme under General
+Preferences. You can select one of four overall color schemes: light,
+light gray, blue or dark. You can also choose one of several preset or
+customizable styles for the Results and Viewer windows.</p>
+<p>There are other windows that we will discuss as needed, namely the
+<em>Graph</em>, <em>Viewer</em>, <em>Variables Manager</em>, <em>Data
+Editor,</em> and <em>Do file Editor</em>.</p>
+<p>Starting with version 8 Stata’s graphical user interface (GUI) allows
+selecting commands and options from a menu and dialog system. However, I
+strongly recommend using the command language as a way to ensure
+reproducibility of your results. In fact, I recommend that you type your
+commands on a separate file, called a do file, as explained in Section
+1.2 below, but for now we will just type in the command window. The GUI
+can be helpful when you are starting to learn Stata, particularly
+because after you point and click on the menus and dialogs, Stata types
+the corresponding command for you.</p>
+<h3 id="typing-commands">1.1.2 Typing Commands</h3>
+<p>Stata can work as a calculator using the <code><u>d</u>isplay</code>
+command. Try typing the following (you may skip the dot at the start of
+a line, which is how Stata marks the lines you type):</p>
+<pre class='stata'>.  display 2+2 
+4
+
+.  display 2 * ttail(20, 2.1) 
+.04861759
+</pre>
+<p>Stata commands are case-sensitive, <code>display</code> is not the
+same as <code>Display</code> and the latter will <em>not</em> work.
+Commands can also be abbreviated; the documentation and online help
+underlines the shortest legal abbreviation of each command, and we will
+do the same here.</p>
+<p>The second command shows the use of a built-in function to compute a
+p-value, in this case twice the probability that a Student’s t with 20
+d.f. exceeds 2.1. This result would just make the 5% cutoff. To find the
+two-tailed 5% critical value try
+<code>display invttail(20, 0.025)</code>. We list a few other functions
+you can use in Section 2.</p>
+<p>If you issue a command and discover that it doesn’t work, press the
+Page Up key to recall it (you can cycle through your command history
+using the Page Up and Page Down keys) and then edit it using the arrow,
+insert and delete keys, which work exactly as you would expect. For
+example Arrows advance a character at a time and Ctrl-Arrows advance a
+word at a time. Shift-Arrows select a character at a time and
+Shift-Ctrl-Arrows select a word at a time, which you can then delete or
+replace. A command can be as long as needed (up to some 64k characters);
+in an interactive session you just keep on typing and the command window
+will wrap and scroll as needed.</p>
+<h3 id="getting-help">1.1.3 Getting Help</h3>
+<p>Stata has excellent online help. To obtain help on a command (or
+function) type <code>help command_name</code>, which displays the help
+on a separate window called the <em>Viewer</em>. (You can also type
+<code>chelp command_name</code>, which shows the help on the
+<em>Results</em> window; but this is not recommended.) Or just select
+Help|Command on the menu system. Try <code>help ttail</code>. Each help
+file appears in a separate viewer tab (a separate window before Stata
+12) unless you use the option <code>, nonew</code>.</p>
+<p>If you don’t know the name of the command you need, you can search
+for it. Stata has a <code>search</code> command that will search the
+documentation and other resources, type <code>help search</code> to
+learn more. By default this command searches the net in Stata 13 and
+later. If you are using an earlier version, learn about the
+<code>findit</code> command. Also, the <code>help</code> command reverts
+to a search if the argument is not recognized as a command. Try
+<code>help Student's t</code>. This will list all Stata commands and
+functions related to the t distribution. Among the list of “Stat
+functions” you will see <code>t()</code> for the distribution function
+and <code>ttail()</code> for right-tail probabilities. Stata can also
+compute tail probabilities for the normal, chi-squared and F
+distributions, among others.</p>
+<p>One of the nicest features of Stata is that, starting with version
+11, all the documentation is available in PDF files. (In fact, since
+version 13 you can no longer get printed manuals.) Moreover, these files
+are linked from the online help, so you can jump directly to the
+relevant section of the manual. To learn more about the help system type
+<code>help help</code>.</p>
+<h3 id="loading-a-sample-data-file">1.1.4 Loading a Sample Data
+File</h3>
+<p>Stata comes with a few sample data files. You will learn how to read
+your own data into Stata in Section 2, but for now we will load one of
+the sample files, namely <code>lifeexp.dta</code>, which has data on
+life expectancy and gross national product (GNP) per capita in 1998 for
+68 countries. To see a list of the files shipped with Stata type
+<code>sysuse dir</code>. To load the file we want type
+<code>sysuse lifeexp</code> (the file extension is optional, so I left
+it out). To see what’s in the file type <code><u>d</u>escribe</code>.
+(This command can be abbreviated to a single letter, but I prefer
+<code>desc</code>.)</p>
+<pre class='stata'>. sysuse lifeexp, clear
+(Life expectancy, 1998)
+
+. desc
+
+Contains data from C:\Program Files\Stata17\ado\base/l/lifeexp.dta
+ Observations:            68                  Life expectancy, 1998
+    Variables:             6                  26 Mar 2020 09:40
+                                              (_dta has notes)
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+region          byte    %16.0g     region     Region
+country         str28   %28s                  Country
+popgrowth       float   %9.0g               * Avg. annual % growth
+lexp            byte    %9.0g               * Life expectancy at birth
+gnppc           float   %9.0g               * GNP per capita
+safewater       byte    %9.0g               * Safe water
+                                            * indicated variables have notes
+───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+Sorted by: 
+</pre>
+<p>We see that we have six variables. The dataset has notes that you can
+see by typing <code>notes</code>. Four of the variables have annotations
+that you can see by typing <code>notes varname</code>. You’ll learn how
+to add notes in Section 2.</p>
+<h3 id="descriptive-statistics">1.1.5 Descriptive Statistics</h3>
+<p>Let us run simple descriptive statistics for the two variables we are
+interested in, using the <code><u>s</u>ummarize</code> command followed
+by the names of the variables (which can be omitted to summarize
+everything):</p>
+<pre class='stata'>. summarize lexp gnppc
+
+    Variable │        Obs        Mean    Std. dev.       Min        Max
+─────────────┼─────────────────────────────────────────────────────────
+        lexp │         68    72.27941    4.715315         54         79
+       gnppc │         63    8674.857    10634.68        370      39980
+</pre>
+<p>We see that live expectancy averages 72.3 years and GNP per capita
+ranges from $370 to $39,980 with an average of $8,675. We also see that
+Stata reports only 63 observations on GNP per capita, so we must have
+some missing values. Let us <code>list</code> the countries for which we
+are missing GNP per capita:</p>
+<pre class='stata'>. list country gnppc if missing(gnppc)
+
+     ┌──────────────────────────────────────┐
+     │                      country   gnppc │
+     ├──────────────────────────────────────┤
+  7. │       Bosnia and Herzegovina       . │
+ 40. │                 Turkmenistan       . │
+ 44. │ Yugoslavia, FR (Serb./Mont.)       . │
+ 46. │                         Cuba       . │
+ 56. │                  Puerto Rico       . │
+     └──────────────────────────────────────┘
+</pre>
+<p>We see that we have indeed five missing values. This example
+illustrates a powerful feature of Stata: the action of any command can
+be restricted to a subset of the data. If we had typed
+<code>list country gnppc</code> we would have listed these variables for
+all 68 countries. Adding the <em>condition</em>
+<code>if missing(gnppc)</code> restricts the list to cases where
+<code>gnppc</code> is missing. Note that Stata lists missing values
+using a dot. We’ll learn more about missing values in Section 2.</p>
+<h3 id="drawing-a-scatterplot">1.1.6 Drawing a Scatterplot</h3>
+<p>To see how life expectancy varies with GNP per capita we will draw a
+scatter plot using the <code>graph</code> command, which has a myriad of
+subcommands and options, some of which we describe in Section 4.</p>
+<pre class='stata'>. graph twoway scatter lexp gnppc
+
+. graph export scatter.png, width(500) replace
+file scatter.png saved as PNG format
+</pre>
+<p><img src="scatter.png" class="img-responsive center-block" /></p>
+<p>The plot shows a curvilinear relationship between GNP per capita and
+life expectancy. We will see if the relationship can be linearized by
+taking the log of GNP per capita.</p>
+<h3 id="computing-new-variables">1.1.7 Computing New Variables</h3>
+<p>We compute a new variable using the <code><u>g</u>enerate</code>
+command with a new variable name and an arithmetic expression. Choosing
+good variable names is important. When computing logs I usually just
+prefix the old variable name with <code>log</code> or <code>l</code>,
+but compound names can easily become cryptic and hard-to-read. Some
+programmers separate words using an underscore, as in
+<code>log_gnp_pc</code>, and others prefer the camel-casing convention
+which capitalizes each word after the first: <code>logGnpPc</code>. I
+suggest you develop a consistent style and stick to it. Variable labels
+can also help, as described in Section 2.</p>
+<p>To compute natural logs we use the built-in function
+<code>log</code>:</p>
+<pre class='stata'>. gen loggnppc = log(gnppc)
+(5 missing values generated)
+</pre>
+<p>Stata says it has generated five missing values. These correspond to
+the five countries for which we were missing GNP per capita. Try to
+confirm this statement using the list command. We will learn more about
+generating new variables in Section 2.</p>
+<h3 id="simple-linear-regression">1.1.8 Simple Linear Regression</h3>
+<p>We are now ready to run a linear regression of life expectancy on log
+GNP per capita. We will use the <code><u>reg</u>ress</code> command,
+which lists the outcome followed by the predictors (here just one,
+<code>loggnppc</code>)</p>
+<pre class='stata'>. regress lexp loggnppc
+
+      Source │       SS           df       MS      Number of obs   =        63
+─────────────┼──────────────────────────────────   F(1, 61)        =     97.09
+       Model │  873.264865         1  873.264865   Prob > F        =    0.0000
+    Residual │  548.671643        61  8.99461709   R-squared       =    0.6141
+─────────────┼──────────────────────────────────   Adj R-squared   =    0.6078
+       Total │  1421.93651        62  22.9344598   Root MSE        =    2.9991
+
+─────────────┬────────────────────────────────────────────────────────────────
+        lexp │ Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+    loggnppc │   2.768349   .2809566     9.85   0.000     2.206542    3.330157
+       _cons │   49.41502   2.348494    21.04   0.000     44.71892    54.11113
+─────────────┴────────────────────────────────────────────────────────────────
+</pre>
+<p>Note that the regression is based on only 63 observations. Stata
+omits observations that are missing the outcome or one of the
+predictors. The log of GNP per capita accounts for 61% of the variation
+in life expectancy in these countries. We also see that a one percent
+increase in GNP per capita is associated with an increase of 0.0277
+years in life expectancy. (To see this point note that if GNP increases
+by one percent its log increases by 0.01.)</p>
+<p>Following a regression (or in fact any estimation command) you can
+retype the command with no arguments to see the results again. Try
+typing <code>reg</code>.</p>
+<h3 id="post-estimation-commands">1.1.9 Post-Estimation Commands</h3>
+<p>Stata has a number of post-estimation commands that build on the
+results of a model fit. A useful command is <code>predict</code>, which
+can be used to generate fitted values or residuals following a
+regression. The command</p>
+<pre class='stata'>. predict plexp
+(option xb assumed; fitted values)
+(5 missing values generated)
+</pre>
+<p>generates a new variable, <code>plexp</code>, that has the life
+expectancy predicted from our regression equation. No predictions are
+made for the five countries without GNP per capita. (If life expectancy
+was missing for a country it would be excluded from the regression, but
+a prediction would be made for it. This technique can be used to fill-in
+missing values.)</p>
+<h3 id="plotting-the-data-and-a-linear-fit">1.1.10 Plotting the Data and
+a Linear Fit</h3>
+<p>A common task is to superimpose a regression line on a scatter plot
+to inspect the quality of the fit. We could do this using the
+predictions we stored in <code>plexp</code>, but Stata’s
+<code>graph</code> command knows how to do linear fits on the fly using
+the <code>lfit</code> plot type, and can superimpose different types of
+<code>twoway</code> plots, as explained in more detail in Section 4. Try
+the command</p>
+<pre class='stata'>. graph twoway (scatter lexp loggnppc) (lfit lexp loggnppc)
+
+. graph export fit.png, width(500) replace
+file fit.png saved as PNG format
+</pre>
+<p><img src="fit.png" class="img-responsive center-block" /></p>
+<p>In this command each expression in parenthesis is a separate two-way
+plot to be overlayed in the same graph. The fit looks reasonably good,
+except for a possible outlier.</p>
+<h3 id="listing-selected-observations">1.1.11 Listing Selected
+Observations</h3>
+<p>It’s hard not to notice the country on the bottom left of the graph,
+which has much lower life expectancy than one would expect, even given
+its low GNP per capita. To find which country it is we list the (names
+of the) countries where life expectancy is less than 55:</p>
+<pre class='stata'>. list country lexp plexp if lexp &lt; 55, clean
+
+       country   lexp      plexp  
+ 50.     Haiti     54   66.06985  
+</pre>
+<p>We find that the outlier is Haiti, with a life expectancy 12 years
+less than one would expect given its GNP per capita. (The keyword
+<code>clean</code> after the comma is an <em>option</em> which omits the
+borders on the listing. Many Stata commands have options, and these are
+always specified after a comma.) If you are curious where the United
+States is try</p>
+<pre class='stata'>. list gnppc loggnppc lexp plexp if country == "United States", clean
+
+       gnppc   loggnppc   lexp      plexp  
+ 58.   29240   10.28329     77   77.88277  
+</pre>
+<p>Here we restricted the listing to cases where the value of the
+variable <code>country</code> was “United States”. Note the use of a
+double equal sign in a logical expression. In Stata <code>x = 2</code>
+assigns the value 2 to the variable x, whereas <code>x == 2</code>
+checks to see if the value of x is 2.</p>
+<h3 id="saving-your-work-and-exiting-stata">1.1.12 Saving your Work and
+Exiting Stata</h3>
+<p>To exit Stata you use the <code>exit</code> command (or select
+File|Exit in the menu, or press Alt-F4, as in most Windows programs). If
+you have been following along this tutorial by typing the commands and
+try to exit Stata will refuse, saying “no; data in memory would be
+lost”. This happens because we have added a new variable that is not
+part of the original dataset, and it hasn’t been saved. As you can see,
+Stata is very careful to ensure we don’t loose our work.</p>
+<p>If you don’t care about saving anything you can type
+<code>exit, clear</code>, which tells Stata to quit no matter what.
+Alternatively, you can save the data to disk using the
+<code>save filename</code> command, and then exit. A cautious programmer
+will <em>always</em> save a modified file using a new name.</p>
+<h2 id="s12">1.2 Using Stata Effectively</h2>
+<p>While it is fun to type commands interactively and see the results
+straightaway, serious work requires that you save your results and keep
+track of the commands that you have used, so that you can document your
+work and reproduce it later if needed. Here are some practical
+recommendations.</p>
+<h3 id="create-a-project-directory">1.2.1 Create a Project
+Directory</h3>
+<p>Stata reads and saves data from the working directory, usually
+<code>C:\DATA</code>, unless you specify otherwise. You can change
+directory using the command <code>cd [drive:]directory_name</code>, and
+print the (name of the) working directory using <code>pwd</code>, type
+<code>help cd</code> for details. I recommend that you create a separate
+directory for each course or research project you are involved in, and
+start your Stata session by changing to that directory.</p>
+<p>Stata understands nested directory structures and doesn’t care if you
+use <code>\</code> or <code>/</code> to separate directories. Versions 9
+and later also understand the double slash used in Windows to refer to a
+computer, so you can <code>cd \\server\shares\research\myProject</code>
+to access a shared project folder. An alternative approach, which also
+works in earlier versions, is to use Windows explorer to assign a drive
+letter to the project folder, for example assign <code>P:</code> to
+<code>\\server\shares\research\myProject</code> and then in Stata use
+<code>cd p:</code>. Alternatively, you may assign <code>R:</code> to
+<code>\\server\shares\research</code> and then use
+<code>cd R:\myProject</code>, a more convenient solution if you work in
+several projects.</p>
+<p>Stata has other commands for interacting with the operating system,
+including <code>mkdir</code> to create a directory, <code>dir</code> to
+list the names of the files in a directory, <code>type</code> to list
+their contents, <code>copy</code> to copy files, and <code>erase</code>
+to delete a file. You can (and probably should) do these tasks using the
+operating system directly, but the Stata commands may come handy if you
+want to write a script to perform repetitive tasks.</p>
+<h3 id="open-a-log-file">1.2.2 Open a Log File</h3>
+<p>So far all our output has gone to the <em>Results</em> window, where
+it can be viewed but eventually disappears. (You can control how far you
+can scroll back, type <code>help scrollbufsize</code> to learn more.) To
+keep a <em>permanent</em> record of your results, however, you should
+<code>log</code> your session. When you open a log, Stata writes all
+results to both the <em>Results</em> window and to the file you specify.
+To open a log file use the command</p>
+<pre><code>log using filename, text replace</code></pre>
+<p>where <em>filename</em> is the name of your log file. Note the use of
+two recommended options: <code>text</code> and <code>replace</code>.</p>
+<p>By default the log is written using SMCL, Stata Markup and Control
+Language (pronounced “smickle”), which provides some formatting
+facilities but can only be viewed using Stata’s <em>Viewer</em>.
+Fortunately, there is a <code>text</code> option to create logs in plain
+text format, which can be viewed in an editor such as Notepad or a word
+processor such as Word. (An alternative is to create your log in SMCL
+and then use the <code>translate</code> command to convert it to plain
+text, postscript, or even PDF, type <code>help translate</code> to learn
+more about this option.)</p>
+<p>The <code>replace</code> option specifies that the file is to be
+overwritten if it already exists. This will often be the case if (like
+me) you need to run your commands several times to get them right. In
+fact, if an earlier run has failed it is likely that you have a log file
+open, in which case the <code>log</code> command will fail. The solution
+is to close any open logs using the <code>log close</code> command. The
+problem with this solution is that it will not work if there is no log
+open! The way out of the catch 22 is to use</p>
+<pre><code>capture log close</code></pre>
+<p>The <code>capture</code> keyword tells Stata to run the command that
+follows and ignore any errors. Use judiciously!</p>
+<h3 id="always-use-a-do-file">1.2.3 Always Use a Do File</h3>
+<p>A do file is just a set of Stata commands typed in a plain text file.
+You can use Stata’s own built-in <em>do-file Editor</em>, which has the
+great advantage that you can run your program directly from the editor
+by clicking on the run icon, selecting <code>Tools|Execute (do)</code>
+from the menu, or using the shortcut <code>Ctrl-D</code>. The run icon
+can also be used to run selected commands and does it smartly: if you
+have selected some text it will extend the selection to include complete
+lines and will then run those commands, if there is no selection it runs
+the entire script. To access Stata’s do editor use <code>Ctrl-9</code>
+in versions 12 and later (Ctrl-8 in earlier versions) or select
+<code>Window|Do-file Editor|New Do-file Editor</code> in the menu
+system.</p>
+<p>Alternatively, you can use an editor such as Notepad. Save the file
+using extension <code>.do</code> and then execute it using the command
+<code>do filename</code>. For a thorough discussion of alternative text
+editors see <a
+href="http://fmwww.bc.edu/repec/bocode/t/textEditors.html"
+class="uri">http://fmwww.bc.edu/repec/bocode/t/textEditors.html</a>, a
+page maintained by Nicholas J. Cox, of the University of Durham.</p>
+<p>You could even use a word processor such as Word, but you would have
+to remember to save the file in plain text format, not in Word document
+format. Also, you may find Word’s insistence on capitalizing the first
+word on each line annoying when you are trying to type Stata commands
+that must be in lowercase. You can, of course, turn auto-correct off.
+But it’s a lot easier to just use a plain-text editor.</p>
+<h3 id="use-comments-and-annotations">1.2.4 Use Comments and
+Annotations</h3>
+<p>Code that looks obvious to you may not be so obvious to a co-worker,
+or even to you a few months later. It is always a good idea to annotate
+your do files with explanatory comments that provide the gist of what
+you are trying to do.</p>
+<p>In the Stata command window you can <em>start</em> a line with a
+<code>*</code> to indicate that it is a comment, not a command. This can
+be useful to annotate your output.</p>
+<p>In a do file you can also use two other types of comments:
+<code>//</code> and <code>/*  */</code>.</p>
+<p><code>//</code> is used to indicate that everything that
+<em>follows</em> to the end of the line is a comment and should be
+ignored by Stata. For example you could write</p>
+<pre><code>gen one = 1 // this will serve as a constant in the model</code></pre>
+<p><code>/* */</code> is used to indicate that all the text
+<em>between</em> the opening <code>/*</code> and the closing
+<code>*/</code>, which may be a few characters or may span several
+lines, is a comment to be ignored by Stata. This type of comment can be
+used anywhere, even in the middle of a line, and is sometimes used to
+“comment out” code.</p>
+<p>There is a third type of comment used to break very long lines, as
+explained in the next subsection. Type <code>help comments</code> to
+learn more about comments.</p>
+<p>It is always a good idea to start every do file with comments that
+include at least a title, the name of the programmer who wrote the file,
+and the date. Assumptions about required files should also be noted.</p>
+<h3 id="continuation-lines">1.2.5 Continuation Lines</h3>
+<p>When you are typing on the command window a command can be as long as
+needed. In a do-file you will probably want to break long commands into
+lines to improve readability.</p>
+<p>To indicate to Stata that a command continues on the next line you
+use <code>///</code>, which says everything else to the end of the line
+is a comment <em>and</em> the command itself continues on the next line.
+For example you could write</p>
+<pre><code>graph twoway  (scatter lexp loggnppc) ///
+              (lfit lexp loggnppc)</code></pre>
+<p>Old hands might write</p>
+<pre><code>graph twoway (scatter lexp loggnppc) /*
+ */          (lfit lexp loggnppc)</code></pre>
+<p>which “comments out” the end of the line.</p>
+<p>An alternative is to tell Stata to use a semi-colon instead of the
+carriage return at the end of the line to mark the end of a command,
+using <code>#delimit ;</code>, as in this example:</p>
+<pre><code>#delimit ;
+graph twoway (scatter lexp loggnppc) 
+             (lfit lexp loggnppc) ;</code></pre>
+<p>Now all commands need to terminate with a semi-colon. To return to
+using <u>c</u>arriage <u>r</u>eturn as the delimiter use</p>
+<pre><code>#delimit cr</code></pre>
+<p>The delimiter can only be changed in do files. But then you always
+use do files, right?</p>
+<h3 id="a-sample-do-file">1.2.6 A Sample Do File</h3>
+<p>Here’s a simple do file that can reproduce all the results in our
+Quick Tour. The file doesn’t have many comments because this page has
+all the details. Following the listing we comment on a couple of lines
+that require explanation.</p>
+<pre><code>// A Quick Tour of Stata
+// Germán Rodríguez - Fall 2021
+
+version 17
+clear
+capture log close
+log using QuickTour, text replace
+
+display 2+2
+display 2 * ttail(20,2.1)
+
+// load sample data and inspect
+sysuse lifeexp
+desc
+summarize lexp gnppc
+list country gnppc if missing(gnppc)
+
+graph twoway scatter lexp gnppc, ///
+  title(Life Expectancy and GNP ) xtitle(GNP per capita)
+// save the graph in PNG format
+graph export scatter.png, width(400) replace   
+gen loggnppc = log(gnppc)
+regress lexp loggnppc
+
+predict plexp
+
+graph twoway (scatter lexp loggnppc) (lfit lexp loggnppc) ///
+    ,  title(Life Expectancy and GNP) xtitle(log GNP per capita)
+graph export fit.png, width(400) replace
+
+list country lexp plexp if lexp &lt; 55, clean
+list gnppc loggnppc lexp plexp if country == &quot;United States&quot;, clean
+log close</code></pre>
+<p>We start the do file by specifying the version of Stata we are using,
+in this case 17. This helps ensure that future versions of Stata will
+continue to interpret the commands correctly, even if Stata has changed,
+see <code>help version</code> for details. (The previous version of this
+file read version 16, and I could have left that in place to run under
+version control; the results would be the same because none of the
+commands used in this quick tour has changed.)</p>
+<p>The <code>clear</code> statement deletes the data currently held in
+memory and any value labels you might have. We need <code>clear</code>
+just in case we need to rerun the program, as the <code>sysuse</code>
+command would then fail because we already have a dataset in memory and
+we have not saved it. An alternative with the same effect is to type
+<code>sysuse lifeexp, clear</code>. (Stata keeps other objects in memory
+as well, including saved results, scalars and matrices, although we
+haven’t had occasion to use these yet. Typing <code>clear all</code>
+removes these objects from memory, ensuring that you start with a
+completely clean slate. See <code>help clear</code> for more
+information. Usually, however, all you need to do is clear the
+data.)</p>
+<p>Note also that we use a <code>graph export</code> command to convert
+the graph in memory to Portable Network Graphics (PNG) format, ready for
+inclusion in a web page. To include a graph in a Word document you are
+better off cutting and pasting a graph in Windows Metafile format, as
+explained in Section 4.</p>
+<h3 id="stata-command-syntax">1.2.7 Stata Command Syntax</h3>
+<p>Having used a few Stata commands it may be time to comment briefly on
+their structure, which usually follows the following syntax, where bold
+indicates keywords and square brackets indicate optional elements:</p>
+<p>[<strong>by</strong> <em>varlist</em><strong>:</strong>]
+<em>command</em> [<em>varlist</em>] [<strong>=</strong><em>exp</em>]
+[<strong>if</strong> <em>exp</em>] [<strong>in</strong> <em>range</em>]
+[<em>weight</em>] [<strong>using</strong> <em>filename</em>]
+[<strong>,</strong><em>options</em>]</p>
+<p>We now describe each syntax element:</p>
+<dl>
+<dt><em><code>command</code></em>:</dt>
+<dd>
+The only required element is the command itself, which is usually (but
+not always) an action verb, and is often followed by the names of one or
+more variables. Stata commands are case-sensitive. The commands
+<code>describe</code> and <code>Describe</code> are different, and only
+the former will work. Commands can usually be abbreviated as noted
+earlier. When we introduce a command we underline the letters that are
+required. For example <code><u>reg</u>ress</code> indicates that the
+<code>regress</code> command can be abbreviated to <code>reg</code>.
+</dd>
+<dt><em><code>varlist</code></em>:</dt>
+<dd>
+The command is often followed by the names of one or more variables, for
+example <code>describe lexp</code> or
+<code>regress lexp loggnppc</code>. Variable names are case sensitive;
+<code>lexp</code> and <code>LEXP</code> are different variables. A
+variable name can be abbreviated to the minimum number of letters that
+makes it unique in a dataset. For example in our quick tour we could
+refer to <code>loggnppc</code> as <code>log</code> because it is the
+only variable that begins with those three letters, but this is a really
+bad idea. Abbreviations that are unique may become ambiguous as you
+create new variables, so you have to be very careful. You can also use
+wildcards such as <code>v*</code> or name ranges, such as
+<code>v101-v105</code> to refer to several variables. Type
+<code>help varlist</code> to learn more about variable lists.
+</dd>
+<dt><em><code>=exp</code></em>:</dt>
+<dd>
+Commands used to generate new variables, such as
+<code>generate log_gnp = log(gnp)</code>, include an arithmetic
+expression, basically a formula using the standard operators (+ - * and
+/ for the four basic operations and ^ for exponentiation, so 3^2 is
+three squared), functions, and parentheses. We discuss expressions in
+Section 2.
+</dd>
+<dt><strong><code>if</code></strong> <em><code>exp</code></em> and
+<strong><code>in</code></strong> <em><code>range</code></em>:</dt>
+<dd>
+As we have seen, a command’s action can be restricted to a subset of the
+data by specifying a logical condition that evaluates to true of false,
+such as <code>lexp &lt; 55</code>. Relational operators are &lt;, &lt;=,
+==, &gt;= and &gt;, and logical negation is expressed using
+<code>!</code> or <code>~</code>, as we will see in Section 2.
+Alternatively, you can specify a range of the data, for example
+<code>in 1/10</code> will restrict the command’s action to the first 10
+observations. Type <code>help numlist</code> to learn more about lists
+of numbers.
+</dd>
+<dt><em><code>weight</code></em>:</dt>
+<dd>
+Some commands allow the use of weights, type <code>help weights</code>
+to learn more.
+</dd>
+<dt><strong><code>using</code></strong>
+<em><code>filename</code></em>:</dt>
+<dd>
+The keyword <code>using</code> introduces a file name; this can be a
+file in your computer, on the network, or on the internet, as you will
+see when we discuss data input in Section 2.
+</dd>
+<dt><em><code>options</code></em>:</dt>
+<dd>
+Most commands have <em><code>options</code></em> that are specified
+following a comma. To obtain a list of the options available with a
+command type <code>help command</code>. where <code>command</code> is
+the actual command name.
+</dd>
+<dt><strong><code>by</code></strong> <em><code>varlist</code></em>:</dt>
+<dd>
+A very powerful feature, it instructs Stata to <em>repeat</em> the
+command for each group of observations defined by distinct values of the
+variables in the list. For this to work the command must be “byable” (as
+noted on the online help) and the data must be sorted by the grouping
+variable(s) (or use <code>bysort</code> instead).
+</dd>
+</dl>
+<h2 id="s13">1.3 Stata Resources</h2>
+<p>There are many resources available to learn more about Stata, both
+online and in print.</p>
+<h3 id="online-resources">1.3.1 Online Resources</h3>
+<p>Stata has an excellent website at <a
+href="https://www.stata.com/">https://www.stata.com</a>. Among other
+things you will find that they make available online all datasets used
+in the official documentation, that they publish a journal called The
+<em>Stata Journal</em>, and that they have an excellent bookstore with
+texts on Stata and related statistical subjects. Stata also offers email
+and web-based training courses called NetCourses, see <a
+href="https://www.stata.com/netcourse/"
+class="uri">https://www.stata.com/netcourse/</a>.</p>
+<p>There is a Stata forum where you can post questions and receive
+prompt and knowledgeable answers from other users, quite often from the
+indefatigable and extremely knowledgeable Nicholas Cox, who deserves
+special recognition for his service to the user community. The list was
+started by Marcello Pagano at the Harvard School of Public Health, and
+is now maintained by StataCorp, see <a href="https://www.statalist.org"
+class="uri">https://www.statalist.org</a> for more information,
+including how to participate. Stata also maintains a list of frequently
+asked questions (FAQ) classified by topic, see <a
+href="https://www.stata.com/support/faqs/"
+class="uri">https://www.stata.com/support/faqs/</a>.</p>
+<p>UCLA maintains an excellent Stata portal at <a
+href="https://stats.idre.ucla.edu/stata/"
+class="uri">https://stats.idre.ucla.edu/stata/</a>, with many useful
+links, including a list of resources to help you learn and stay
+up-to-date with Stata, including classes and seminars, learning modules
+and useful links, not to mention comparisons with other packages such as
+SAS and SPSS.</p>
+<h3 id="manuals-and-books">1.3.2 Manuals and Books</h3>
+<p><img src="stata17doc.png" align="left" class="img-responsive pull-left" style="padding-right:14px">
+The Stata documentation has been growing with each version and now
+consists of 31 volumes with more than 17,000 pages, all available in PDF
+format with your copy of Stata. Here is a list, with italics indicating
+a new manual in Stata 17. The basic documentation consists of a Base
+Reference Manual, separate volumes on Data Management, Graphics,
+<em>Customizable Tables and Collected Results</em>, Reporting and
+Functions; a User’s Guide, an Index, and Getting Started with Stata,
+which has platform-specific versions for Windows, Mac and Unix. Some
+statistical subjects that may be important to you are described in
+nineteen separate manuals: Bayesian Analysis, Choice Models, Dynamic
+Stochastic General Equilibrium Models, Extended Regression Models,
+Finite Mixture Models, Item Response Theory, Lasso, Longitudinal
+Data/Panel Data, Meta Analysis, Multilevel Mixed Effects, Multiple
+Imputation, Multivariate Statistics; Power, Precision and Sample Size;
+Spatial Autoregressive Models, Structural Equation Modeling, Survey
+Data, Survival Analysis, Times Series, and Treatment Effects. Additional
+volumes of interest to programmers, particularly those seeking to extend
+Stata’s capabilities, are manuals on Programming and on Mata, Stata’s
+matrix programming language.</p>
+<p>A good introduction to Stata is Alan C. Acock’s <em>A Gentle
+Introduction to Stata</em>, now in its 6th edition. One of my favorite
+statistical modeling books is Scott Long and Jeremy Freese’s
+<em>Regression Models for Categorical Dependent Variables Using
+Stata</em> (3rd edition); Section 2.10 of this book is a set of
+recommended practices that should be read and followed faithfully by
+every aspiring Stata data analyst. Another book I like is Michael
+Mitchell’s excellent <em>A Visual Guide to Stata Graphics</em>, which
+was written specially to introduce the new graphs in version 8 and is
+now in its 4th edition. Two useful (but more specialized) references
+written by the developers of Stata are <em>An Introduction to Survival
+Analysis Using Stata</em> (revised 3rd edition), by Mario Cleves,
+William Gould and Julia Marchenko, and <em>Maximum Likelihood Estimation
+with Stata</em> (4th edition) by William Gould, Jeffrey Pitblado, and
+Brian Poi. Readers interested in programming Stata will find Christopher
+F. Baum’s <em>An Introduction to Stata Programming</em> (2nd edition)
+and William Gould’s <em>The Mata Book: A Book for Serious Programmers
+and Those Who Want to Be</em> both invaluable.</p>
+
+<p class="pull-right">Continue with <a href="dataManagement" class="btn btn-default">Data Management</a></p>
+

@@ -1,0 +1,408 @@
+---
+layout: default
+title: "Stata Tutorial"
+section: stata
+tab: "Graphics"
+---
+
+<h1 class="first" id="s4">4 Stata Graphics</h1>
+<p>Stata has excellent graphic facilities, accessible through the
+<code>graph</code> command, see <code>help graph</code> for an overview.
+The most common graphs in statistics are X-Y plots showing points or
+lines. These are available in Stata through the <code>twoway</code>
+subcommand, which in turn has many sub-subcommands or plot types, the
+most important of which are <code>scatter</code> and <code>line</code>.
+I will also describe briefly bar plots, available through the
+<code>bar</code> subcommand, and other plot types.</p>
+<p>Stata 10 introduced a graphics editor that can be used to modify a
+graph interactively. I do not recomment this practice, however, because
+it conflicts with the goals of documenting and ensuring reproducibility
+of all the steps in your research.</p>
+<p>All the graphs in this section (except where noted) use a custom
+scheme with blue titles and a white background, but otherwise should
+look the same as your own graphs. I discuss schemes in Section
+3.2.5.</p>
+<h2 id="s41">4.1 Scatterplots</h2>
+<p>In this section I will illustrate a few plots using the data on
+fertility decline first used in Section 2.1. To read the data from
+net-aware Stata type</p>
+<pre class='stata'>. infile str14 country setting effort change ///
+>     using https://grodri.github.io/datasets/effort.raw, clear
+(20 observations read)
+</pre>
+<p>To whet your appetite, here’s the plot that we will produce in this
+section:</p>
+<p><img src="fig31.png" class="img-responsive center-block" /></p>
+<h3 id="a-simple-scatterplot">4.1.1 A Simple Scatterplot</h3>
+<p>To produce a simple scatterplot of fertility change by social setting
+you use the command</p>
+<pre><code>graph twoway scatter change setting </code></pre>
+<p>Note that you specify <code>y</code> first, then <code>x</code>.
+Stata labels the axes using the variable labels, if they are defined, or
+variable names if not. The command may be abbreviated to
+<code>twoway scatter</code>, or just <code>scatter</code> if that is the
+only plot on the graph. We will now add a few bells and whistles.</p>
+<h3 id="fitted-lines">4.1.2 Fitted Lines</h3>
+<p>Suppose we want to show the fitted regression line as well. In some
+packages you would need to run a regression, compute the fitted line,
+and then plot it. Stata can do all that in one step using the
+<code>lfit</code> plot type. (There is also a <code>qfit</code> plot for
+quadratic fits.) This can be combined with the scatter plot by enclosing
+each sub-plot in parenthesis. (One can also combine plots using two
+horizontal bars <code>||</code> to separate them.)</p>
+<pre><code>graph twoway (scatter setting effort) ///
+             (lfit setting effort)</code></pre>
+<p>Now suppose we wanted to put confidence bands around the regression
+line. Stata can do this with the <code>lfitci</code> plot type, which
+draws the confidence region as a gray band. (There is also a
+<code>qfitci</code> band for quadratic fits.) Because the confidence
+band can obscure some points we draw the region first and the points
+later</p>
+<pre><code>graph twoway (lfitci setting effort) ///
+             (scatter setting effort) </code></pre>
+<p>Note that this command doesn’t label the y-axis but uses a legend
+instead. You could specify a label for the y-axis using the
+<code>ytitle()</code> option, and omit the (rather obvious) legend using
+<code>legend(off)</code>. Here we specify both as options to the
+<code>twoway</code> command. To make the options more obvious to the
+reader, I put the comma at the start of a new line:</p>
+<pre><code>graph twoway (lfitci setting effort) ///
+             (scatter setting effort) ///
+           , ytitle(&quot;Fertility Decline&quot;) legend(off)</code></pre>
+<h3 id="labeling-points">4.1.3 Labeling Points</h3>
+<p>There are many options that allow you to control the markers used for
+the points, including their shape and color, see
+<code>help marker_options</code>. It is also possible to label the
+points with the values of a variable, using the
+<code>mlabel(varname)</code> option. In the next step we add the country
+names to the plot:</p>
+<pre><code>graph twoway (lfitci change setting) ///
+             (scatter change setting, mlabel(country) ) </code></pre>
+<p>One slight problem with the labels is the overlap of Costa Rica and
+Trinidad Tobago (and to a lesser extent Panama and Nicaragua). We can
+solve this problem by specifying the position of the label relative to
+the marker using a 12-hour clock (so 12 is above, 3 is to the right, 6
+is below and 9 is to the left of the marker) and the
+<code>mlabv()</code> option. We create a variable to hold the position
+set by default to 3 o’clock and then move Costa Rica to 9 o’clock and
+Trinidad Tobago to just a bit above that at 11 o’clock (we can also move
+Nicaragua and Panama up a bit, say to 2 o’clock):</p>
+<pre class='stata'>. gen pos=3
+
+. replace pos = 11 if country == "TrinidadTobago"
+(1 real change made)
+
+. replace pos = 9 if country == "CostaRica"
+(1 real change made)
+
+. replace pos = 2 if country == "Panama" | country == "Nicaragua"
+(2 real changes made)
+</pre>
+<p>The command to generate this version of the graph is as follows</p>
+<pre><code>graph twoway (lfitci change setting) ///
+             (scatter change setting, mlabel(country) mlabv(pos) ) </code></pre>
+<h3 id="titles-legends-and-captions">4.1.4 Titles, Legends and
+Captions</h3>
+<p>There are options that apply to all two-way graphs, including titles,
+labels, and legends. Stata graphs can have a <code>title()</code> and
+<code>subtitle()</code>, usually at the top, and a
+<code>legend()</code>, <code>note()</code> and <code>caption()</code>,
+usually at the bottom, type <code>help title_options</code> to learn
+more. Usually a title is all you need. Stata 11 allows text in graphs to
+include bold, italics, greek letters, mathematical symbols, and a choice
+of fonts. Stata 14 introduced Unicode, greatly expanding what can be
+done. Type <code>help graph text</code> to learn more.</p>
+<p>Our final tweak to the graph will be to add a legend to specify the
+linear fit and 95% confidence interval, but not fertility decline
+itself. We do this using the
+<code>order(2 "linear fit" 1 "95% CI")</code> option of the legend to
+label the second and first items in that order. We also use
+<code>ring(0)</code> to move the legend inside the plotting area, and
+<code>pos(5)</code> to place the legend box near the 5 o’clock position.
+Our complete command is then</p>
+<pre class='stata'>. graph twoway (lfitci change setting) ///
+>          (scatter change setting, mlabel(country) mlabv(pos) ) ///
+>        , title("Fertility Decline by Social Setting") ///
+>          ytitle("Fertility Decline") ///
+>          legend(ring(0) pos(5) order(2 "linear fit" 1 "95% CI")) 
+
+. graph export fig31.png, width(500) replace             
+(file fig31.png not found)
+file fig31.png saved as PNG format
+</pre>
+<p>The result is the graph shown at the beginning of this section.</p>
+<h3 id="axis-scales-and-labels">4.1.5 Axis Scales and Labels</h3>
+<p>There are options that control the scaling and range of the axes,
+including <code>xscale()</code> and <code>yscale()</code>, which can be
+arithmetic, log, or reversed, type <code>help axis_scale_options</code>
+to learn more. Other options control the placing and labeling of major
+and minor ticks and labels, such as as <code>xlabel()</code>,
+<code>xtick()</code> and <code>xmtick()</code>, and similarly for the
+y-axis, see <code>help axis_label_options</code>. Usually the defaults
+are acceptable, but it’s nice to know that you can change them.</p>
+<h2 id="s42">4.2 Line Plots</h2>
+<p>I will illustrate line plots using data on U.S. life expectancy,
+available as one of the datasets shipped with Stata. (Try
+<code>sysuse dir</code> to see what else is available.)</p>
+<pre class='stata'>. sysuse uslifeexp, clear
+(U.S. life expectancy, 1900-1999)
+</pre>
+<p>The idea is to plot life expectancy for white and black males over
+the 20th century. Again, to whet your appetite I’ll start by showing you
+the final product, and then we will build the graph bit by bit.</p>
+<p><img src="fig32.png" class="img-responsive center-block"
+style="width:70.0%" /></p>
+<h3 id="a-simple-line-plot">4.2.1 A Simple Line Plot</h3>
+<p>The simplest plot uses all the defaults:</p>
+<pre><code>graph twoway line le_wmale le_bmale year </code></pre>
+<p>If you are puzzled by the dip before 1920, Google “US life expectancy
+1918”. We could abbreviate the command to <code>twoway line</code>, or
+even <code>line</code> if that’s all we are plotting. (This shortcut
+only works for <code>scatter</code> and <code>line</code>.)</p>
+<p>The <code>line</code> plot allows you to specify more than one “y”
+variable, the order is y<sub>1</sub>, y<sub>2</sub>, …, y<sub>m</sub>,
+x. In our example we specified two, corresponding to white and black
+life expectancy. Alternatively, we could have used two line plots:
+<code>(line le_wmale year) (line le_bmale year)</code>.</p>
+<h3 id="titles-and-legends">4.2.2 Titles and Legends</h3>
+<p>The default graph is quite good, but the legend seems too wordy. We
+will move most of the information to the title and keep only ethnicity
+in the legend:</p>
+<pre><code>graph twoway line le_wmale le_bmale year ///
+    , title(&quot;U.S. Life Expectancy&quot;) subtitle(&quot;Males&quot;) ///
+      legend( order(1 &quot;white&quot; 2 &quot;black&quot;) )</code></pre>
+<p>Here I used three options, which as usual in Stata go after a comma:
+<code>title</code>, <code>subtitle</code> and <code>legend</code>. The
+<code>legend</code> option has many sub options; I used
+<code>order</code> to list the keys and their labels, saying that the
+first line represented whites and the second blacks. To omit a key you
+just leave it out of the list. To add text without a matching key use a
+hyphen (or minus sign) for the key. There are many other legend options,
+see <code>help legend_option</code> to learn more.</p>
+<p>I would like to use space a bit better by moving the legend inside
+the plot area, say around the 5 o’clock position, where improving life
+expectancy has left some spare room. As noted earlier we can move the
+legend inside the plotting area by using <code>ring(0)</code>, the
+“inner circle”, and place it near the 5 o’clock position using
+<code>pos(5)</code>. Because these are legend sub-options they have to
+go <em>inside</em> <code>legend()</code>:</p>
+<pre><code>graph twoway line le_wmale le_bmale year ///
+    , title(&quot;U.S. Life Expectancy&quot;) subtitle(&quot;Males&quot;) ///
+      legend( order(1 &quot;white&quot; 2 &quot;black&quot;) ring(0) pos(5) )</code></pre>
+<h3 id="line-styles">4.2.3 Line Styles</h3>
+<p>I don’t know about you, but I find hard to distinguish the default
+lines on the plot. Stata lets you control the line style in different
+ways. The <code>clstyle()</code> option lets you use a named style, such
+as <code>foreground</code>, <code>grid</code>, <code>yxline</code>, or
+<code>p1-p15</code> for the styles used by lines 1 to 15, see
+<code>help linestyle</code>. This is useful if you want to pick your
+style elements from a <em>scheme</em>, as noted further below.</p>
+<p>Alternatively, you can specify the three components of a style: the
+line pattern, width and color:</p>
+<ul>
+<li>Patterns are specified using the <code>clpattern()</code> option.
+The most common patterns are <code>solid</code>, <code>dash</code>, and
+<code>dot</code>; see <code>help linepatternstyle</code> for more
+information.</li>
+</ul>
+<!-- -->
+<ul>
+<li>Line width is specified using <code>clwidth()</code>; the available
+options include <code>thin</code>, <code>medium</code> and
+<code>thick</code>, see <code>help linewidthstyle</code> for more.</li>
+</ul>
+<!-- -->
+<ul>
+<li>Colors can be specified using the <code>clcolor()</code> option
+using color names (such as <code>red</code>, <code>white</code> and
+<code>blue</code>, <code>teal</code>, <code>sienna</code>, and many
+others) or RGB values, see <code>help colorstyle</code>.</li>
+</ul>
+<p>Here’s how to specify blue for whites and red for blacks:</p>
+<pre><code>graph twoway (line le_wmale le_bmale year , clcolor(blue red) ) ///
+        , title(&quot;U.S. Life Expectancy&quot;) subtitle(&quot;Males&quot;) ///
+        legend( order(1 &quot;white&quot; 2 &quot;black&quot;) ring(0) pos(5)) </code></pre>
+<p>Note that <code>clcolor()</code> is an option of the line plot, so I
+put parentheses round the <code>line</code> command and inserted it
+there.</p>
+<h3 id="scale-options">4.2.4 Scale Options</h3>
+<p>It looks as if improvements in life expectancy slowed down a bit in
+the second half of the century. This can be better appreciated using a
+log scale, where a straight line would indicate a constant percent
+improvement. This is easily done using the axis options of the two-way
+command, see <code>help axis_options</code>, and in particular
+<code>yscale()</code>, which lets you choose <code>arithmetic</code>,
+<code>log</code>, or <code>reversed</code> scales. There’s also a
+suboption <code>range()</code> to control the plotting range. Here I
+will specify the y-range as 25 to 80 to move the curves a bit up:</p>
+<pre class='stata'>. graph twoway (line le_wmale le_bmale year , clcolor(blue red) ) ///
+>     , title("U.S. Life Expectancy") subtitle("Males") ///
+>     legend( order(1 "white" 2 "black") ring(0) pos(5)) ///
+>     yscale(log range(25 80))
+</pre>
+<h3 id="graph-schemes">4.2.5 Graph Schemes</h3>
+<p>Stata uses schemes to control the appearance of graphs, see
+<code>help scheme</code>. You can set the default scheme to be used in
+all graphs with <code>set scheme_name</code>. You can also redisplay the
+(last) graph using a different scheme with
+<code>graph display, scheme(scheme_name</code>).</p>
+<p>To see a list of available schemes type
+<code>graph query, schemes</code>. Try <code>s2color</code> for screen
+graphs, <code>s1manual</code> for the style used in the Stata manuals,
+and <code>economist</code> for the style used in <em>The Economist</em>.
+Using the latter we obtain the graph shown at the start of this
+section.</p>
+<pre class='stata'>. graph display, scheme(economist)
+
+. graph export fig32.png, width(400) replace
+(file fig32.png not found)
+file fig32.png saved as PNG format
+</pre>
+<h2 id="s43">4.3 Other Graphs</h2>
+<p>I conclude the graphics section discussing bar graphs, box plots, and
+kernel density plots using area graphs with transparency.</p>
+<h3 id="bar-graphs">4.3.1 Bar Graphs</h3>
+<p>Bar graphs may be used to plot the frequency distribution of a
+categorical variable, or to plot descriptive statistics of a continuous
+variable within groups defined by a categorical variable. For our
+examples we will use the city temperature data that ships with
+Stata.</p>
+<p>If I was to just type <code>graph bar, over(region)</code> I would
+obtain the frequency distribution of the region variable. Let us show
+instead the average temperatures in January and July. To do this I could
+specify <code>(mean) tempjan (mean) tempjuly</code>, but because the
+default statistic is the mean I can use the shorter version below. I
+think the default legend is too long, so I also specified a custom
+one.</p>
+<p>I use <code>over()</code> so the regions are overlaid in the same
+graph; using <code>by()</code> instead, would result in a graph with a
+separate panel for each region. The <code>bargap()</code> option
+controls the gap between bars for different statistics in the same over
+group; here I put a small space. The <code>gap()</code> option, not used
+here, controls the space between bars for different over groups. I also
+set the intensity of the color fill to 70%, which I think looks
+nicer.</p>
+<pre class='stata'>. sysuse citytemp, clear
+(City temperature data)
+
+. graph bar tempjan tempjul, over(region) bargap(10) intensity(70) ///
+>     title(Mean Temperature) legend(order(1 "January" 2 "July")) 
+
+. graph export bar.png, width(500) replace
+(file bar.png not found)
+file bar.png saved as PNG format
+</pre>
+<p><img src="bar.png" class="img-responsive center-block" /></p>
+<p>Obviously the north-east and north-central regions are much colder in
+January than the south and west. There is less variation in July, but
+temperatures are higher in the south.</p>
+<h3 id="box-plots">4.3.2 Box Plots</h3>
+<p>A quick summary of the distribution of a variable may be obtained
+using a “box-and-wiskers” plot, which draws a box ranging from the first
+to the third quartile, with a line at the median, and adds “wiskers”
+going out from the box to the adjacent values, defined as the highest
+and lowest values that are no farther from the median than 1.5 times the
+inter-quartile range. Values further out are outliers, indicated by
+circles.</p>
+<p>Let us draw a box plot of January temperatures by region. I will use
+the <code>over(region)</code> option, so the boxes will be overlaid in
+the same graph, rather than <code>by(region)</code>, which would produce
+a separate panel for each region. The option <code>sort(1)</code>
+arranges the boxes in order of the median of <code>tempjan</code>, the
+first (and in this case only) variable. I also set the box color to a
+nice blue by specifying the Red, Blue and Green (RGB) color components
+in a scale of 0 to 255:</p>
+<pre class='stata'>. graph box tempjan, over(region, sort(1)) box(1, color("51 102 204")) ///
+>     title(Box Plots of January Temperature by Region)
+
+. graph export boxplot.png, width(500) replace
+(file boxplot.png not found)
+file boxplot.png saved as PNG format
+</pre>
+<p><img src="boxplot.png" class="img-responsive center-block" /></p>
+<p>We see that January temperatures are lower and less variable in the
+north-east and north-central regions, with quite a few cities with
+unusually cold averages.</p>
+<h3 id="kernel-density-estimates">4.3.3 Kernel Density Estimates</h3>
+<p>A more detailed view of the distribution of a variable may be
+obtained using a smooth histogram, calculated using a kernel density
+smoother using the <code>kdensity</code> command.</p>
+<p>Let us run separate kernel density estimates for January temperatures
+in each region using all the defaults, and save the results.</p>
+<pre class='stata'>. kdensity tempjan if region== 1, generate(x1  d1)
+
+. kdensity tempjan if region== 2, generate(x2  d2)
+
+. kdensity tempjan if region== 3, generate(x3  d3)
+
+. kdensity tempjan if region== 4, generate(x4  d4)
+
+. generate zero = 0
+</pre>
+<p>Because we are using essentially the same command four times we could
+have used a loop, explained later in Section 5.2 of this tutorial, but
+perhaps it is clearer this way. We also generate a baseline at zero.</p>
+<p>Next we plot the density estimates using area plots with a floor at
+zero. Because the densities overlap, I use the opacity option introduced
+in Stata 15 to make them 50% transparent. In this case I used color
+names, followed by a <code>%</code> symbol and the opacity. I also
+simplify the legend a bit, match the order of the densities, and put it
+in the top right corner of the plot.</p>
+<pre class='stata'>. twoway rarea d1 zero x1, color("blue%50") ///
+>    ||  rarea d2 zero x2, color("purple%50") ///
+>    ||  rarea d3 zero x3, color("orange%50")  ///
+>    ||  rarea d4 zero x4, color("red%50") ///
+>        title(January Temperatures by Region) ///
+>        ytitle("Smoothed density") ///
+>        legend(ring(0) pos(2) col(1) order(2 "NC" 1 "NE" 3 "S" 4 "W"))     
+
+. graph export kernel.png, width(500) replace
+(file kernel.png not found)
+file kernel.png saved as PNG format
+</pre>
+<p><img src="kernel.png" class="img-responsive center-block" /></p>
+<p>The plot gives us a clear picture of regional differences in January
+temperatures, with colder and narrower distributions in the north-east
+and north-central regions, and warmer with quite a bit of overlap in the
+south and west.</p>
+<h2 id="s44">4.4 Managing Graphs</h2>
+<p>Stata keeps track of the last graph you have drawn, which is stored
+in memory, and calls it <code>Graph</code>. You can actually keep more
+than one graph in memory if you use the <code>name()</code> option to
+name the graph when you create it. This is useful for combining graphs,
+type <code>help graph combine</code> to learn more. Note that graphs
+kept in memory disappear when you exit Stata, even if you save the data,
+unless you save the graph itself.</p>
+<p>To save the current graph on disk using Stata’s own format, type
+<code>graph save filename</code>. This command has two options,
+<code>replace</code>, which you need to use if the file already exists,
+and <code>asis</code>, which freezes the graph (including its current
+style) and then saves it. The default is to save the graph in a live
+format that can be edited in future sessions, for example by changing
+the scheme. After saving a graph in Stata format you can load it from
+the disk with the command <code>graph use filename</code>. (Note that
+<code>graph save</code> and <code>graph use</code> are analogous to
+<code>save</code> and <code>use</code> for Stata files.) Any graph
+stored in memory can be displayed using
+<code>graph display [name]</code>. (You can also list, describe, rename,
+copy, or drop graphs stored in memory, type
+<code>help graph_manipulation</code> to learn more.)</p>
+<p>If you plan to incorporate the graph in another document you will
+probably need to save it in a more portable format. Stata’s command
+<code>graph export filename</code> can export the graph using a wide
+variety of vector or raster formats, usually specified by the file
+extension. <em>Vector</em> formats such as Windows metafile (wmf or emf)
+or Adobe’s PostScript and its variants (ps, eps, pdf) contain
+essentially drawing instructions and are thus resolution independent, so
+they are best for inclusion in other documents where they may be
+resized. <em>Raster</em> formats such as Portable Network Graphics (png)
+save the image pixel by pixel using the current display resolution, and
+are best for inclusion in web pages. Stata 15 added Scalable Vector
+Graphics (SVG), a vector image format that is supported by all major
+modern web browsers.</p>
+<p>You can also print a graph using <code>graph print</code>, or copy
+and paste it into a document using the Windows clipboard; to do this
+right click on the window containing the graph and then select copy from
+the context menu.</p>
+
+<p class="pull-right">Continue with <a href="programming" class="btn btn-default">Programming</a></p>

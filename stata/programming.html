@@ -1,0 +1,835 @@
+---
+layout: default
+title: "Stata Tutorial"
+section: stata
+tab: "Programming"
+---
+
+<h1 class="first" id="s5">5 Programming Stata</h1>
+<p>This section is a gentle introduction to programming Stata. I discuss
+<em>macros</em> and <em>loops</em>, and show how to write your own
+(simple) programs. This is a large subject and all I can hope to do here
+is provide a few tips that hopefully will spark your interest in further
+study. However, the material covered will help you use Stata more
+effectively.</p>
+<p>Stata 9 introduced a new and extremely powerful matrix programming
+language called <em>Mata</em>, and Stata expanded the choice of
+languages by integrating Python in version 16 and Java in version 17. In
+addition, it is possible to write Stata plugins in C. All of these
+languages are beyond the scope of this introductory tutorial. Your
+efforts here will not be wasted, however, because these options are
+complementary to -not a complete substitute for- classic Stata
+programming.</p>
+<p>To learn more about programming Stata I recommend Kit Baum’s <em>An
+Introduction to Stata Programming</em>, now in its second edition, and
+William Gould’s <em>The Mata Book</em>. You may also find useful Chapter
+18 in the <em>User’s Guide</em>, referring to the <em>Programming</em>
+volume and/or the online help as needed. Nick Cox’s regular columns in
+the <em>Stata Journal</em> are a wonderful resource for learning about
+Stata. Other resources were listed in Section 1 of this tutorial.</p>
+<h2 id="s51">5.1 Macros</h2>
+<p>A macro is simply a name associated with some text. Macros can be
+local or global in scope.</p>
+<h3 id="storing-text-in-local-macros">5.1.1 Storing Text in Local
+Macros</h3>
+<p>Local macros have names of up to 31 characters and are known only in
+the current context (the console, a do file, or a program).</p>
+<p>You <em>define</em> a local macro using
+<code>local name [=] text</code> and you <em>evaluate</em> it using
+<code>`name'</code>. (Note the use of an opening backtick or left quote
+and a closing straight quote.)</p>
+<p>The first variant, without an equal sign, is used to store arbitrary
+text of up to ~64k characters (up to a million in Stata SE). The text is
+often enclosed in quotes, but it doesn’t have to be.</p>
+<h4 id="example-control-variables-in-regression.">Example: Control
+Variables in Regression.</h4>
+<p>You need to run a bunch of regression equations that include a
+standard set of control variables, say <code>age</code>,
+<code>agesq</code>, <code>education</code>, and <code>income</code>. You
+could, of course, type these names in each equation, or you could cut
+and paste the names, but these alternatives are tedious and error prone.
+The smart way is to define a macro</p>
+<pre><code>local controls age agesq education income</code></pre>
+<p>You then type commands such as</p>
+<pre><code>regress outcome treatment `controls&#39;</code></pre>
+<p>which in this case is exactly equivalent to typing
+<code>regress outcome treatment age agesq education income</code>.</p>
+<p>If there’s only one regression to run you haven’t saved anything, but
+if you have to run several models with different outcomes or treatments,
+the macro saves work and ensures consistency.</p>
+<p>This approach also has the advantage that if later on you realize
+that you should have used log-income rather than income as a control,
+all you need to do is change the macro definition at the top of your do
+file, say to read <code>logincome</code> instead of <code>income</code>
+and all subsequent models will be run with income properly logged
+(assuming these variables exist).</p>
+<p><em>Warning</em>: Evaluating a macro that doesn’t exist is not an
+error; it just returns an empty string. So be careful to spell macro
+names correctly. If you type
+<code>regress outcome treatment `contrls'</code>, Stata will read
+<code>regress outcome treatment</code>, because the macro
+<code>contrls</code> does not exist. The same would happen if you type
+<code>`control'</code> because macro names cannot be abbreviated the way
+variable names can. Either way, the regression will run without any
+controls. But you always check your output, right?</p>
+<h4 id="a-technical-note-on-nested-macros">A Technical Note on Nested
+Macros</h4>
+<p>Macro definitions may include other macros. For example we could
+define <code>age</code> and then use it in <code>controls</code>:</p>
+<pre><code>local age &quot;age agesq&quot;
+local controls `age&#39; education income</code></pre>
+<p>The first ocurrence of <code>age</code> in the first line is the name
+of the macro, and the second occurrence the name of a variable. I used
+quotes to make the code clearer, but they are optional. Stata never gets
+confused.</p>
+<p>The macro <code>age</code> in the definition of <code>controls</code>
+is resolved at the time the macro is defined, not when it is evaluated.
+Therefore changing the contents of <code>age</code> at a later time will
+not change <code>controls</code>. Suppose you run a few models and then
+decide to control for age using <code>age5</code>, a factor variable
+with age in five-year groups. You define <code>local age i.age5</code>.
+The problem is that <code>controls</code> still has <code>age</code> and
+<code>agesq</code>.</p>
+<p>There is, however, a way to achieve that particular effect. The trick
+is to escape the macro evaluation character when you define the outer
+macro, typing <code>local controls \`age' education income</code>. Now
+Stata does not evaluate the inner macro (but eats the escape character),
+so the contents of <code>controls</code> becomes
+<code>`age' education income</code>. When the <code>controls</code>
+macro is evaluated, Stata sees that it includes the macro
+<code>age</code> and substitutes its current contents.</p>
+<p>In one case substitution occurs when the macro is defined, in the
+other when it is evaluated.</p>
+<h3 id="storing-results-in-local-macros">5.1.2 Storing Results in Local
+Macros</h3>
+<p>The second type of macro definition, <code>local name = text</code>
+with an equal sign, is used to store <em>results</em>. It instructs
+Stata to treat the text on the right hand side as an expression,
+evaluate it, and store a text representation of the result under the
+given name.</p>
+<p>Suppose you just run a regression and want to store the resulting
+R-squared, for comparison with a later regression. You know that
+<code>regress</code> stores R-squared in <code>e(r2)</code>, so you
+think <code>local rsq e(r2)</code> would do the trick. Well, does
+it?</p>
+<p>Your macro stored the formula <code>e(r2)</code>, as you can see by
+typing <code>display "`rsq'"</code>. What you needed to store was the
+value. The solution is to type <code>local rsq = e(r2)</code>, with an
+equal sign. This causes Stata to evaluate the expression and store the
+result.</p>
+<p>To see the difference try this</p>
+<pre class='stata'>. sysuse auto, clear
+(1978 automobile data)
+
+. quietly regress mpg weight
+
+. local rsqf e(r2)
+
+. local rsqv = e(r2)
+
+. di `rsqf'       // this has the current R-squared
+.65153125
+
+. di `rsqv'       // as does this
+.65153125
+
+. quietly regress mpg weight foreign
+
+. di `rsqf'       // the formula has the new R-squared
+.66270291
+
+. di `rsqv'       // this guy has the old one
+.65153125
+</pre>
+<p>Another way to force evaluation is to enclose <code>e(r2)</code> in
+single quotes when you define the macro. This is called a <em>macro
+expression</em>, and is also useful when you want to display results. It
+allows us to type <code>display "R-squared=`rsqv'"</code> instead of
+<code>display "R-squared=" `rsq'</code>. (What do you think would happen
+if you type <code>display "``rsqf''"</code>?)</p>
+<p>An alternative way to store results for later use is to use
+<em>scalars</em> (type <code>help scalars</code> to learn more.) This
+has the advantage that Stata stores the result in binary form without
+loss of precision. A macro stores a text representation that is good
+only for about 8 digits. The downside is that scalars are in the global
+namespace, so there is a potential for name conflicts, particular in
+programs (unless you use temporary names, which we discuss later).</p>
+<p>You <em>can</em> use an equal sign when you are storing text, but
+this is not necessary, and is not a good idea if you are using an old
+version of Stata. The difference is subtle. Suppose we had defined the
+<code>controls</code> macro by saying
+<code>local controls = "age agesq education income"</code>. This would
+have worked fine, but the quotes cause the right-hand-side to be
+<em>evaluated</em>, in this case as a string, and strings used to be
+limited to 244 characters (or 80 in Stata/IC before 9.1), whereas macro
+text can be much longer. Type <code>help limits</code> to be reminded of
+the limits in your version.</p>
+<h3 id="keyboard-mapping-with-global-macros">5.1.3 Keyboard Mapping with
+Global Macros</h3>
+<p>Global macros have names of up to 32 characters and, as the name
+indicates, have global scope.</p>
+<p>You <em>define</em> a global macro using
+<code>global name [=] text</code> and <em>evaluate</em> it using
+<code>$name</code>. (You may need to use <code>${name}</code> to clarify
+where the name ends.)</p>
+<p>I suggest you avoid global macros because of the potential for name
+conflicts. A useful application, however, is to map the function keys on
+your keyboard. If you work on a shared network folder with a long name
+try something like this</p>
+<pre><code>global F5 \\server\shared\research\project\subproject\ </code></pre>
+<p>Then when you hit F5 Stata will substitute the full name. And your
+<em>do</em> files can use commands like <code>do ${F5}dofile</code>. (We
+need the braces to indicate that the macro is called <code>F5</code>,
+not <code>F5dofile</code>.)</p>
+<p>Obviously you don’t want to type this macro each time you use Stata.
+Solution? Enter it in your <code>profile.do</code> file, a set of
+commands that is executed each time you run Stata. Your profile is best
+stored in Stata’s start-up directory, usually <code>C:\data</code>. Type
+<code>help profilew</code> to learn more.</p>
+<h3 id="more-on-macros">5.1.4 More on Macros</h3>
+<p>Macros can also be used to obtain and store information about the
+system or the variables in your dataset using <em>extended macro
+functions</em>. For example you can retrieve variable and value labels,
+a feature that can come handy in programming.</p>
+<p>There are also commands to manage your collection of macros,
+including <code>macro list</code> and <code>macro drop</code>. Type
+<code>help macro</code> to learn more.</p>
+<h2 id="s52">5.2 Looping</h2>
+<p>Loops are used to do repetitive tasks. Stata has commands that allow
+looping over sequences of numbers and various types of lists, including
+lists of variables.</p>
+<p>Before we start, however, don’t forget that Stata does a lot of
+looping all by itself. If you want to compute the log of income, you can
+do that in Stata with a single line:</p>
+<pre><code>gen logincome = log(income)</code></pre>
+<p>This loops implicitly over all observations, computing the log of
+each income, in what is sometimes called a <em>vectorized</em>
+operation. You could code the loop yourself, but you shouldn’t because
+(i) you don’t need to, and (ii) your code will be a lot slower that
+Stata’s built-in loop.</p>
+<h3 id="looping-over-sequences-of-numbers">5.2.1 Looping Over Sequences
+of Numbers</h3>
+<p>The basic looping command takes the form</p>
+<pre><code>forvalues number = sequence {
+    ... body of loop using `number&#39; ...
+}</code></pre>
+<p>Here <code>forvalues</code> is a keyword, <code>number</code> is the
+name of a local macro that will be set to each number in the sequence,
+and <code>sequence</code> is a range of values which can have the
+form</p>
+<ul>
+<li><code>min/max</code> to indicate a sequence of numbers from
+<code>min</code> to <code>max</code> in steps of one, for example
+<code>1/3</code> yields 1, 2 and 3, or</li>
+<li><code>first(step)last</code> which yields a sequence from
+<code>first</code> to <code>last</code> in steps of size
+<code>step</code>. For example <code>15(5)50</code> yields
+15,20,25,30,35,40,45 and 50.</li>
+</ul>
+<p>(There are two other ways of specifying the second type of sequence,
+but I find the one listed here the clearest, see
+<code>help forvalues</code> for the alternatives.)</p>
+<p>The opening left brace must be the last thing on the first line
+(other than comments), and the loop must be closed by a matching right
+brace on a line all by itself. The loop is executed once for each value
+in the sequence with your local macro <code>number</code> (or whatever
+you called it) holding the value.</p>
+<h4 id="creating-dummy-variables">Creating Dummy Variables</h4>
+<p>Here’s my favorite way of creating dummy variables to represent age
+groups. Stata 11 introduced factor variables and Stata 13 improved
+the<br />
+labeling of tables of estimates, so there’s really no need to “roll your
+own” dummies, but the code remains instructive.</p>
+<pre><code>forvalues bot = 20(5)45 {
+    local top = `bot&#39; + 4
+    gen age`bot&#39;to`top&#39; = age &gt;= `bot&#39; &amp; age &lt;= `top&#39;
+}</code></pre>
+<p>This will create dummy variables <code>age20to24</code> to
+<code>age45to49</code>. The way the loop works is that the local macro
+<code>bot</code> will take values between 20 and 45 in steps of 5 (hence
+20, 25, 30, 35, 40, and 45), the lower bounds of the age groups.</p>
+<p>Inside the loop we create a local macro <code>top</code> to represent
+the upper bounds of the age groups, which equals the lower bound plus 4.
+The first time through the loop <code>bot</code> is 20, so
+<code>top</code> is 24. We use an equal sign to store the result of
+adding 4 to <code>bot</code>.</p>
+<p>The next line is a simple generate statement. The first time through
+the loop the line will say
+<code>gen age20to24 = age &gt;= 20 &amp; age &lt;= 24</code>, as you can
+see by doing the macro substitution yourself. This will create the first
+dummy, and Stata will then go back to the top to create the next
+one.</p>
+<h3 id="looping-over-elements-in-a-list">5.2.2 Looping Over Elements in
+a List</h3>
+<p>The second looping command is <code>foreach</code> and comes in six
+flavors, dealing with different types of lists. I will start with the
+generic list:</p>
+<pre><code>foreach item in a-list-of-things {
+    ... body of loop using `item&#39; ...
+}</code></pre>
+<p>Here <code>foreach</code> is a keyword, <code>item</code> is a local
+macro name of your own choosing, <code>in</code> is another keyword, and
+what comes after is a list of blank-separated words. Try this
+example</p>
+<pre><code>foreach animal in cats and dogs {
+    display &quot;`animal&#39;&quot;
+}</code></pre>
+<p>This loop will print “cats”, “and”, and “dogs”, as the local macro
+<code>animal</code> is set to each of the words in the list. Stata
+doesn’t know “and” is not an animal, but even if it did, it wouldn’t
+care because the list is generic.</p>
+<p>If you wanted to loop over an irregular sequence of numbers –for
+example you needed to do something with the Coale-Demeny regional model
+life tables for levels 2, 6 and 12– you could write</p>
+<pre><code>foreach level in 2 6 12 {
+    ... do something with `level&#39; ...
+}</code></pre>
+<p>That’s it. This is probably all you need to know about looping.</p>
+<h3 id="looping-over-specialized-lists">5.2.3 Looping Over Specialized
+Lists</h3>
+<p>Stata has five other variants of <code>foreach</code> which loop over
+specific types of lists, which I now describe briefly.</p>
+<h4 id="lists-of-variables">Lists of Variables</h4>
+<p>Perhaps the most useful variant is</p>
+<pre><code>foreach varname of varlist list-of-variables {
+    ... body of loop using `varname&#39; ...
+}</code></pre>
+<p>Here <code>foreach</code>, <code>of</code> and <code>varlist</code>
+are keywords, and must be typed exactly as they are. The
+<code>list-of-variables</code> is just that, a list of <em>existing</em>
+variable names typed using standard Stata conventions, so you can
+abbreviate names (at your own peril), use <code>var*</code> to refer to
+all variables that start with “var”, or type <code>var1-var3</code> to
+refer to variables <code>var1</code> to <code>var3</code>.</p>
+<p>The advantages of this loop over the generic equivalent
+<code>foreach varname in list-of-variables</code> is that Stata checks
+that each name in the list is indeed an existing variable name, and lets
+you abbreviate or expand the names.</p>
+<p>If you need to loop over <em>new</em> as opposed to <em>existing</em>
+variables use
+<code>foreach varname of newlist list-of-new-variables</code>. The
+<code>newlist</code> keyword replaces <code>varlist</code> and tells
+Stata to check that all the list elements are legal names of variables
+that don’t exist already.</p>
+<h4 id="words-in-macros">Words in Macros</h4>
+<p>Two other variants loop over the words in a local or global macro;
+they use the keyword <code>global</code> or <code>local</code> followed
+by a macro name (in lieu of a list). For example here’s a way to list
+the control variables from the section on local macros:</p>
+<pre><code>foreach control of local controls {
+    display &quot;`control&#39;&quot;
+}</code></pre>
+<p>Presumably you would do something more interesting than just list the
+variable names. Because we are looping over variables in the dataset we
+could have achieved the same purpose using <code>foreach</code> with a
+<code>varlist</code>; here we save the checking.</p>
+<h4 id="lists-of-numbers">Lists of Numbers</h4>
+<p>Stata also has a <code>foreach</code> variant that specializes in
+lists of numbers (or <code>numlists</code> in Stataspeak) that can’t be
+handled with <code>forvalues</code>.</p>
+<p>Suppose a survey had a baseline in 1980 and follow ups in 1985 and
+1995. (They actually planned a survey in 1990 but it was not funded.) To
+loop over these you could use</p>
+<pre><code>foreach year of numlist 1980 1985 1995 {
+    display &quot;`year&#39;&quot;
+}</code></pre>
+<p>Of course you would do something more interesting than just print the
+years. The numlist could be specified as <code>1 2 3</code>, or
+<code>1/5</code> (meaning 1 2 3 4 5), or <code>1(2)7</code> (count from
+1 to 7 in steps of 2 to get 1 3 5 7); type <code>help numlist</code> for
+more examples.</p>
+<p>The advantage of this command over the generic <code>foreach</code>
+is that Stata will check that each of the elements of the list of
+numbers is indeed a number.</p>
+<h3 id="looping-for-a-while">5.2.4 Looping for a While</h3>
+<p>In common with many programming languages, Stata also has a
+<code>while</code> loop, which has the following structure</p>
+<pre><code>while condition {
+    ... do something ...
+}</code></pre>
+<p>where condition is an expression. The loop executes as long as the
+condition is true (nonzero). Usually something happens inside the loop
+to make the condition false, otherwise the code would run forever.</p>
+<p>A typical use of <code>while</code> is in iterative estimation
+procedures, where you may loop while the difference in successive
+estimates exceeds a predefined tolerance. Usually an iteration count is
+used to detect lack of convergence.</p>
+<p>The <code>continue [,break]</code> command allows breaking out of any
+loop, including <code>while</code>, <code>forvalues</code> and
+<code>foreach</code>. The command stops the current iteration and
+continues with the next, unless <code>break</code> is specified, in
+which case it exits the loop.</p>
+<h3 id="conditional-execution">5.2.5 Conditional Execution</h3>
+<p>Stata also has an <code>if</code> programming command, not to be
+confused with the <code>if</code><em>qualifier</em> that can be used to
+restrict any command to a subset of the data, as in
+<code>summarize mpg if foreign</code>. The
+<code>if</code><em>command</em> has the following structure</p>
+<pre><code>if expression {
+    ... commands to be executed if expression is true ...
+}
+else {
+    ... optional block to be executed if expression is false ...
+}</code></pre>
+<p>Here <code>if</code> and the optional <code>else</code> are keywords,
+and <code>expression</code> is a logical condition (type
+<code>help exp</code> for an explanation of expressions). The opening
+brace <code>{</code> must be the last thing on a line (other than
+comments) and the closing brace <code>}</code> must be on a new line by
+itself.</p>
+<p>If the <code>if</code> or <code>else</code> parts consist of a single
+command they can go on the same line <em>without</em> braces, as in
+<code>if expression command</code>. But
+<code>if expression { command }</code> is not legal. You could use the
+braces by spreading the code into three lines, and this often improves
+readability of the code.</p>
+<p>So here we have a silly loop where we break out after five of the
+possible ten iterations:</p>
+<pre><code>forvalues iter=1/10 {
+    display &quot;`iter&#39;&quot;
+    if `iter&#39; &gt;= 5 continue, break
+}</code></pre>
+<p>And with that, we break out of looping.</p>
+<h2 id="s53">5.3 Writing Commands</h2>
+<p>We now turn to the fun task of writing your own Stata commands.
+Follow along as we develop a few simple programs, ending with an
+<code>egen</code> extension to evaluate the Coale-McNeil model
+nuptiality schedule, so we can create a plot like the figure below.</p>
+<p><img src="cohhnup.png" class="img-responsive center-block" /></p>
+<h3 id="programs-with-no-arguments">5.3.1 Programs With No
+Arguments</h3>
+<p>There is a long tradition that the first program one writes in a new
+language is “Hello World!”. The simplest way to develop a new program is
+to start with a do file:</p>
+<pre><code>capture program drop hello
+program define hello
+    version 14
+    display as text &quot;hello, world&quot;
+end</code></pre>
+<p>That’s it. If you now type <code>hello</code> Stata will say “hello,
+world”, in lowercase, with a comma, and without an exclamation mark,
+just as Brian Kernighan’s original.
+<!-- https://www.bell-labs.com/usr/dmr/www/ctut.pdf --></p>
+<p>The <code>program drop</code> statement is needed in case we make
+changes and need to rerun the do file, because you can’t define an
+existing program. The <code>capture</code> is needed the very first
+time, when there is nothing to drop.</p>
+<p>The <code>version</code> is set to 14 so that users of earlier
+versions of Stata can run the program. (I will do that for all programs
+in this section, as they do not rely on more recent features.)</p>
+<p>All Stata output goes through SMCL, pronounced “smickle” and short
+for Stata Markup Control Language. SMCL uses plain text combined with
+commands enclosed in braces. Below we use a bit of SMCL to frame this
+inmortal sentence</p>
+<pre class='stata'>. capture program drop hello
+
+. program define hello
+  1.     version 14
+  2.     display "{txt}{c TLC}{hline 14}{c TRC}"
+  3.     display "{c |} hello, world {c |}"
+  4.     display "{c BLC}{hline 14}{c BRC}"
+  5. end
+
+. hello
+┌──────────────┐
+│ hello, world │
+└──────────────┘
+</pre>
+<p>Here <code>{txt}</code> sets the style to text (as opposed to input,
+error or result), <code>{c TLC}</code> and its cousins are used to draw
+top-left, top-right, bottom-left and bottom-right corners,
+<code>{hline 14}</code> draws a horizontal line 14 characters long, and
+<code>{c |}</code> draws a tall <code>|</code>. To learn more about SMCL
+type <code>help smcl</code>. This will be essential to write a help file
+for your commands.</p>
+<h3 id="a-program-with-an-argument">5.3.2 A Program with an
+Argument</h3>
+<p>To make useful programs you will often need to pass information to
+them, in the form of “arguments” you type after the command. Let’s write
+a command that echoes what you say. I used to call it <code>echo</code>,
+but now Stata has its own (undocumented) echo program, so we’ll call it
+<code>parrot</code>. (Stata reserves all english words, so you have to
+be careful naming your programs. You can check if the name is taken by
+typing <code>which</code> followed by the name, in our case
+<code>which parrot</code>.)</p>
+<pre><code>capture program drop parrot
+program define parrot
+    version 14
+    display &quot;`0&#39;&quot;
+end</code></pre>
+<p>Try typing <code>parrot hello, world</code> to see what happens.</p>
+<p>When you call a command Stata stores the arguments in a local macro
+called <code>0</code>. We use a display command with <code>`0'</code> to
+evaluate the macro. The result is text, so we enclose it in quotes.
+(Suppose you typed <code>parrot hi</code>, so the local macro
+<code>0</code> has <code>hi</code>; the command would read
+<code>display hi</code> and Stata will complain, saying ‘hi not found’.
+We want the command to read <code>display "hi"</code>, which is why we
+code <code>display "`0'"</code>.)</p>
+<p>If we don’t specify anything, the local macro <code>0</code> will be
+an empty string, the command will read <code>display ""</code> and Stata
+will print a blank line.</p>
+<h3 id="compound-quotes">5.3.3 Compound Quotes</h3>
+<p>Before we go out to celebrate we need to fix a small problem with our
+new command. Try typing <code>parrot The hopefully "final" run</code>.
+Stata will complain. Why? Because after macro substitution the
+all-important display command will read</p>
+<pre><code>display &quot;The hopefully &quot;final&quot; run&quot;</code></pre>
+<p>The problem is that the quote before final closes the initial quote,
+so Stata sees this is as <code>"The hopefully "</code> followed by
+<code>final" run"</code>, which looks to Stata like an invalid name.
+Obviously we need some way to distinguish the inner and outer
+quotes.</p>
+<p>Incidentally you could see exactly where things went south by typing
+<code>set trace on</code> and running the command. You can see in (often
+painful) detail all the steps Stata goes through, including all macro
+substitutions. Don’t forget to type <code>set trace off</code> when you
+are done. Type <code>help trace</code> to learn more.</p>
+<p>The solution to our problem? Stata’s <em>compound double quotes</em>:
+<code>`"</code> to open and <code>"'</code> to close, as in
+<code>`"compound quotes"'</code>. Because the opening and closing
+symbols are different, these quotes can be nested. Compound quotes</p>
+<ul>
+<li><em>can</em> be used anywhere a double quote is used.</li>
+<li><em>must</em> be used if the text being quoted includes double
+quotes.</li>
+</ul>
+<p>So our program must <code>display `"`0'"'</code>. Here’s the final
+version.</p>
+<pre><code>program define parrot
+    version 14
+    if `&quot;`0&#39;&quot;&#39; != &quot;&quot; display as text `&quot;`0&#39;&quot;&#39;
+end</code></pre>
+<p>You will notice that I got rid of the <code>capture drop line</code>.
+I also used <code>display as text</code> to make sure we print using the
+text style. Another option is <code>display as error</code>, useful for
+error messages. Type <code>help display</code> to learn more about this
+command.</p>
+<p>We are now ready to save the program as an <code>ado</code> file.
+Type <code>sysdir</code> to find out where your personal ado directory
+is, and then save the file there with the name <code>parrot.ado</code>.
+The command will now be available any time you use Stata.</p>
+<h3 id="positional-arguments">5.3.4 Positional Arguments</h3>
+<p>In addition to storing all arguments together in local macro
+<code>0</code>, Stata parses the arguments (using white space as a
+delimiter) and stores all the words it finds in local macros
+<code>1</code>, <code>2</code>, <code>3</code>, etc.</p>
+<p>Typically you would do something with <code>`1'</code> and then move
+on to the next one. The command <code>mac shift</code> comes handy then,
+because it shifts all the macros down by one, so the contents of
+<code>2</code> is now in <code>1</code>, and <code>3</code> is in
+<code>2</code>, and so on. This way you always work with what’s in
+<code>1</code> and shift down. When the list is exhausted <code>1</code>
+is empty and you are done.</p>
+<p>So here is the canonical program that lists its arguments</p>
+<pre><code>capture program drop listargs
+program define listargs
+    version 14
+    while &quot;`1&#39;&quot; != &quot;&quot; {
+        display `&quot;`1&#39;&quot;&#39;
+        mac shift
+    }
+end</code></pre>
+<p>Don’t forget the <code>mac shift</code>, otherwise your program may
+run forever. (Or until you hit the break key.)</p>
+<p>Try <code>listargs one two three testing</code>. Now try
+<code>listargs one "two and three" four</code>. Notice how one can group
+words into a single argument by using quotes.</p>
+<p>This method is useful, and sometimes one can given the arguments more
+meaningful names using <code>args</code>. We will give an example in
+5.3.8. But let us discuss Stata syntax first, a more powerful and robust
+approach.</p>
+<p>(By the way one can pass arguments not just to commands, but to
+<em>do</em> files as well. Type <code>help do</code> to learn more.)</p>
+<h3 id="using-stata-syntax">5.3.5 Using Stata Syntax</h3>
+<p>If your command uses standard Stata syntax –which means the arguments
+are a list of variables, possibly a weight, maybe an <code>if</code> or
+<code>in</code> clause, and perhaps a bunch of <em>options</em>– you can
+take advantage of Stata’s own parser, which conveniently stores all
+these elements in local macros ready for you to use.</p>
+<h4 id="a-command-prototype">A Command Prototype</h4>
+<p>Let us write a command that computes the probability of marrying by a
+certain age in a Coale-McNeil model with a given mean, standard
+deviation, and proportion marrying. The syntax of our proposed command
+is</p>
+<pre><code>pnupt age, generate(married) [ mean(25) stdev(5) pem(1) ]</code></pre>
+<p>So we require an existing variable with age in exact years, and a
+mandatory option specifying a new variable to be generated with the
+proportions married. There are also options to specify the mean, the
+standard deviation, and the proportion ever married in the schedule, all
+with defaults. Here’s a first cut at the command</p>
+<pre><code>capture program drop pnupt
+program define pnupt
+    version  9.1
+    syntax varname, Generate(name) ///
+        [ Mean(real 25) Stdev(real 5) Pem(real 1) ]
+    // ... we don&#39;t do anything yet ...
+end</code></pre>
+<p>The first thing to note is that the <code>syntax</code> command looks
+remarkably like our prototype. That’s how easy this is.</p>
+<h4 id="variable-lists">Variable Lists</h4>
+<p>The first element in our syntax is an example of a <em>list of
+variables</em> or <code>varlist</code>. You can specify minima and
+maxima, for example a program requiring exactly two variables would say
+<code>varlist(min=2 max=2)</code>. When you have only one variable, as
+we do, you can type <code>varname</code>, which is short for
+<code>varlist(min=1 max=1)</code>.</p>
+<p>Stata will then make sure that your program is called with exactly
+one name of an existing variable, which will be stored in a local macro
+called <code>varlist</code>. (The macro is always called
+<code>varlist</code>, even if you have only one variable and used
+<code>varname</code> in your syntax statement.) Try
+<code>pnupt nonesuch</code> and Stata will complain, saying “variable
+nonesuch not found”.</p>
+<p>(If you have done programming before, and you spent 75% of your time
+writing checks for input errors and only 25% focusing on the task at
+hand, you will really appreciate the <code>syntax</code> command. It
+does a lot of error checking for you.)</p>
+<h4 id="options-and-defaults">Options and Defaults</h4>
+<p>Optional syntax elements are enclosed in square brackets
+<code>[</code> and <code>]</code>. In our command the
+<code>generate</code> option is required, but the other three are
+optional. Try these commands to generate a little test dataset with an
+age variable ranging from 15 to 50</p>
+<pre><code>drop _all
+set obs 36
+gen age = 14 + _n</code></pre>
+<p>Now try <code>pnupt age</code>. This time Stata is happy with
+<code>age</code> but notes ‘option generate() required’. Did I say
+<code>syntax</code> saves a lot of work? Options that take arguments
+need to specify the type of argument (<code>integer</code>,
+<code>real</code>, <code>string</code>, <code>name</code>) and,
+optionally, a default value. Our <code>generate</code> takes a
+<code>name</code>, and is required, so there is no default. Try
+<code>pnupt age, gen(2)</code>. Stata will complain that 2 is not a
+name.</p>
+<p>If all is well, the contents of the option is stored in a local macro
+with the same name as the option, here <code>generate</code>.</p>
+<h4 id="checking-arguments">Checking Arguments</h4>
+<p>Now we need to do just a bit of work to check that the name is a
+valid variable name, which we do with <code>confirm</code>:</p>
+<pre><code>confirm new variable `generate&#39;</code></pre>
+<p>Stata then checks that you could in fact generate this variable, and
+if not issues error 110. Try <code>pnupt age, gen(age)</code> and Stata
+will say ‘age already defined’.</p>
+<p>It should be clear by now that Stata will check that if you specify a
+mean, standard deviation or proportion ever married, abbreviated as
+<code>m()</code>, <code>s()</code> and <code>p()</code>, they will be
+real numbers, which will be stored in local macros called
+<code>mean</code>, <code>stdev</code>, and <code>pem</code>. If an
+option is omitted the local macro will contain the default.</p>
+<p>You could do more checks on the input. Let’s do a quick check that
+all three parameters are non-negative and the proportion is no more than
+one.</p>
+<pre><code>if (`mean&#39; &lt;= 0 | `stdev&#39; &lt;= 0 | `pem&#39; &lt;= 0 | `pem&#39; &gt; 1) {
+    di as error &quot;invalid parameters&quot;
+    exit 110
+}</code></pre>
+<p>You could be nicer to your users and have separate checks for each
+parameter, but this will do for now.</p>
+<h4 id="temporary-variables">Temporary Variables</h4>
+<p>We are now ready to do some calculations. We take advantage of the
+relation between the Coale-McNeil model and the gamma distribution, as
+explained in Rodríguez and Trussell (1980). Here’s a working version of
+the program</p>
+<pre><code>program define pnupt
+*! Coale-McNeil cumulative nuptiality schedule v1 GR 24-Feb-06
+    version 14
+    syntax varname, Generate(name) [Mean(real 25) Stdev(real 5) Pem(real 1)]
+    confirm new var `generate&#39;
+    if `mean&#39; &lt;= 0 | `stdev&#39; &lt;= 0 | `pem&#39; &lt;= 0 | `pem&#39; &gt; 1 {
+        display as error &quot;invalid parameters&quot;
+        exit 198
+    }
+    tempname z g
+    gen `z&#39; = (`varlist&#39; - `mean&#39;)/`stdev&#39;
+    gen `g&#39; = gammap(0.604, exp(-1.896 * (`z&#39; + 0.805)))
+    gen `generate&#39; = `pem&#39; * (1 - `g&#39;) 
+end </code></pre>
+<p>We could have written the formula for the probability in one line,
+but only by sacrificing readability. Instead we first standardize age,
+by subtracting the mean and dividing by the standard deviation. What can
+we call this variable? You might be tempted to call it <code>z</code>,
+but what if the user of your program has a variable called
+<code>z</code>? Later we evaluate the gamma function. What can we call
+the result?</p>
+<p>The solution is the <code>tempname</code> command, which asks Stata
+to make up unique temporary variable names, in this case two to be
+stored in local macros <code>z</code> and <code>g</code>. Because these
+macros are local, there is no risk of name conflicts. Another feature of
+temporary variables is that they disappear automatically when your
+program ends, so Stata does the housekeeping for you.</p>
+<p>The line <code>gen `z' = (`varlist' - `mean')/`stdev'</code> probably
+looks a bit strange at first. Remember that all names and values of
+interest are now stored in local macros and we need to evaluate them to
+get anywhere, hence the profusion of backticks: <code>`z'</code> gets
+the name of our temporary variable, <code>`varlist'</code> gets the name
+of the age variable specified by the user, <code>`mean'</code> gets the
+value of the mean, and <code>`stdev'</code> gets the value of the
+standard deviation. After macro substitution this line will read
+something like <code>gen _000001 = (age-22.44)/5.28</code>, which
+probably makes a lot more sense.</p>
+<h4 id="ifin">If/In</h4>
+<p>You might consider allowing the user to specify <code>if</code> and
+<code>in</code> conditions for your command. These would need to be
+added to the syntax, where they would be stored in local macros, which
+can then be used in the calculations, in this case passed along to
+generate.</p>
+<p>For a more detailed discussion of this subject type
+<code>help syntax</code> and select <code>if</code> and then
+<code>in</code>. The entry in <code>help mark</code> is also
+relevant.</p>
+<h3 id="creating-new-variables">5.3.6 Creating New Variables</h3>
+<p>Sometimes all your command will do is create a new variable. This, in
+fact, is what our little command does. Wouldn’t it be nice if we could
+use an <code>egen</code> type of command like this:</p>
+<pre><code>egen married = pnupt(age), mean(22.48) stdev(5.29) pem(0.858)</code></pre>
+<p>Well, we can! As it happens, <code>egen</code> is user-extendable. To
+implement a function called <code>pnupt</code> you have to create a
+program (ado file) called <code>_gpnupt</code>, in other words add the
+prefix <code>_g</code>. The documentation on egen extensions is a bit
+sparse, but once you know this basic fact all you need to do is look at
+the source of an <code>egen</code> command and copy it. (I looked at
+<code>_gmean</code>.)</p>
+<p>So here’s the <code>egen</code> version of our Coale-McNeil
+command.</p>
+<pre><code>program define _gpnupt
+*! Coale-McNeil cumulative nuptiality schedule v1 GR 24-Feb-06
+    version 14
+    syntax newvarname=/exp [, Mean(real 25) Stdev(real 5) Pem(real 1)]
+    if `mean&#39; &lt;= 0 | `stdev&#39; &lt;= 0 | `pem&#39; &lt;= 0 | `pem&#39; &gt; 1 {
+        display as error &quot;invalid parameters&quot;
+        exit 198
+    }
+    tempname z g
+    gen `z&#39; = (`exp&#39; - `mean&#39;)/`stdev&#39;
+    gen `g&#39; = gammap(0.604, exp(-1.896 * (`z&#39; + 0.805)))
+    gen `typlist&#39; `varlist&#39; = `pem&#39; * (1 - `g&#39;) 
+end </code></pre>
+<p>There are very few differences between this program and the previous
+one. Instead of an input variable <code>egen</code> accepts an
+expression, which gets evaluated and stored in a temporary variable
+called <code>exp</code>. The output variable is specified as a
+<code>varlist</code>, in this case a <code>newvarname</code>. That’s why
+<code>z</code> now works with <code>exp</code>, and <code>gen</code>
+creates <code>varlist</code>. The mysterious <code>typlist</code> is
+there because <code>egen</code> lets you specify the type of the output
+variable (<code>float</code> by default) and that gets passed to our
+function, which passes it along to <code>gen</code>.</p>
+<h3 id="a-coale-mcneil-fit">5.3.7 A Coale-McNeil Fit</h3>
+<p>We are ready to reveal how the initial plot was produced. The data
+are available in a Stata file in the demography section of my website,
+which has counts of ever married and single women by age. We compute the
+observed proportion married, compute fitted values based on the
+estimates in Rodríguez and Trussell (1980), and plot the results. It’s
+all done in a handful of lines</p>
+<pre class='stata'>. use https://grodri.github.io/datasets/cohhnupt, clear
+(WFS Colombia Household Survey)
+
+. gen agem = age + 0.5
+
+. gen obs = ever/total
+
+. egen fit = pnupt(agem), mean(22.44) stdev(5.28) pem(.858)
+
+. twoway (scatter obs agem) (line fit agem), ///
+>     title(Proportions Married by Age) subtitle(Colombia 1976) ///
+>     ytitle(Proportion married) xtitle(age)
+
+. graph export cchhnup.png,     width(500) replace
+(file cchhnup.png not found)
+file cchhnup.png saved as PNG format
+</pre>
+<p>The actual estimation can be implemented using Stata’s maximum
+likelihood procedures, but that’s a story for another day.</p>
+<h3 id="returning-results">5.3.8 Returning Results</h3>
+<p>So far our commands have printed results or created a new variable.
+How do you return results to the user? A general command can declare
+itself to be <code>rclass</code> and then return results in
+<code>r()</code>, while an estimation command can declare
+<code>eclass</code> and return results in <code>e()</code>. Let us
+illustrate the former with a command to compute Tukey’s trimean T =
+(Q<sub>1</sub> + 2 Q<sub>2</sub> + Q<sub>3</sub>)/4, a weighted average
+of the quartiles and median.</p>
+<pre class='stata'>. capture program drop trimean
+
+. program trimean, rclass
+  1.     version 14
+  2.     args varname
+  3.     confirm variable `varname'
+  4.     quietly summarize `varname', detail
+  5.     if r(N) == 0 {
+  6.         display as error "No observations"
+  7.         exit
+  8.     }
+  9.     tempname trimean
+ 10.     scalar `trimean' = (r(p25) + 2*r(p50) + r(p75))/4
+ 11.     display "trimean = ", `trimean'
+ 12.     return scalar trimean = `trimean'
+ 13. end
+</pre>
+<p>The first thing to notice is that the <code>program</code> statement
+includes the <code>rclass</code> option. This is required to be able to
+return results.</p>
+<p>We then use <code>args</code> to name the single argument
+<code>varname</code>, and we then use <code>confirm variable</code> to
+check that the variable exists. The quartiles we need are computed by
+<code>summarize</code> with the <code>detail</code> option, which we do
+<code>quietly</code> to skip printing the results. If the variable is a
+string or all values are missing, <code>summarize</code> will set
+<code>r(N)</code> to 0, in which case we display an error message and
+exit.</p>
+<p>We could store the trimean in a local macro, but we will lose
+precision. Instead we use a scalar. The <code>tempname</code> line will
+store a unique name in the local macro <code>trimean</code>. We then
+store the trimean in a scalar with that name, and print it. The final
+step uses the <code>return</code> statement to store the scalar result
+in <code>r(trimean)</code>. Let us run the program and then list the
+results</p>
+<pre class='stata'>. sysuse auto, clear
+(1978 automobile data)
+
+. trimean mpg
+trimean =  20.75
+
+. return list
+
+scalars:
+            r(trimean) =  20.75
+</pre>
+<p>Each <code>rclass</code> command erases the results of the previous
+one. However we could use <code>return add</code> to add our results to
+what’s on <code>r()</code> already. Try it. After running our command,
+<code>return list</code> will list 20 results, ready for inclusion in a
+customized table.</p>
+<p>We could expand the program to more variables, perhaps using
+<code>syntax varlist</code>, but note that <code>summarize</code> only
+stores results for the last variable listed, and our command should
+probably do the same.</p>
+<h2 id="s54">5.4 Other Topics</h2>
+<p>To keep this tutorial from becoming too long I have skipped or cut
+short many topics. To learn more about returning results from your
+commands type <code>help return</code>. For estimation commands, which
+can post estimation results to <code>e()</code>, see
+<code>help ereturn</code> and <code>help _estimates</code>. An essential
+reference on estimation is <em>Maximum Likelihood Estimation with
+Stata</em>, Fourth Edition, by Gould, Pitblado and Poi (2010).</p>
+<p>Other subjects of interest are matrices (start with
+<code>help matrix</code>), and how to make commands “byable” (type
+<code>help byable</code>). To format your output you need to learn more
+about SMCL, start with <code>help smcl</code>. For work on graphics you
+may want to study class programming (<code>help class</code>) and learn
+about sersets (<code>help serset</code>). To provide a graphical user
+interface to your command try <code>help dialog programming</code>. It
+is also possible to read and write text and binary files (see
+<code>help file</code>).</p>
+<p>The biggest omission is Mata, a full-fledged matrix programming
+language that was introduced in Version 9 of Stata. Mata is compiled to
+byte code, so it is much faster than Stata’s classic ado programs. I
+find that the best way to write new Stata commands is to use classic ado
+for the user interface and Mata for the actual calculations. If you are
+interested in learning Mata I strongly recommend Gould’s (2018) <em>The
+Mata Book</em>.</p>
+<h1 id="references">References</h1>
+
+{% include_relative references.html %}
