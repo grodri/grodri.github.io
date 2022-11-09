@@ -1,0 +1,185 @@
+---
+layout: default
+section: R
+tab: "Linear Models"
+mathjax: true
+---
+
+<style>
+pre {background-color:white;} 
+pre.r {background-color:#f6f6f6;}
+</style>
+
+<div id="linear-models" class="section level1">
+<h1>4 Linear Models</h1>
+<p>Let us try some linear models, starting with multiple regression and analysis of covariance models, and then moving on to models using regression splines. In this section I will use the data read in Section 3, so make sure the <code>fpe</code> data frame is still available.</p>
+<div id="fitting-a-model" class="section level2">
+<h2>4.1 Fitting a Model</h2>
+<p>To fit an ordinary linear model with fertility change as the response and setting and effort as predictors, try</p>
+<pre class="r"><code>&gt; lmfit = lm( change ~ setting + effort, data = fpe )</code></pre>
+<p>Note first that <code>lm()</code> is a function, and we assign the result to an object that I choose to call <code>lmfit</code> (for linear model fit). This stores the results of the fit for later examination.</p>
+<p>The first argument to <code>lm()</code> is a model formula, which has the response on the left of the tilde <code>~</code> (read “is modeled as”), and a Wilkinson-Rogers model specification formula on the right. R uses</p>
+<p><code>+</code> to combine elementary terms, as in <code>A + B</code> <code>:</code> for interactions, as in <code>A:B</code>; <code>*</code> for both main effects and interactions, so <code>A * B = A + B + A:B</code></p>
+<p>A nice feature of R is that it lets you create interactions between categorical variables, between categorical and continuous variables, and even between numeric variables (it just creates the cross-product).</p>
+<p>We also used the <code>data</code> argument to specify the data frame containing these variables.</p>
+</div>
+<div id="examining-a-fit" class="section level2">
+<h2>4.2 Examining a Fit</h2>
+<p>Let us look at the results of the fit. One thing you can do with <code>lmfit</code>, as you can with any R object, is print it.</p>
+<pre class="r"><code>&gt; lmfit</code></pre>
+<pre><code>
+Call:
+lm(formula = change ~ setting + effort, data = fpe)
+
+Coefficients:
+(Intercept)      setting       effort  
+   -14.4511       0.2706       0.9677  </code></pre>
+<p>The output includes the model formula and the coefficients. You can get a bit more detail by using the <code>summary()</code> function:</p>
+<pre class="r"><code>&gt; summary(lmfit)</code></pre>
+<pre><code>
+Call:
+lm(formula = change ~ setting + effort, data = fpe)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-10.3475  -3.6426   0.6384   3.2250  15.8530 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) -14.4511     7.0938  -2.037 0.057516 .  
+setting       0.2706     0.1079   2.507 0.022629 *  
+effort        0.9677     0.2250   4.301 0.000484 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 6.389 on 17 degrees of freedom
+Multiple R-squared:  0.7381,    Adjusted R-squared:  0.7073 
+F-statistic: 23.96 on 2 and 17 DF,  p-value: 1.132e-05</code></pre>
+<p>The output includes a more conventional table with parameter estimates and standard errors, as well the residual standard error and multiple R-squared. (You could also get the matrix of correlations among parameter estimates, by adding the option <code>correlation = TRUE</code> in the call to <code>summary()</code>, but that is a bit too much detail.)</p>
+<p>To get a hierarchical analysis of variance table corresponding to introducing each of the terms in the model one at a time, in the same order as in the model formula, try the <code>anova()</code> function:</p>
+<pre class="r"><code>&gt; anova(lmfit)</code></pre>
+<pre><code>Analysis of Variance Table
+
+Response: change
+          Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
+setting    1 1201.08 1201.08  29.421 4.557e-05 ***
+effort     1  755.12  755.12  18.497 0.0004841 ***
+Residuals 17  694.01   40.82                      
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>Alternatively, you can plot the results using</p>
+<pre class="r"><code>plot(lmfit)</code></pre>
+<p>This will produce a set of four plots: residuals versus fitted values, a Q-Q plot of standardized residuals, a scale-location plot (square roots of standardized residuals versus fitted values, and a plot of residuals versus leverage, that adds bands corresponding to Cook’s distances of 0.5 and 1.</p>
+<p>R Studio (and R) will prompt you to press Enter before showing each graph, but we can do better. Type <code>par(mfrow = c(2, 2))</code> to set your graphics window to show four plots at once, in a layout with 2 rows and 2 columns. Then redo te graph using <code>plot(lmfit)</code>. To go back to a single graph per window use <code>par(mfrow = c(1, 1))</code>. There are many other ways to customize your graphs by setting high-level parameters, type <code>?par</code> to learn more.</p>
+<center><img src="lmplot.png" /> </center>
+<p><em>Technical Note</em>: You may have noticed that we have used the function <code>plot()</code> with all kinds of arguments: one or two variables, a data frame, and now a linear model fit. In R jargon, <code>plot()</code> is a generic function. It checks for the kind of object that you are plotting, and then calls the appropriate (more specialized) function to do the work. There are actually many plot functions in R, including <code>plot.data.frame()</code> and <code>plot.lm()</code>. For most purposes, the generic function will do the right thing and you don’t need to be concerned about its inner workings.</p>
+</div>
+<div id="extracting-results" class="section level2">
+<h2>4.3 Extracting Results</h2>
+<p>There are some specialized functions that allow you to extract elements from a linear model fit. For example</p>
+<pre class="r"><code>&gt; fitted(lmfit)</code></pre>
+<pre><code>       Bolivia         Brazil          Chile       Colombia      CostaRica 
+     -2.004026       5.572452      25.114699      21.867637      28.600325 
+          Cuba   DominicanRep        Ecuador     ElSalvador      Guatemala 
+     24.146986      17.496913      10.296380      14.364491       9.140694 
+         Haiti       Honduras        Jamaica         Mexico      Nicaragua 
+     -2.077359       6.122912      31.347518      11.878604       3.948921 
+        Panama       Paraguay           Peru TrinidadTobago      Venezuela 
+     26.664898       8.475593       5.301864      22.794043      16.946453 </code></pre>
+<p>extracts the fitted values. In this case it will also print them, because we did not asign them to anything. (The longer form <code>fitted.values()</code> is an alias.)</p>
+<p>To extract the coefficients use the <code>coef()</code> function (or the longer form <code>coefficients()</code>)</p>
+<pre class="r"><code>&gt; coef(lmfit)</code></pre>
+<pre><code>(Intercept)     setting      effort 
+-14.4510978   0.2705885   0.9677137 </code></pre>
+<p>To get the residuals, use the <code>resids()</code> function (or the longer form <code>residuals()</code>). There is a <code>type</code> argument that lets you choose several types of residuals, type <code>?residuals.lm</code> for information. I find more useful the <code>rstudent()</code> functions that returns standardized residuals:</p>
+<pre class="r"><code>&gt; rstudent(lmfit)</code></pre>
+<pre><code>       Bolivia         Brazil          Chile       Colombia      CostaRica 
+    0.51666939     0.75316960     0.63588630     0.50233619     0.06666317 
+          Cuba   DominicanRep        Ecuador     ElSalvador      Guatemala 
+    3.32236668     0.56318276    -1.76471053    -0.22267614    -0.85483603 
+         Haiti       Honduras        Jamaica         Mexico      Nicaragua 
+    0.39308668     0.14477900    -1.98177567    -0.47988042     0.50479726 
+        Panama       Paraguay           Peru TrinidadTobago      Venezuela 
+   -0.77508737    -0.40082283    -0.55507263     1.01832414    -1.03565220 </code></pre>
+<p>If you are curious to see exactly what a linear model fit produces, try the function</p>
+<pre class="r"><code>&gt; names(lmfit)</code></pre>
+<pre><code> [1] &quot;coefficients&quot;  &quot;residuals&quot;     &quot;effects&quot;       &quot;rank&quot;         
+ [5] &quot;fitted.values&quot; &quot;assign&quot;        &quot;qr&quot;            &quot;df.residual&quot;  
+ [9] &quot;xlevels&quot;       &quot;call&quot;          &quot;terms&quot;         &quot;model&quot;        </code></pre>
+<p>which lists the named components of a linear fit. All of these objects may be extracted using the <code>$</code> operator. However, if there is a special extractor function such as <code>coef()</code> or <code>resid()</code>, you are encouraged to use it.</p>
+</div>
+<div id="factors-and-covariates" class="section level2">
+<h2>4.4 Factors and Covariates</h2>
+<p>So far our predictors have been continuous variables or <em>covariates</em>. We can also use categorical variables or <em>factors</em>. Let us group family planning effort into three categories:</p>
+<pre class="r"><code>&gt; fpe$effortg = cut(fpe$effort, breaks = c(-1, 4, 14, 100), 
++   label = c(&quot;weak&quot;, &quot;moderate&quot;, &quot;strong&quot;))</code></pre>
+<p>The function <code>cut()</code> creates a factor or categorical variable. The first argument is an input vector, the second is a vector of breakpoints, and the third is a vector of category labels. Note that there is one more breakpoint than there are categories. All values greater than the <em>i</em>-th breakpoint and less than or equal to the <em>(i+1)</em>-st breakpoint go into the <em>i</em>-th category. Any values below the first breakpoint or above the last one are coded <code>NA</code> (a special R code for missing values). If the labels are omitted, R generates a suitable default of the form “(a, b]”. By default the intervals are closed on the right, so our intervals are <span class="math inline">\(\le 4\)</span>, 5 - 14, and 15+. To change this behavior, use the option <code>right = FALSE</code>.</p>
+<p>Note that by specifying <code>fpe$effortg</code> on the left-hand-side, we have effectively added a new column to the <code>fpe</code> data frame.</p>
+<p>Try fitting the analysis of covariance model:</p>
+<pre class="r"><code>&gt; covfit = lm( change ~ setting + effortg, data = fpe)
+&gt; covfit</code></pre>
+<pre><code>
+Call:
+lm(formula = change ~ setting + effortg, data = fpe)
+
+Coefficients:
+    (Intercept)          setting  effortgmoderate    effortgstrong  
+        -5.9540           0.1693           4.1439          19.4476  </code></pre>
+<p>As you can see, <code>effortg</code> has been treated automatically as a factor, and R has generated the necessary dummy variables for “moderate” and “strong” programs, treating “weak”&quot; as the reference cell.</p>
+<p><em>Choice of Contrasts</em>: R codes unordered factors using the reference cell or “treatment contrast” method. The reference cell is always the first category which, depending on how the factor was created, is usually the first in alphabetical order. If you don’t like this choice, R provides a special function to re-order levels, check out <code>help(relevel)</code>.</p>
+<p>You can obtain a hierarchical anova table for the analysis of covariance model using the <code>anova()</code> function:</p>
+<pre class="r"><code>&gt; anova(covfit)</code></pre>
+<pre><code>Analysis of Variance Table
+
+Response: change
+          Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
+setting    1 1201.08 1201.08  36.556 1.698e-05 ***
+effortg    2  923.43  461.71  14.053 0.0002999 ***
+Residuals 16  525.69   32.86                      
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>Type <code>?anova</code> to learn more about this function.</p>
+</div>
+<div id="regression-splines" class="section level2">
+<h2>4.5 Regression Splines</h2>
+<p>The real power of R begins to shine when you consider some of the other functions you can include in a model formula. First, you can include mathematical functions, for example <code>log(setting)</code> is a perfectly legal term in a model formula. You don’t have to create a variable representing the log of setting and then use it, R will create it ‘on the fly’, so you can type</p>
+<pre class="r"><code>&gt; lm( change ~ log(setting) + effort, data = fpe)</code></pre>
+<pre><code>
+Call:
+lm(formula = change ~ log(setting) + effort, data = fpe)
+
+Coefficients:
+ (Intercept)  log(setting)        effort  
+     -61.737        15.638         1.002  </code></pre>
+<p>If you wanted to use orthogonal polynomials of degree 3 on setting, you could include a term of the form <code>poly(setting, 3)</code>.</p>
+<p>You can also get R to calculate a well-conditioned basis for regression splines. First you must load the <code>splines</code> library.</p>
+<pre class="r"><code>&gt; library(splines)</code></pre>
+<p>This makes available the function `bs()~ to generate B-splines. For example the call</p>
+<pre class="r"><code>&gt; fpe$setting.bs = bs(fpe$setting, knots = c(66, 74, 84))</code></pre>
+<p>will generate cubic B-splines with interior knots placed at 66, 74 and 84. This basis will use seven degrees of freedom, four corresponding to the constant, linear, quadratic and cubic terms, plus one for each interior knot. Alternatively, you may specify the number of degrees of freedom you are willing to spend on the fit using the parameter <code>df</code>. For cubic splines R will choose df-4 interior knots placed at suitable quantiles. You can also control the degree of the spline using the parameter <code>degree</code>, the default being cubic.</p>
+<p>If you like natural cubic splines, you can obtain a well-conditioned basis using the function <code>ns()</code>, which has exactly the same arguments as <code>bs()</code> except for <code>degree</code>, which is always three. To generate a natural spline with five degrees of freedom, use the call</p>
+<pre class="r"><code>&gt; fpe$setting.ns = ns(fpe$setting, df=5)</code></pre>
+<p>Natural cubic splines are better behaved than ordinary splines at the extremes of the range. The restrictions mean that you save four degrees of freedom. You will probably want to use two of them to place additional knots at the extremes, but you can still save the other two.</p>
+<p>To fit an additive model to fertility change using natural cubic splines on setting and effort with only one interior knot each, placed exactly at the median of each variable, try the following call:</p>
+<pre class="r"><code>&gt; splinefit = lm( change ~ ns(setting, knot=median(setting)) + 
++   ns(effort, knot=median(effort)), data = fpe )</code></pre>
+<p>Here we used the parameter <code>knot</code> to specify where we wanted the knot placed, and the function <code>median()</code> to calculate the median of setting and effort. All calculations are done “on the fly”.</p>
+<p>Do you think the spline model is a good fit? Natural cubic splines with exactly one interior knot require the same number of parameters as an ordinary cubic polynomial, but are much better behaved at the extremes.</p>
+</div>
+<div id="other-options" class="section level2">
+<h2>4.6 Other Options</h2>
+<p>The <code>lm()</code> function has several additional parameters that we have not discussed. These include</p>
+<p><code>subset</code> to restrict the analysis to a subset of the data <code>weights</code> to do weighted least squares</p>
+<p>and many others; see <code>help(lm)</code> for further details. The <code>args()</code> function lists the arguments used by any function, in case you forget them. Try <code>args(lm)</code>.</p>
+<p>The fact that R has powerful matrix manipulation routines means that one can do many of these calculations from first principles. The next couple of lines create a model matrix to represent the constant, setting and effort, and then calculate the OLS estimate of the coefficients as <span class="math inline">\((X&#39;X)^{-1}X&#39;y:\)</span></p>
+<pre class="r"><code>&gt; X &lt;- cbind(1, fpe$effort, fpe$setting)
+&gt; solve( t(X) %*% X ) %*% t(X) %*% fpe$change</code></pre>
+<pre><code>            [,1]
+[1,] -14.4510978
+[2,]   0.9677137
+[3,]   0.2705885</code></pre>
+<p>Compare these results with <code>coef(lmfit)</code>.</p>
+</div>
+</div>
+
+<p class="pull-right">Continue with <a href="glms" class="btn btn-default">Generalized Linear Models</a></p>

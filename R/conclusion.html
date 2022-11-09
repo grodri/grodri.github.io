@@ -1,0 +1,89 @@
+---
+layout: default
+section: R
+tab: Conclusion
+---
+
+<div id="next-steps" class="section level1">
+<h1>6 Next Steps</h1>
+<p>These notes have hardly scratched the surface of R, which has many more statistical functions. These include functions to calculate the density, cdf, and inverse cdf of distributions such as chi-squared, t, F, lognormal, logistic and others.</p>
+<p>The <code>survival</code> library includes methods for the estimation of survival curves, tests of differences between survival curves, and Cox proportional hazards models. The library <code>lme4</code> includes code for fitting generalized linear mixed effect models, including multilevel models. Many new statistical procedures are first made available to the research community in the form of R functions.</p>
+<p>To produce really nice graphs consider installing the <code>ggplot2</code> package. To draw a plot you specify a data frame, aesthetics that map variables to aspects of the graph, and geometries that specify whether to use points, lines, or other primitives. You fill find more information at <a href="https://ggplot2.tidyverse.org/" class="uri">https://ggplot2.tidyverse.org/</a></p>
+<p>For data management I recommend that you install the <code>dplyr</code> package, which includes tools for adding new variables, selecting cases or variables (rows or columns), as well as summarizing and re-arranging your data. Check the overview at <a href="https://dplyr.tidyverse.org/" class="uri">https://dplyr.tidyverse.org/</a>.</p>
+<p>You can also run <code>install.packages(&quot;tidyverse&quot;)</code> to install all the packages in the tidyverse, including <code>ggplot2</code> and <code>dplyr</code>, as well as <code>tidyr</code> (for help tidying data), <code>readr</code> (for reading rectangular data like csv files), <code>purrr</code> (for an alternative to loops), <code>tibble</code> (for tidy data frames), <code>stringr</code> (for working with strings) and <code>forcats</code> (for working with factors). Learn more at <a href="https://www.tidyverse.org/packages/" class="uri">https://www.tidyverse.org/packages/</a>.</p>
+<p>In addition, R is a full-fledged programming language, with a rich complement of mathematical functions, matrix operations and control structures. It is very easy to write your own functions. To learn more about programming R, I recommend <span class="citation">Wickham (2019)</span>’s <em>Advanced R</em> book.</p>
+<p>R is an interpreted language but it is reasonably fast, particularly if you take advantage of the fact that operations are vectorized, and try to avoid looping. Where efficiency is crucial you can always write a function in a compiled language such as C or Fortran and then call it from R. Some of my work on multilevel generalized linear models used this approach.</p>
+<p>Last, but most certainly not least, you will want to learn about dynamic documents using R Markdown. The basic idea here is to combine a narrative written in Markdown with R code, an approach that has excellent support in R Studio. The definite book on the subject is <span class="citation">Xie, Allaire, and Grolemund (2019)</span>.</p>
+
+<p>This tutorial has been written in R Markdown. You can download the <a href="https://data.princeton.edu/R/introducingR.Rmd">source code</a>  and the <a href="https://data.princeton.edu/R/introducingR.bib">bibliography file</a>. To reproduce the PDF document you also need <a href="https://data.princeton.edu/R/tweaks.tex">tweaks.tex</a>.
+To generate an HTML document change the output specification near the top of the script.</p>
+</div>
+
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-beckerChambers1984">
+<p>Becker, Richard A., and John M. Chambers. 1984. <em>S an Interactive Environment for Data Analysis and Graphics</em>. Belmont, CA: Wadsworth.</p>
+</div>
+<div id="ref-beckerChambersWilks1988">
+<p>Becker, Richard A., John M. Chambers, and Allan R. Wilks. 1988. <em>The New S Language</em>. Pacific Grove, CA: Wadsworth.</p>
+</div>
+<div id="ref-braunMurdoch2016">
+<p>Braun, W. John, and Duncan J. Murdoch. 2016. <em>A First Course in Statistical Programming with R</em>. Second Edition. Cambridge University Press.</p>
+</div>
+<div id="ref-chambers1998">
+<p>Chambers, John M. 1998. <em>Programming with Data</em>. New York: Springer.</p>
+</div>
+<div id="ref-chambers2008">
+<p>———. 2008. <em>Software for Data Analysis. Programming with R</em>. New York: Springer.</p>
+</div>
+<div id="ref-chambers2016">
+<p>———. 2016. <em>Extending R</em>. Boca Raton, FL: Chapman Hall/CRC.</p>
+</div>
+<div id="ref-chambersHastie1992">
+<p>Chambers, John M., and Trevor J. Hastie, eds. 1992. <em>Statistical Models in S</em>. Pacific Grove, CA: Wadsworth.</p>
+</div>
+<div id="ref-dalgaard2008">
+<p>Dalgaard, Peter. 2008. <em>Introductory Statistics with R</em>. Second Edition. New York: Springer.</p>
+</div>
+<div id="ref-fox2002">
+<p>Fox, John. 2002. <em>An R and S-Plus Companion to Applied Regression</em>. Thousand Oaks, CA: SAGE.</p>
+</div>
+<div id="ref-hothornEveritt2014">
+<p>Hothorn, Torsten, and Brian S. Everitt. 2014. <em>A Handbook of Statistical Analyses Using R</em>. Third Edition. Boca Raton, FL: CRC Press.</p>
+</div>
+<div id="ref-krauseOlson1997">
+<p>Krause, Anreas, and Melvin Olson. 1997. <em>The Basics of S and S-Plus</em>. New York: Springer.</p>
+</div>
+<div id="ref-murrell2006">
+<p>Murrell, Paul. 2006. <em>R Graphics</em>. Boca Raton, FL: Chapman Hall/CRC.</p>
+</div>
+<div id="ref-pinheiroBates2000">
+<p>Pinheiro, José C., and Douglas M. Bates. 2000. <em>Mixed-Effects Models in S and S-Plus</em>. New York: Springer.</p>
+</div>
+<div id="ref-therneauGrambsch2000">
+<p>Therneau, Terry M., and Patricia M. Grambsch. 2000. <em>Modeling Survival Data</em>. New York.</p>
+</div>
+<div id="ref-venablesRipley2000">
+<p>Venables, W. N., and B. D. Ripley. 2000. <em>S Programming</em>. New York: Springer.</p>
+</div>
+<div id="ref-venablesRipley2002">
+<p>———. 2002. <em>Modern Applied Statistics with S-Plus</em>. Fourth Edition. New York: Springer.</p>
+</div>
+<div id="ref-wickham2016">
+<p>Wickham, Hadley. 2016. <em>ggplot2 Elegant Graphics for Data Analysis</em>. Second Edition. New York: Springer. <a href="https://ggplot2-book.org/">https://ggplot2-book.org/</a>.</p>
+</div>
+<div id="ref-wickham2019">
+<p>———. 2019. <em>Advanced R</em>. Second Edition. Boca Raton, FL: CRC Press. <a href="https://adv-r.hadley.nz/">https://adv-r.hadley.nz/</a>.</p>
+</div>
+<div id="ref-wickhamGrolemund2017">
+<p>Wickham, Hadley, and Garret Grolemund. 2017. <em>R for Data Science</em>. Sebastopol, CA: O’Reilly. <a href="https://r4ds.had.co.nz/">https://r4ds.had.co.nz/</a>.</p>
+</div>
+<div id="ref-wilkinson2005">
+<p>Wilkinson, Leland. 2005. <em>The Grammar of Graphics</em>. Second Edition. New York: Springer.</p>
+</div>
+<div id="ref-xieAllaireGrolemund2019">
+<p>Xie, Yihui, J. J. Allaire, and Garrett Grolemund. 2019. <em>R Markdown: The Definitive Guide</em>. Boca Raton, FL: Chapman Hall/CRC. <a href="https://bookdown.org/yihui/rmarkdown/">https://bookdown.org/yihui/rmarkdown/</a>.</p>
+</div>
+</div>
+</div>

@@ -1,0 +1,175 @@
+---
+layout: default
+section: R
+tab: "Reading Data"
+---
+
+<style>
+pre {background-color:white;} 
+pre.r {background-color:#f6f6f6;}
+</style>
+
+<div id="reading-and-examining-data" class="section level1">
+<h1>3 Reading and Examining Data</h1>
+<p>R can handle several types of data, including numbers, character strings, vectors and matrices, as well as more complex data structures. In this section I describe <strong>data frames</strong>, the preferred way to organize data for statistical analysis, explain how to read data from an external file into a data frame, and show how to examine the data using simple descriptive statistics and informative plots.</p>
+<div id="lists-and-data-frames" class="section level2">
+<h2>3.1 Lists and Data Frames</h2>
+<p>An important data structure that we have not discussed so far is the <strong>list</strong>. A list is a set of objects that are usually named and can be anything: numbers, character strings, matrices or even lists.</p>
+<p>Unlike a vector, whose elements must all be of the same type (all numeric, or all character), the elements of a list may have different types. Here’s a list with two components created using the function <code>list()</code>:</p>
+<pre class="r"><code>&gt; person = list(name=&quot;Jane&quot;, age=24)</code></pre>
+<p>Typing the name of the list prints all elements.</p>
+<pre class="r"><code>&gt; person</code></pre>
+<pre><code>$name
+[1] &quot;Jane&quot;
+
+$age
+[1] 24</code></pre>
+<p>You can extract a component of a list using the extract operator <code>$</code>. For example we can list just the <code>name</code> or <code>age</code> of this person:</p>
+<pre class="r"><code>&gt; person$name</code></pre>
+<pre><code>[1] &quot;Jane&quot;</code></pre>
+<pre class="r"><code>&gt; person$age</code></pre>
+<pre><code>[1] 24</code></pre>
+<p>Individual elements of a list can also be accessed using their indices or their names as subscripts. For example we can get the name using <code>person[1]</code> or <code>person[&quot;name&quot;]</code>. (You can use single or double square brackets depending on whether you want a list with the name, which is what we did, or just the name, which would require double brackets as in <code>person[[1]]</code> or <code>person[[&quot;name&quot;]]</code>. The distinction is not important at this point.)</p>
+<p>A <strong>data frame</strong> is essentially a rectangular array containing the values of one or more variables for a set of units. The frame also contains the names of the variables, the names of the observations, and information about the nature of the variables, including whether they are numerical or categorical.</p>
+<p>Internally, a data frame is a special kind of list, where each element is a vector of observations on a variable. Data frames look like matrices, but can have columns of different types. This makes them ideally suited for representing datasets, where some variables can be numeric and others can be categorical.</p>
+<p>Data frames (like matrices) can also accommodate missing values, which are coded using the special symbol <code>NA</code>. Most statistical procedures, however, omit all missing values.</p>
+<p>Data frames can be created from vectors, matrices or lists using the function data.frame, but more often than not one will read data from an external file, as shown in the next two sections.</p>
+</div>
+<div id="free-format-input" class="section level2">
+<h2>3.2 Free-Format Input</h2>
+<p>Free-format data are text files containing numbers or character strings separated by spaces. Optionally the file may have a header containing variable names. Here’s an excerpt of a data file containing information on three variables for 20 countries in Latin America:</p>
+<pre><code>setting  effort   change
+Bolivia            46       0        1
+Brazil             74       0       10
+Chile              89      16       29
+  ... lines omitted ...
+Venezuela          91       7       11</code></pre>
+<p>This small dataset includes an index of social setting, an index of family planning effort, and the percent decline in the crude birth rate between 1965 and 1975. The data are available at <a href="https://grodri.github.io/datasets/" class="uri">https://grodri.github.io/datasets/</a> in a file called <code>effort.dat</code> that includes a header with the variable names.</p>
+<p>R can read the data directly from the web:</p>
+<pre class="r"><code>&gt; fpe = read.table(&quot;https://grodri.github.io/datasets/effort.dat&quot;)</code></pre>
+<p>The function used to read data frames is <code>read.table()</code>. The argument is a character string giving the name of the file containing the data, but here we have given it a fully qualified url (uniform resource locator), and that’s all it takes.</p>
+<p>Alternatively, you could download the data and save them in a local file, or just cut and paste the data from the browser to an editor, and then save them. Make sure the file ends up in R’s working directory, which you can find out by typing <code>getwd()</code>. If that is not the case, you can use a fully qualified path name or change R’s working directory by calling <code>setwd()</code> with a string argument. Remember to double up your backward slashes (or use forward slashes instead) when specifying paths in Windows.</p>
+<p>Here we assigned the data to an object called <code>fpe</code>. R’s “official”&quot; assignment operator is <code>&lt;-</code> but I prefer <code>=</code>. Yo print the object simply type its name</p>
+<pre class="r"><code>&gt; fpe</code></pre>
+<pre><code>               setting effort change
+Bolivia             46      0      1
+Brazil              74      0     10
+Chile               89     16     29
+Colombia            77     16     25
+CostaRica           84     21     29
+Cuba                89     15     40
+DominicanRep        68     14     21
+Ecuador             70      6      0
+ElSalvador          60     13     13
+Guatemala           55      9      4
+Haiti               35      3      0
+Honduras            51      7      7
+Jamaica             87     23     21
+Mexico              83      4      9
+Nicaragua           68      0      7
+Panama              84     19     22
+Paraguay            74      3      6
+Peru                73      0      2
+TrinidadTobago      84     15     29
+Venezuela           91      7     11</code></pre>
+<p>In this example R detected correctly that the first line in our file was a header with the variable names. It also inferred correctly that the first column had the observation names. (Well, it did so with a little help; I made sure the row names did not have embedded spaces, hence <code>CostaRica</code>. Alternatively, I could have used <code>&quot;Costa Rica&quot;</code> in quotes as a row name.)</p>
+<p>You can always tell R explicitly whether or not you have a header by specifying the optional argument <code>header=TRUE</code> or <code>header=FALSE</code> to the <code>read.table()</code> function. This is important if you have a header but lack row names, because R’s guess is based on the fact that the header line has one fewer entry than the next row, as it did in our example.</p>
+<p>If your file does not have a header line, R will use the default variable names <code>V1</code>, <code>V2</code>, …, etc. To override this default use <code>read.table()</code>’s optional argument <code>col.names</code> to assign variable names. This argument takes a vector of names. So, if our file did <em>not</em> have a header we could have used the command</p>
+<pre class="r"><code>&gt; fpe = read.table(&quot;noheader.dat&quot;, col.names=c(&quot;setting&quot;,&quot;effort&quot;,&quot;change&quot;))</code></pre>
+<p>Don’t worry if this command doesn’t fit in a line. R code can be continued automatically in a new line simply by making it obvious that we are not done, for example ending the line with a comma, or having an unclosed left parenthesis. R responds by prompting for more with the continuation symbol <code>+</code> instead of the usual prompt <code>&gt;</code>.</p>
+<p>If your file does not have observation names, R will simply number the observations from 1 to n. You can specify row names using <code>read.table()&#39;s  optional argument</code>row.names<code>, which works just like</code>col.names<code>; type</code>?data.frame` for more information. (I should mention that in a “tidy” world row names should just be another column, but classic R treats them as observation indices.)</p>
+<p>There are two closely related functions that can be used to get or set variable <em>and</em> observation names at a later time. These are called <code>names()</code>, for the variable or column names, and <code>row.names()</code> for the observation or row names. Thus, if our file did not have a header we could have read the data and then changed the default variable names using the <code>names()</code> function:</p>
+<pre class="r"><code>&gt; fpe = read.table(&quot;noheader.dat&quot;)
+&gt; names(fpe) = c(&quot;setting&quot;,&quot;effort&quot;,&quot;change&quot;)</code></pre>
+<p><em>Technical Note</em>: If you have a background in other programming languages, you may be surprised to see a function call on the left hand side of an assignment. These are special ‘replacement’ functions in R. They extract an element of an object and then replace its value.</p>
+<p>In our example all three-variables were numeric. R will handle string variables with no problem. If one of our variables was sex, coded <code>M</code> for males and <code>F</code> for females, R would have created a <em>factor</em>, which is basically a categorical variable that takes one of a finite set of values called <em>levels</em>. In Section 5 we will use a data frame with categorical variables to illustrate logistic regression. Another way to generate factors is by grouping a numeric covariate. An example appears in Section 4 below.</p>
+<p><em>Exercise</em>: Use a text editor to create a small file with the following three lines:</p>
+<pre><code>a b c
+1 2 3
+4 5 6</code></pre>
+<p>Read this file into R so the variable names are <code>a</code>, <code>b</code> and <code>c</code>. Now delete the first row in the file, save it, and read it again into R so the variable names are still <code>a</code>, <code>b</code> and <code>c</code>.</p>
+</div>
+<div id="fixed-format-input" class="section level2">
+<h2>3.3 Fixed-Format Input</h2>
+<p>Suppose the family planning effort data had been stored in a file containing only the actual data (no country names or variable names) in a fixed format, with social setting in character positions (often called columns) 1-2, family planning effort in positions 3-4 and fertility change in positions 5-6. This is a fairly common way to organize large datasets.</p>
+<p>The following call will read the data into a data frame and name the variables:</p>
+<pre class="r"><code>&gt; fpe = read.table(&quot;fixedformat.dat&quot;,  col.names = c(&quot;setting&quot;, &quot;effort&quot;, 
+&quot;change&quot;), sep=c(1, 3, 5))</code></pre>
+<p>Here I assume that the file in question is called <code>fixedformat.dat</code>. I assign column names just as before, using the <code>col.names</code> parameter. The novelty lies in the next argument, called <code>sep</code>, which is used to indicate how the variables are separated. The default is white space, which is appropriate when the variables are separated by one or more blanks or tabs. If the data are separated by commas, a common format with spreadsheets, you can specify <code>sep =  &quot;,&quot;</code>. Here I created a vector with the numbers 1, 3 and 5 to specify the character position (or column) where each variable starts. Type <code>?read.table</code> for more details.</p>
+</div>
+<div id="printing-data-and-summaries" class="section level2">
+<h2>3.4 Printing Data and Summaries</h2>
+<p>You can refer to any variable in the <code>fpe</code> data frame using the extract operator <code>$</code>. For example to look at the values of the fertility change variable, type</p>
+<pre class="r"><code>&gt; fpe$change</code></pre>
+<pre><code> [1]  1 10 29 25 29 40 21  0 13  4  0  7 21  9  7 22  6  2 29 11</code></pre>
+<p>and R will list a vector with the values of change for the 20 countries. You can also define <code>fpe</code> as your default dataset by “attaching” it to your session:</p>
+<pre class="r"><code>&gt; attach(fpe)</code></pre>
+<p>If you now type the name <code>effort</code> by itself, R will now look for it in the <code>fpe</code> data frame. If you are done with a data frame, you can detach it using <code>detach(fpe)</code>. While <code>attach()</code> can save typing, experience has shown that it can also lead to problems, suggesting it is best avoided. For example, if you already have an object named <code>effort</code>, that will mask the object in <code>fpe</code>. My advice is to always specify the data frame name, as we do below.</p>
+<p>To obtain simple descriptive statistics on these variables try the <code>summary()</code> function:</p>
+<pre class="r"><code>&gt; summary(fpe)</code></pre>
+<pre><code>    setting         effort          change     
+ Min.   :35.0   Min.   : 0.00   Min.   : 0.00  
+ 1st Qu.:66.0   1st Qu.: 3.00   1st Qu.: 5.50  
+ Median :74.0   Median : 8.00   Median :10.50  
+ Mean   :72.1   Mean   : 9.55   Mean   :14.30  
+ 3rd Qu.:84.0   3rd Qu.:15.25   3rd Qu.:22.75  
+ Max.   :91.0   Max.   :23.00   Max.   :40.00  </code></pre>
+<p>As you can see, we get the min and max, 1st and 3rd quartiles, median and mean. For categorical variables you get a table of counts. Alternatively, you may ask for a summary of a specific variable. Or use the functions <code>mean()</code> and <code>var()</code> for the mean and variance of a variable, or <code>cor()</code> for the correlation between two variables, as shown below:</p>
+<pre class="r"><code>&gt; mean(fpe$effort)</code></pre>
+<pre><code>[1] 9.55</code></pre>
+<pre class="r"><code>&gt; cor(fpe$effort, fpe$change)</code></pre>
+<pre><code>[1] 0.8008299</code></pre>
+<p>Elements of data frames can be addressed using the subscript notation introduced in Section 2.3 for vectors and matrices. For example to list the countries that had a family planning effort score of zero we can use</p>
+<pre class="r"><code>&gt; fpe[fpe$effort == 0, ]</code></pre>
+<pre><code>          setting effort change
+Bolivia        46      0      1
+Brazil         74      0     10
+Nicaragua      68      0      7
+Peru           73      0      2</code></pre>
+<p>This works because the expression <code>fpe$effort == 0</code> selects the rows (countries) where the effort score is zero, while leaving the column subscript blank selects all columns (variables).</p>
+<p>The fact that the rows are named allows yet another way to select elements: by name. Here’s how to print the data for Chile:</p>
+<pre class="r"><code>&gt; fpe[&quot;Chile&quot;, ]</code></pre>
+<pre><code>      setting effort change
+Chile      89     16     29</code></pre>
+<p><em>Exercise</em>: Can you list the countries where social setting is high (say above 80) but effort is low (say below 10)? Hint: recall the element-by-element logical operator <code>&amp;</code>.</p>
+</div>
+<div id="plotting-data" class="section level2">
+<h2>3.5 Plotting Data</h2>
+<p><img src="boxplot.png" style="float:right; padding:0 0 2rem 2rem" /></p>
+
+<p>Probably the best way to examine the data is by using graphs. Here’s a boxplot of setting. Inspired by a demo included in the R distribution, I used custom colors for the box (“lavender”, specified using a name R recognizes) and the title (<code>#3366CC</code>).</p>
+<p>As noted earlier, R can save a plot as a png or jpeg file, so that it can be included directly on a web page. Other formats available are postscript for printing and windows metafile for embedding in other applications. Note also that you can cut and paste a graph to insert it in another document.</p>
+<pre class="r"><code>&gt; boxplot(fpe$setting, col=&quot;lavender&quot;)
+&gt; title(&quot;Boxplot of Setting&quot;, col.main=&quot;#3366CC&quot;)</code></pre>
+<p>Here’s a scatterplot of change by effort, so you can see what a correlation of 0.80 looks like:</p>
+<pre class="r"><code>&gt; plot(fpe$effort, fpe$change, pch=21, bg=&quot;gold&quot;)
+&gt; title(&quot;Scatterplot of Change by Effort&quot;, col.main=&quot;#3366CC&quot;)</code></pre>
+<center><img src="scatterplot.png" style=" margin:auto" /></center>
+
+<p>I used two optional arguments that work well together: <code>pch=21</code> selects a special plotting symbol, in this case a circle, that can be colored and filled; and <code>bf=&quot;gold&quot; selects the fill color for the symbol. I left the perimeter  black, but you can change this color with the</code>col` argument.</p>
+<p>To identify points in a scatterplot use the <code>identify()</code> function. Try the following on the graph window:</p>
+<pre class="r"><code>&gt; identify(fpe$effort, fpe$change, row.names(fpe), ps = 9)</code></pre>
+<p>The first three parameters to this function are the x and y coordinates of the points and the character strings to be used in labeling them. The <code>ps</code> optional argument specifies the size of the text in points; here I picked 9-point labels.</p>
+<p>Now click within a quarter of an inch of the points you want to identify. R Studio will note that “locator is active”. When you are done clicking press the <code>Esc</code> key. The labels will then appear next to the points you clicked on. (If you are using the R GUI, the labels will appear as you click on the points.)</p>
+<p>Which country had the most effort but only moderate change? Which one had the most change?</p>
+<p>Another interesting plot to try is <code>pairs()</code>, which draws a scatterplot matrix. In our example try</p>
+<pre class="r"><code>pairs(fpe)
+title(&quot;Scatterplots for Setting, Effort and Change&quot;, col.main=&quot;#3366cc&quot;)</code></pre>
+<img src="pairs.png" style="margin:auto" />
+
+<p>The result is a 3 by 3 matrix of scatterplots, with the variable names down the diagonal and plots of each variable against every other one.</p>
+<p>Before you quit this session consider saving the <code>fpe</code> data frame. To do this use the <code>save()</code> function</p>
+<pre class="r"><code>&gt; save(fpe, file=&quot;fpe.Rdata&quot;)
+&gt; load(&quot;fpe.Rdata&quot;)</code></pre>
+<p>The first argument specifies the object to be saved, and the <code>file</code> argument provides the name of a file, which will be in the working directory unless a full path is given. (Remember to double-up your backslashes in Windows, or use forward slashes instead.)</p>
+<p>By default R saves objects using a compact binary format which is portable across all R platforms. There is an optional argument <code>ascii</code> that can be set to <code>TRUE</code> to save the object as ASCII text. This option was handy to transfer R objects across platforms, but is no longer needed.</p>
+<p>You can also save an image of your entire workspace, including all objects you have defined, and then load everything again, using</p>
+<pre class="r"><code>&gt; save.image(file = &quot;workspace.Rdata&quot;)
+&gt; load(&quot;workspace.Rdata&quot;)</code></pre>
+<p>In R Studio you can also do this using the Environment tab on the top right; click on the floppy disk image to save the workspace, or on the folder with an arrow to load a workspace. (In the R Gui you can use the main menu; choose <code>File|Save</code> and <code>File|Load</code>.)</p>
+<p>When you quit R using <code>q()</code> you will be prompted to save the workspace, unless you skip this safeguard by typing <code>q(&quot;no&quot;)</code>.</p>
+<p><em>Exercise</em>: Use R to create a scatterplot of change by setting, cut and paste the graph into a document in your favorite word processor, and try resizing and printing it. I recommend that you use the windows metafile format for the cut and paste operation.</p>
+</div>
+</div>
+
+<p class="pull-right">Continue with <a href="linearmodels" class="btn btn-default">Linear Models</a></p>

@@ -1,0 +1,300 @@
+---
+layout: default
+section: R
+tab: "GLMs"
+---
+
+<style>
+pre {background-color:white;} 
+pre.r {background-color:#f6f6f6;}
+</style>
+
+<div id="generalized-linear-models" class="section level1">
+<h1>5 Generalized Linear Models</h1>
+<p>Generalized linear models are just as easy to fit in R as ordinary linear model. In fact, they require only an additional parameter to specify the variance and link functions.</p>
+<div id="variance-and-link-families" class="section level2">
+<h2>5.1 Variance and Link Families</h2>
+<p>The basic tool for fitting generalized linear models is the <code>glm()</code> function, which has the folllowing general structure:</p>
+<pre class="r"><code>&gt; glm(formula, family, data, weights, subset, ...)</code></pre>
+<p>where <code>...</code> stands for more esoteric options. The only parameter that we have not encountered before is <code>family</code>, which is a simple way of specifying a choice of variance and link functions. There are six choices of family:</p>
+<table class="table table-condensed">
+<thead>
+<tr class="header">
+<th align="left">Family</th>
+<th align="left">Variance</th>
+<th align="left">Link</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">gaussian</td>
+<td align="left">gaussian</td>
+<td align="left">identity</td>
+</tr>
+<tr class="even">
+<td align="left">binomial</td>
+<td align="left">binomial</td>
+<td align="left">logit, probit or cloglog</td>
+</tr>
+<tr class="odd">
+<td align="left">poisson</td>
+<td align="left">poisson</td>
+<td align="left">log, identity or sqrt</td>
+</tr>
+<tr class="even">
+<td align="left">gamma</td>
+<td align="left">gamma</td>
+<td align="left">inverse, identity or log</td>
+</tr>
+<tr class="odd">
+<td align="left">inverse.gaussian</td>
+<td align="left">inverse.gaussian</td>
+<td align="left"><span class="math inline">\(1/\mu^2\)</span></td>
+</tr>
+<tr class="even">
+<td align="left">quasi</td>
+<td align="left">user-defined</td>
+<td align="left">user-defined</td>
+</tr>
+</tbody>
+</table>
+<p>As can be seen, each of the first five choices has an associated variance function (for binomial, the binomial variance <span class="math inline">\(\mu(1 - \mu)\)</span>, and one or more choices of link functions (for binomial, the logit, probit or complementary log-log links).</p>
+<p>As long as you want the default link, all you have to specify is the family name. If you want an alternative link, you must add a link argument. For example to do probits you use</p>
+<pre class="r"><code>&gt; glm( formula, family = binomial(link = probit))</code></pre>
+<p>The last family on the list, <code>quasi</code>, is there to allow fitting user-defined models by maximum quasi-likelihood.</p>
+</div>
+<div id="logistic-regression" class="section level2">
+<h2>5.2 Logistic Regression</h2>
+<p>We will illustrate fitting logistic regression models using the contraceptive use data excerpted below (and shown in full further below):</p>
+<pre><code>  age education wantsMore notUsing using 
+  &lt;25       low       yes       53     6
+  &lt;25       low        no       10     4
+  ... lines omitted ...
+40-49      high        no       12    31</code></pre>
+<p>The data are available from the datasets section of the website for my generalized linear models course. 
+    Visit <a href="/glms/datasets" class="uri">/glms/datasets</a> to read a short description and follow the link to <code>cuse.dat</code>.</p>
+<p>Of course the data can be downloaded directly from within R:</p>
+<pre class="r"><code>&gt; cuse = read.table(&quot;https://grodri.github.io/datasets/cuse.dat&quot;, header 
++ = TRUE)
+&gt; cuse</code></pre>
+<pre><code>     age education wantsMore notUsing using
+1    &lt;25       low       yes       53     6
+2    &lt;25       low        no       10     4
+3    &lt;25      high       yes      212    52
+4    &lt;25      high        no       50    10
+5  25-29       low       yes       60    14
+6  25-29       low        no       19    10
+7  25-29      high       yes      155    54
+8  25-29      high        no       65    27
+9  30-39       low       yes      112    33
+10 30-39       low        no       77    80
+11 30-39      high       yes      118    46
+12 30-39      high        no       68    78
+13 40-49       low       yes       35     6
+14 40-49       low        no       46    48
+15 40-49      high       yes        8     8
+16 40-49      high        no       12    31</code></pre>
+<p>I specified the <code>header</code> parameter as <code>TRUE</code>, because otherwise it would not have been obvious that the first line in the file has the variable names. There are no row names specified, so the rows will be numbered from 1 to 16. I also printed the data to make sure we got it alright.</p>
+<p>Let us try a simple additive model where contraceptive use depends on age, education and whether or not the woman wants more children:</p>
+<pre class="r"><code>&gt; lrfit = glm( cbind(using, notUsing) ~ age + education + wantsMore, 
++   data = cuse, family = binomial)</code></pre>
+<p>There are a few things to explain here. First, the function is <code>glm()</code> and I have assigned its value to an object called <code>lrfit</code> (for logistic regression fit). The first argument of the function is a model formula, which defines the response and linear predictor.</p>
+<p>With binomial data the response can be either a vector or a matrix with two columns.</p>
+<ul>
+<li><p>If the response is a <em>vector</em>, it can be numeric with 0 for failure and 1 for success, or a factor with the first level representing “failure” and all others representing “success”. In these cases R generates a vector of ones to represent the binomial denominators.</p></li>
+<li><p>Alternatively, the response can be a <em>matrix</em> where the first column is the number of “successes” and the second column is the number of “failures”. In this case R adds the two columns together to produce the correct binomial denominator.</p></li>
+</ul>
+<p>Because the latter approach is clearly the right one for us, I used the function <code>cbind()</code> to create a matrix by binding the column vectors containing the numbers using and not using contraception.</p>
+<p>Following the special symbol <code>~</code> that separates the response from the predictors, we have a standard Wilkinson-Rogers model formula. In this case we are specifying main effects of <code>age</code>, <code>education</code> and <code>wantsMore</code>. Because all three predictors are categorical variables, they are treated automatically as factors, as you can see by inspecting the results:</p>
+<pre class="r"><code>&gt; lrfit</code></pre>
+<pre><code>
+Call:  glm(formula = cbind(using, notUsing) ~ age + education + wantsMore, 
+    family = binomial, data = cuse)
+
+Coefficients:
+ (Intercept)      age25-29      age30-39      age40-49  educationlow  
+     -0.8082        0.3894        0.9086        1.1892       -0.3250  
+wantsMoreyes  
+     -0.8330  
+
+Degrees of Freedom: 15 Total (i.e. Null);  10 Residual
+Null Deviance:      165.8 
+Residual Deviance: 29.92    AIC: 113.4</code></pre>
+<p>Recall that R sorts the levels of a factor in alphabetical order. Because <code>&lt;25</code> comes before <code>25-29</code>, <code>30-39</code>, and <code>40-49</code>, it has been picked as the reference cell for <code>age</code>. Similarly, <code>high</code> is the reference cell for <code>education</code> because high comes alphabetically before <code>low</code>! Finally, R picked <code>no</code> as the base for <code>wantsMore</code>.</p>
+<p>If you are unhappy about these choices you can (1) use <code>relevel()</code> to change the base category, or (2) define your own indicator variables. I will use the second approach, defining indicators for women with high education and women who want no more children, both added to the <code>cuse</code> data frame:</p>
+<pre class="r"><code>&gt; cuse$noMore = cuse$wantsMore == &quot;no&quot;
+&gt; cuse$hiEduc = cuse$education == &quot;high&quot;</code></pre>
+<p>Now try the model with these predictors</p>
+<pre class="r"><code>&gt; glm(cbind(using, notUsing) ~ age + hiEduc + noMore, 
++   data = cuse, family = binomial)</code></pre>
+<pre><code>
+Call:  glm(formula = cbind(using, notUsing) ~ age + hiEduc + noMore, 
+    family = binomial, data = cuse)
+
+Coefficients:
+(Intercept)     age25-29     age30-39     age40-49   hiEducTRUE   noMoreTRUE  
+    -1.9662       0.3894       0.9086       1.1892       0.3250       0.8330  
+
+Degrees of Freedom: 15 Total (i.e. Null);  10 Residual
+Null Deviance:      165.8 
+Residual Deviance: 29.92    AIC: 113.4</code></pre>
+<p>The residual deviance of 29.92 on 10 d.f. is highly significant:</p>
+<pre class="r"><code>&gt; pchisq(29.92, 10, lower.tail = FALSE)</code></pre>
+<pre><code>[1] 0.0008828339</code></pre>
+<p>To obtain a p-value I specified <code>lower.tail</code> as <code>FALSE</code>. This is more accurate than computing the default lower tail and subtracting from one.</p>
+<p>So, we need a better model. One of my favorites for this dataset introduces an interaction between age and wanting no more children, which is easily specified</p>
+<pre class="r"><code>&gt; lrfit2 = glm( cbind(using, notUsing) ~ age * noMore + hiEduc , data = cuse, 
++ family = binomial)
+&gt; lrfit2</code></pre>
+<pre><code>
+Call:  glm(formula = cbind(using, notUsing) ~ age * noMore + hiEduc, 
+    family = binomial, data = cuse)
+
+Coefficients:
+        (Intercept)             age25-29             age30-39  
+           -1.80317              0.39460              0.54666  
+           age40-49           noMoreTRUE           hiEducTRUE  
+            0.57952              0.06622              0.34065  
+age25-29:noMoreTRUE  age30-39:noMoreTRUE  age40-49:noMoreTRUE  
+            0.25918              1.11266              1.36167  
+
+Degrees of Freedom: 15 Total (i.e. Null);  7 Residual
+Null Deviance:      165.8 
+Residual Deviance: 12.63    AIC: 102.1</code></pre>
+<p>Note how R built the interaction terms automatically, and even came up with sensible labels for them. The model’s deviance of 12.63 on 7 d.f. is not significant at the conventional five per cent level, so we have no evidence against this model.</p>
+<p>To obtain more detailed information about this fit try the <code>summary()</code> function:</p>
+<pre class="r"><code>&gt; summary(lrfit2)</code></pre>
+<pre><code>
+Call:
+glm(formula = cbind(using, notUsing) ~ age * noMore + hiEduc, 
+    family = binomial, data = cuse)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-1.30027  -0.66163  -0.03286   0.81945   1.73851  
+
+Coefficients:
+                    Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)         -1.80317    0.18018 -10.008  &lt; 2e-16 ***
+age25-29             0.39460    0.20145   1.959  0.05013 .  
+age30-39             0.54666    0.19842   2.755  0.00587 ** 
+age40-49             0.57952    0.34742   1.668  0.09530 .  
+noMoreTRUE           0.06622    0.33071   0.200  0.84130    
+hiEducTRUE           0.34065    0.12577   2.709  0.00676 ** 
+age25-29:noMoreTRUE  0.25918    0.40975   0.633  0.52704    
+age30-39:noMoreTRUE  1.11266    0.37404   2.975  0.00293 ** 
+age40-49:noMoreTRUE  1.36167    0.48433   2.811  0.00493 ** 
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 165.77  on 15  degrees of freedom
+Residual deviance:  12.63  on  7  degrees of freedom
+AIC: 102.14
+
+Number of Fisher Scoring iterations: 4</code></pre>
+<p>R follows the popular custom of flagging significant coefficients with one, two or three stars depending on their p-values. Try <code>plot(lrfit2)</code>. You get the same plots as in a linear model, but adapted to a generalized linear model; for example the residuals plotted are deviance residuals (the square root of the contribution of an observation to the deviance, with the same sign as the raw residual).</p>
+<p>The functions that can be used to extract results from the fit include</p>
+<ul>
+<li><code>residuals()</code> or <code>resid()</code>, for the deviance residuals</li>
+<li><code>fitted()</code> or <code>fitted.values()</code>, for the fitted values (estimated probabilities)</li>
+<li><code>predict()</code>, for the linear predictor (estimated logits)</li>
+<li><code>coef()</code> or <code>coefficients()</code>, for the coefficients, and</li>
+<li><code>deviance()</code>, for the deviance.</li>
+</ul>
+<p>Some of these functions have optional arguments; for example, you can extract five different types of residuals, called “deviance”, “pearson”, “response” (defined as response - fitted value), “working” (the working dependent variable in the IRLS algorithm - linear predictor), and “partial” (a matrix of working residuals formed by omitting each term in the model). You specify the one you want using the <code>type</code> argument, for example <code>residuals(lrfit2, type =  &quot;pearson&quot;)</code>.</p>
+</div>
+<div id="model-updating" class="section level2">
+<h2>5.3 Model Updating</h2>
+<p>If you want to modify a model you may consider using the special function <code>update()</code>. For example to drop the <code>age:noMore</code> interaction in our model, one could use</p>
+<pre class="r"><code>&gt; lrfit1 = update(lrfit2, ~ . - age:noMore)</code></pre>
+<p>The first argument is the result of a fit, and the second an updating formula. The tilde <code>~</code> separates the response from the predictors, and the dot <code>.</code> refers to the right-hand side of the original formula, so here we simply remove <code>age:noMore</code>. Alternatively, one can give a new formula as the second argument.</p>
+<p>The update function may also be used to fit the same model to different datasets, using the argument <code>data</code> to specify a new data frame. Another useful argument is <code>subset</code>, to fit the model to a different subsample. This function works with linear models as well as generalized linear models.</p>
+<p>If you plan to fit a sequence of models you will find the anova function useful. Given a series of nested models, it will calculate the change in deviance between them. Try</p>
+<pre class="r"><code>&gt; anova(lrfit1, lrfit2)</code></pre>
+<pre><code>Analysis of Deviance Table
+
+Model 1: cbind(using, notUsing) ~ age + noMore + hiEduc
+Model 2: cbind(using, notUsing) ~ age * noMore + hiEduc
+  Resid. Df Resid. Dev Df Deviance
+1        10     29.917            
+2         7     12.630  3   17.288</code></pre>
+<p>Adding the interaction has reduced the deviance by 17.288 at the expense of 3 d.f.</p>
+<p>If the argument to <code>anova()</code> is a single model, the function will show the change in deviance obtained by adding each of the terms in the order listed in the model formula, just as it did for linear models. Because this requires fitting as many models as there are terms in the formula, the function may take a while to complete its calculations.</p>
+<p>The <code>anova()</code> function lets you specify an optional test. The usual choices will be “F” for linear models and “Chisq” for generalized linear models. Adding the parameter <code>test = &quot;Chisq&quot;</code> adds p-values next to the deviances. In our case</p>
+<pre class="r"><code>&gt; anova(lrfit2, test = &quot;Chisq&quot;)</code></pre>
+<pre><code>Analysis of Deviance Table
+
+Model: binomial, link: logit
+
+Response: cbind(using, notUsing)
+
+Terms added sequentially (first to last)
+
+           Df Deviance Resid. Df Resid. Dev  Pr(&gt;Chi)    
+NULL                          15    165.772              
+age         3   79.192        12     86.581 &lt; 2.2e-16 ***
+noMore      1   49.693        11     36.888 1.798e-12 ***
+hiEduc      1    6.971        10     29.917 0.0082860 ** 
+age:noMore  3   17.288         7     12.630 0.0006167 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>We can see that all terms were highly significant when they were introduced into the model.</p>
+</div>
+<div id="model-selection" class="section level2">
+<h2>5.4 Model Selection</h2>
+<p>A very powerful tool in R is a function for stepwise regression that has three remarkable features:</p>
+<ul>
+<li><p>It works with generalized linear models, so it will do stepwise logistic regression, or stepwise Poisson regression,</p></li>
+<li><p>It understand hierarchical models, so it will only consider adding interactions after including the corresponding main effects in the models, and</p></li>
+<li><p>It understands terms involving more than one degree of freedom, so it it will keep together dummy variables representing the effects of a factor.</p></li>
+</ul>
+<p>The basic idea of the procedure is to start from a given model (which could well be the null model) and take a series of steps, by either deleting a term already in the model, or adding a term from a list of candidates for inclusion, called the scope of the search and defined, of course, by a model formula.</p>
+<p>Selection of terms for deletion or inclusion is based on Akaike’s information criterion (AIC). R defines AIC as</p>
+<p>AIC = –2 maximized log-likelihood + 2 number of parameters</p>
+<p>The procedure stops when the AIC criterion cannot be improved.</p>
+<p>In R all of this work is done by calling a couple of functions, <code>add1()</code> and <code>drop1()~, that consider adding or dropping one term from a model. These  functions can be very useful in model selection, and both of them accept a</code>test<code>argument just like</code>anova()`.</p>
+<p>Consider first <code>drop1()</code>. For our logistic regression model,</p>
+<pre class="r"><code>&gt; drop1(lrfit2, test = &quot;Chisq&quot;)</code></pre>
+<pre><code>Single term deletions
+
+Model:
+cbind(using, notUsing) ~ age * noMore + hiEduc
+           Df Deviance    AIC     LRT  Pr(&gt;Chi)    
+&lt;none&gt;          12.630 102.14                      
+hiEduc      1   20.099 107.61  7.4695 0.0062755 ** 
+age:noMore  3   29.917 113.42 17.2877 0.0006167 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>Obviously we can’t drop any of these terms. Note that R considered dropping the main effect of education, and the age by want no more interaction, but did not examine the main effects of age or want no more, because one would not drop these main effects while retaining the interaction.</p>
+<p>The sister function <code>add1()</code> requires a scope to define the additional terms to be considered. In our example we will consider all possible two-factor interactions:</p>
+<pre class="r"><code>&gt; add1(lrfit2, ~ .^2, test = &quot;Chisq&quot;)</code></pre>
+<pre><code>Single term additions
+
+Model:
+cbind(using, notUsing) ~ age * noMore + hiEduc
+              Df Deviance    AIC    LRT Pr(&gt;Chi)  
+&lt;none&gt;            12.6296 102.14                  
+age:hiEduc     3   5.7983 101.31 6.8313  0.07747 .
+noMore:hiEduc  1  10.8240 102.33 1.8055  0.17905  
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>We see that neither of the missing two-factor interactions is significant by itself at the conventional five percent level. (However, they happen to be jointly significant.) Note that the model with the age by education interaction has a lower AIC than our starting model.</p>
+<p>The <code>step()</code> function will do an automatic search. Here we let it start from the additive model and search in a scope defined by all two-factor interactions.</p>
+<pre class="r"><code>&gt; search = step(lrfit1, ~.^2)</code></pre>
+<p>The <code>step()</code> function produces detailed trace output that I have supressed. The returned object, however, includes an <code>anova</code> component that summarizes the search:</p>
+<pre class="r"><code>&gt; search$anova</code></pre>
+<pre><code>             Step Df  Deviance Resid. Df Resid. Dev      AIC
+1                 NA        NA        10  29.917222 113.4251
+2    + age:noMore -3 17.287669         7  12.629553 102.1375
+3    + age:hiEduc -3  6.831288         4   5.798265 101.3062
+4 + noMore:hiEduc -1  3.356777         3   2.441488  99.9494</code></pre>
+<p>As you can see, the automated procedure introduced, one by one, all three remaining two-factor interactions, to yield a final AIC of 99.9. This is an example where AIC, by requiring a deviance improvement of only 2 per parameter, may have led to overfitting the data.</p>
+<p>Some analysts prefer a higher penalty per parameter. In particular, using <code>log(n)</code> instead of 2 as a multiplier yields BIC, the Bayesian Information Criterion. In our example <code>log(1607) = 7.38</code>, so we would require a deviance reduction of 7.38 per additional parameter. The <code>step()</code> function accepts <code>k</code> as an argument, with default 2. You may verify that specifying <code>k = log(1607)</code> leads to a much simpler model; not only are no new interactions introduced, but the main effect of education is dropped (even though it is significant).</p>
+<p>In this example AIC would lead to a model that may be too complex, and BIC would lead to a model that may be too simple. In my opinion, the model with only one interaction is just right.</p>
+</div>
+</div>
+
+<p class="pull-right">Continue with <a href="conclusion" class="btn btn-default">Next Steps and References</a></p>
+ <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" type="text/javascript"></script>
