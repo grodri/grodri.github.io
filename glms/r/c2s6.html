@@ -1,0 +1,187 @@
+---
+layout: default
+section: glms
+tab: "R Logs"
+pager: true
+---
+
+
+<h3>2.6 One-Way Analysis of Variance</h3>
+<p>
+Let us group social setting into three categories: &lt 70, 70-79 and 80+.
+</p>
+<p>
+The easiest way to do this is using the function <code>cut()</code>, which takes 
+as arguments the original variable and a set of cutpoints or "breaks", here the
+minimum (23), 70, 80, and the maximum (91).
+By default the cutpoint itself is included in the lower category so the intervals
+are closed on the right, as in (70,80], but we want the opposite, as in [70,80),
+so we specify <code>right=FALSE</code>. To make sure we include the highest 
+cutpoint in the last category we specify <code>include.lowest=TRUE</code>. 
+(I know, this option can be confusing; by default it will include the lowest cutpoint in 
+the first category as the name suggests, but having specified that <code>right</code> 
+is false it will actually include the highest cutpoint in the last category.)
+</p>
+<p>
+R generates labels for the categories, and you should probably accept them at
+first to ensure that the grouping was done as intended, but I'll call the
+categories "low", medium", and "high", for consistency with the notes.
+We could add this variable to the data frame, but I will not bother for now.
+</p>
+<pre class='r'>
+> setting.g <- cut(setting, 
++   breaks=c(min(setting),70,80,max(setting)),
++   right=FALSE,include.lowest=TRUE, 
++   labels=c("Low","Medium","High"))
+</pre>
+<p>
+To verify the grouping we need to split the data by categories of social
+setting and compute the range of setting in each group. In R this can
+be done in many ways. I'll use <code>tapply()</code> to compute the minimum
+and maximum for each category and then bind the results into a data frame.
+(For a general discussion of the split-apply-combine approach to data
+processing in R you may want to learn about the <code>plyr</code> package,
+or its succesor <code>dplyr</code>.)
+</p>
+<pre class='r'>
+> data.frame(min = tapply(setting, setting.g, min),
++            max = tapply(setting, setting.g, max))
+       min max
+Low     35  68
+Medium  70  77
+High    83  91
+</pre>
+<p>
+We see that the ranges included in each category are 35-68, 70-77 and 83-91, 
+so obviously  the cut was correct. We can use the same approach to compute 
+the average fertility decline in each category of social setting:
+</p>
+<pre class='r'>
+> tapply(change, setting.g, mean)
+      Low    Medium      High 
+ 7.571429  8.600000 23.750000 
+</pre>
+<p>
+We observe substantially more fertility decline in countries with high 
+setting, but only a small difference between the low and medium categories.
+</p>
+<h4>A One-Factor Model</h4>
+<p>
+To fit a linear model treating social setting as a factor we simply use
+the  categorical variable in the model formula:
+</p>
+<pre class='r'>
+> m1g <- lm(change ~ setting.g)
+> summary(m1g)
+Call:
+lm(formula = change ~ setting.g)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-14.750  -6.579  -1.161   5.250  16.400 
+
+Coefficients:
+                Estimate Std. Error t value Pr(>|t|)   
+(Intercept)        7.571      3.498   2.164  0.04497 * 
+setting.gMedium    1.029      5.420   0.190  0.85173   
+setting.gHigh     16.179      4.790   3.377  0.00358 **
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 9.256 on 17 degrees of freedom
+Multiple R-squared:  0.4505,	Adjusted R-squared:  0.3858 
+F-statistic: 6.967 on 2 and 17 DF,  p-value: 0.006167
+</pre>
+<p>
+R will automatically create dummy variables for each category other than
+the first. You can verify that the constant is the average decline in
+low setting countries, and the coefficients for medium and high are the
+differences between medium and low and between high and low; in other
+words, differences with respect to the omitted category. 
+</p>
+<h4>Dummy Variables</h4>
+<p>
+We could, of course, compute the dummy variables "by hand", with the
+same results. Below I use <code>as.numeric</code> to coerce a logical
+expression to take the values 1 and 0, otherwise the coefficients
+would have names like <code>settingMediumTRUE</code>.
+</p>
+<pre class='r'>
+> settingMedium <- as.numeric(setting.g == "Medium")
+> settingHigh   <- as.numeric(setting.g == "High")
+> lm(change ~ settingMedium + settingHigh)
+Call:
+lm(formula = change ~ settingMedium + settingHigh)
+
+Coefficients:
+  (Intercept)  settingMedium    settingHigh  
+        7.571          1.029         16.179  
+</pre>
+<p>
+Using the factor notation is not only simpler but tells R that the
+terms belong together.
+</p>
+<h4>The F-Test</h4>
+<p>
+The t-statistics produced by <code>summary</code> compare each 
+category to the reference cell. To obtain an overall test of 
+the significance of social setting we need to compare the 
+models with and without setting. This can be done using 
+the <code>anova()</code> function:
+</p>
+<pre class='r'>
+> anova(m1g)
+Analysis of Variance Table
+
+Response: change
+          Df Sum Sq Mean Sq F value   Pr(>F)   
+setting.g  2 1193.8  596.89  6.9672 0.006167 **
+Residuals 17 1456.4   85.67                    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+</pre>
+<p>
+The F-test of 6.97 on 2 and 17 d.f. tells us that the
+differences between the social setting categories are 
+much larger than one would expect by chance if all
+experienced the same decline in fertility.
+</p>
+<p>
+It may be instructive to calculate the text "by hand"
+using the residual sum of squares for the null model and
+the model treating setting as a factor:
+</p>
+<pre class='r'>
+> ((rss(m0)-rss(m1g))/2)/(rss(m1g)/df.residual(m1g))
+[1] 6.967234
+</pre>
+<p>
+We obtain the same 6.97 on 2 and 17 d.f.
+</p>
+<p>
+We can also compute the test from the coefficients as
+their variance-covariance matrix, as shown on page 32
+of the notes. We do this using <code>coef</code> to
+extract the coefficients and <code>vcov</code> for
+their variance-covariance matrix, using -1 to exclude
+the constant:
+</p>
+<pre class='r'>
+> b = coef(m1g)[-1]
+> V = vcov(m1g)[-1,-1]
+> W = t(b) %*% solve(V) %*% b
+> c(W, W/2)
+[1] 13.934467  6.967234
+</pre>
+<p>
+We obtain a Wald statistic of 13.94 on 2 d.f. in agreement 
+with the  notes. Dividing by 2 we obtain, once again, an F
+statistic of 6.92 on 2 and 17 d.f.  Recall that the
+Wald statistic is asymptotically chi-squared, whereas
+under normality the F statistic has an F distribution.
+</p>
+<p>
+<i>Exercise:</i>  Obtain the parameter estimates and anova table 
+for the model with family planning effort grouped into three 
+categories: 0-4, 5-14 and 15+, labelled weak, moderate and strong.
+</p>

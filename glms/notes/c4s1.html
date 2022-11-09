@@ -1,0 +1,238 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h2>4. Poisson Models for Count Data</h2>
+<p>In this chapter we study log-linear models for count data under the assumption of a Poisson error
+structure. These models have many applications, not only to the analysis of counts of events, but
+also in the context of models for contingency tables and the analysis of survival data.</p>
+
+<h3>4.1 Introduction to Poisson Regression</h3>
+<p>As usual, we start by introducing an example that 
+will serve to illustrative regression models for count data.
+We then introduce the Poisson distribution and
+discuss the rationale for modeling the logarithm
+of the mean as a linear function of observed covariates.
+The result is a generalized linear model with 
+Poisson response and link log.</p>
+
+<h4>4.1.1 The Children Ever Born Data</h4>
+<p>Table <a href='#t_4_1'>4.1</a>, adapted from Little&nbsp;(1978), comes
+from the Fiji Fertility Survey and is typical of the sort
+of table published in the reports of the World Fertility
+Survey. The table shows data on the number of children
+ever born to married women of the Indian race classified by
+duration since their first marriage (grouped in six categories),
+type of place of residence (Suva, other urban and rural),
+and educational level (classified in four categories: none,
+lower primary, upper primary, and secondary or higher).
+Each cell in the table shows the mean, the variance and
+the number of observations.</p>
+
+<a name='t_4_1'></a><p class='text-center'>Table 4.1. Number of Children Ever Born to Women of Indian Race<br/>By Marital Duration, Type of Place of Residence and Educational Level</p>
+<table class='tex-table'>
+<tr class='bt'><td class='ar'>Marr.</td><td colspan='4' align='center'>Suva</td><td colspan='4' align='center'>Urban</td><td colspan='4' align='center'>Rural</td></tr>
+<tr class='bb'><td class='ar'>Dur.</td><td class='ar'>N</td><td class='ar'>LP</td><td class='ar'>UP</td><td class='ar'>S\(+\)</td><td class='ar'>N</td><td class='ar'>LP</td><td class='ar'>UP</td><td class='ar'>S\(+\)</td><td class='ar'>N</td><td class='ar'>LP</td><td class='ar'>UP</td><td class='ar'>S\(+\)</td></tr>
+<tr class='bt'><td class='ar'>0&ndash;4</td><td class='ar'>0.50</td><td class='ar'>1.14</td><td class='ar'>0.90</td><td class='ar'>0.73</td><td class='ar'>1.17</td><td class='ar'>0.85</td><td class='ar'>1.05</td><td class='ar'>0.69</td><td class='ar'>0.97</td><td class='ar'>0.96</td><td class='ar'>0.97</td><td class='ar'>0.74</td></tr>
+<tr><td class='ar'></td><td class='ar'>1.14</td><td class='ar'>0.73</td><td class='ar'>0.67</td><td class='ar'>0.48</td><td class='ar'>1.06</td><td class='ar'>1.59</td><td class='ar'>0.73</td><td class='ar'>0.54</td><td class='ar'>0.88</td><td class='ar'>0.81</td><td class='ar'>0.80</td><td class='ar'>0.59</td></tr>
+<tr><td class='ar'></td><td class='ar'>8</td><td class='ar'>21</td><td class='ar'>42</td><td class='ar'>51</td><td class='ar'>12</td><td class='ar'>27</td><td class='ar'>39</td><td class='ar'>51</td><td class='ar'>62</td><td class='ar'>102</td><td class='ar'>107</td><td class='ar'>47</td></tr>
+<tr><td class='ar'>5&ndash;9</td><td class='ar'>3.10</td><td class='ar'>2.67</td><td class='ar'>2.04</td><td class='ar'>1.73</td><td class='ar'>4.54</td><td class='ar'>2.65</td><td class='ar'>2.68</td><td class='ar'>2.29</td><td class='ar'>2.44</td><td class='ar'>2.71</td><td class='ar'>2.47</td><td class='ar'>2.24</td></tr>
+<tr><td class='ar'></td><td class='ar'>1.66</td><td class='ar'>0.99</td><td class='ar'>1.87</td><td class='ar'>0.68</td><td class='ar'>3.44</td><td class='ar'>1.51</td><td class='ar'>0.97</td><td class='ar'>0.81</td><td class='ar'>1.93</td><td class='ar'>1.36</td><td class='ar'>1.30</td><td class='ar'>1.19</td></tr>
+<tr><td class='ar'></td><td class='ar'>10</td><td class='ar'>30</td><td class='ar'>24</td><td class='ar'>22</td><td class='ar'>13</td><td class='ar'>37</td><td class='ar'>44</td><td class='ar'>21</td><td class='ar'>70</td><td class='ar'>117</td><td class='ar'>81</td><td class='ar'>21</td></tr>
+<tr><td class='ar'>10&ndash;14</td><td class='ar'>4.08</td><td class='ar'>3.67</td><td class='ar'>2.90</td><td class='ar'>2.00</td><td class='ar'>4.17</td><td class='ar'>3.33</td><td class='ar'>3.62</td><td class='ar'>3.33</td><td class='ar'>4.14</td><td class='ar'>4.14</td><td class='ar'>3.94</td><td class='ar'>3.33</td></tr>
+<tr><td class='ar'></td><td class='ar'>1.72</td><td class='ar'>2.31</td><td class='ar'>1.57</td><td class='ar'>1.82</td><td class='ar'>2.97</td><td class='ar'>2.99</td><td class='ar'>1.96</td><td class='ar'>1.52</td><td class='ar'>3.52</td><td class='ar'>3.31</td><td class='ar'>3.28</td><td class='ar'>2.50</td></tr>
+<tr><td class='ar'></td><td class='ar'>12</td><td class='ar'>27</td><td class='ar'>20</td><td class='ar'>12</td><td class='ar'>18</td><td class='ar'>43</td><td class='ar'>29</td><td class='ar'>15</td><td class='ar'>88</td><td class='ar'>132</td><td class='ar'>50</td><td class='ar'>9</td></tr>
+<tr><td class='ar'>15&ndash;19</td><td class='ar'>4.21</td><td class='ar'>4.94</td><td class='ar'>3.15</td><td class='ar'>2.75</td><td class='ar'>4.70</td><td class='ar'>5.36</td><td class='ar'>4.60</td><td class='ar'>3.80</td><td class='ar'>5.06</td><td class='ar'>5.59</td><td class='ar'>4.50</td><td class='ar'>2.00</td></tr>
+<tr><td class='ar'></td><td class='ar'>2.03</td><td class='ar'>1.46</td><td class='ar'>0.81</td><td class='ar'>0.92</td><td class='ar'>7.40</td><td class='ar'>2.97</td><td class='ar'>3.83</td><td class='ar'>0.70</td><td class='ar'>4.91</td><td class='ar'>3.23</td><td class='ar'>3.29</td><td class='ar'>&ndash;</td></tr>
+<tr><td class='ar'></td><td class='ar'>14</td><td class='ar'>31</td><td class='ar'>13</td><td class='ar'>4</td><td class='ar'>23</td><td class='ar'>42</td><td class='ar'>20</td><td class='ar'>5</td><td class='ar'>114</td><td class='ar'>86</td><td class='ar'>30</td><td class='ar'>1</td></tr>
+<tr><td class='ar'>20&ndash;24</td><td class='ar'>5.62</td><td class='ar'>5.06</td><td class='ar'>3.92</td><td class='ar'>2.60</td><td class='ar'>5.36</td><td class='ar'>5.88</td><td class='ar'>5.00</td><td class='ar'>5.33</td><td class='ar'>6.46</td><td class='ar'>6.34</td><td class='ar'>5.74</td><td class='ar'>2.50</td></tr>
+<tr><td class='ar'></td><td class='ar'>4.15</td><td class='ar'>4.64</td><td class='ar'>4.08</td><td class='ar'>4.30</td><td class='ar'>7.19</td><td class='ar'>4.44</td><td class='ar'>4.33</td><td class='ar'>0.33</td><td class='ar'>8.20</td><td class='ar'>5.72</td><td class='ar'>5.20</td><td class='ar'>0.50</td></tr>
+<tr><td class='ar'></td><td class='ar'>21</td><td class='ar'>18</td><td class='ar'>12</td><td class='ar'>5</td><td class='ar'>22</td><td class='ar'>25</td><td class='ar'>13</td><td class='ar'>3</td><td class='ar'>117</td><td class='ar'>68</td><td class='ar'>23</td><td class='ar'>2</td></tr>
+<tr><td class='ar'>25&ndash;29</td><td class='ar'>6.60</td><td class='ar'>6.74</td><td class='ar'>5.38</td><td class='ar'>2.00</td><td class='ar'>6.52</td><td class='ar'>7.51</td><td class='ar'>7.54</td><td class='ar'>&ndash;</td><td class='ar'>7.48</td><td class='ar'>7.81</td><td class='ar'>5.80</td><td class='ar'>&ndash;</td></tr>
+<tr><td class='ar'></td><td class='ar'>12.40</td><td class='ar'>11.66</td><td class='ar'>4.27</td><td class='ar'>&ndash;</td><td class='ar'>11.45</td><td class='ar'>10.53</td><td class='ar'>12.60</td><td class='ar'>&ndash;</td><td class='ar'>11.34</td><td class='ar'>7.57</td><td class='ar'>7.07</td><td class='ar'>&ndash;</td></tr>
+<tr class='bb'><td class='ar'></td><td class='ar'>47</td><td class='ar'>27</td><td class='ar'>8</td><td class='ar'>1</td><td class='ar'>46</td><td class='ar'>45</td><td class='ar'>13</td><td class='ar'>&ndash;</td><td class='ar'>195</td><td class='ar'>59</td><td class='ar'>10</td><td class='ar'>&ndash;</td></tr>
+</table>
+
+<p>In our analysis of these data we will treat the number of children ever
+born to each woman as the response, and her marriage duration,
+type of place of residence and level of education as three discrete
+predictors or factors.</p>
+
+<h4>4.1.2 The Poisson Distribution</h4>
+<p>A random variable \( Y \) is said to have a Poisson
+distribution with parameter \( \mu \) if it takes integer values
+\( y=0,1,2,\ldots \) with probability</p>
+
+<a name='e_4_1'></a>\[\tag{4.1}\Pr\{Y=y\} = \frac{ e^{-\mu} \mu^y } { y! }\]
+<p>for \( \mu > 0 \).  
+The mean and variance of this distribution can be shown to be</p>
+
+\[ E(Y) = \mbox{var}(Y) = \mu. \]
+<p>Since the mean is equal to the variance, any factor that affects
+one will also affect the other. Thus, the usual
+assumption of homoscedasticity would not be appropriate for
+Poisson data.</p>
+
+<p>The classic text on probability theory by Feller&nbsp;(1957) includes
+a number of examples of observations fitting the Poisson
+distribution, including data on the number of flying-bomb hits in the
+south of London during World War II. The city was divided into
+576 small areas of one-quarter square kilometers each, and the
+number of areas hit exactly \( k \) times was counted. There were
+a total of 537 hits, so the average number of hits per area
+was 0.9323. The observed frequencies in Table <a href='#t_4_2'>4.2</a>
+are remarkably close to a Poisson distribution with mean \( \mu=0.9323 \).
+Other examples of events that fit this distribution are 
+radioactive disintegrations, chromosome interchanges in cells,
+the number of telephone connections to a wrong number, and the
+number of bacteria in different areas of a Petri plate.</p>
+
+<a name='t_4_2'></a><p class='text-center'>Table 4.2. Flying-bomb Hits on London During World War II</p>
+<table class='tex-table'>
+<tr class='bt bb'><td class='al'>Hits</td><td class='ar'>0</td><td class='ar'>1</td><td class='ar'>2</td><td class='ar'>3</td><td class='ar'>4</td><td class='ar'>\(5+\)</td></tr>
+<tr class='bt'><td class='al'>Observed</td><td class='ar'>229</td><td class='ar'>211</td><td class='ar'>93</td><td class='ar'>35</td><td class='ar'>7</td><td class='ar'>1</td></tr>
+<tr class='bb'><td class='al'>Expected</td><td class='ar'>226.7</td><td class='ar'>211.4</td><td class='ar'>98.6</td><td class='ar'>30.6</td><td class='ar'>7.1</td><td class='ar'>1.6</td></tr>
+</table>
+
+<p>The Poisson distribution can be derived as a limiting form of
+the binomial distribution if you consider the distribution of
+the number of successes in a very large number of Bernoulli trials 
+with a small probability of success in each trial.
+Specifically, if \( Y \sim B(n,\pi) \) then the distribution of \( Y \)
+as \( n \rightarrow \infty \) and \( \pi \rightarrow 0 \) with
+\( \mu = n \pi \) remaining fixed approaches
+a Poisson distribution with mean \( \mu \). Thus, the Poisson
+distribution provides an approximation to the binomial for
+the analysis of rare events, where \( \pi \) is small and \( n \) is large.</p>
+
+<p>In the flying-bomb example, we can think of each day as one of
+a large number of trials where each specific area has only a small
+probability of being hit. Assuming independence across days
+would lead to a binomial distribution 
+which is well approximated by the Poisson.</p>
+
+<p>An alternative derivation of the Poisson distribution is in
+terms of a stochastic process described somewhat informally as follows.  
+Suppose events occur randomly in time in such a way that the following
+conditions obtain:</p>
+
+<ul><li><p>
+The probability of at least one occurrence of the event
+in a given time interval is proportional to the length 
+of the interval.
+</p></li><li><p>
+The probability of two or more occurrences of the event
+in a very small time interval is negligible.
+</p></li><li><p> 
+The numbers of occurrences of the event in disjoint
+time intervals are mutually independent.
+</p></li></ul>
+<p>Then the probability distribution of the number of occurrences
+of the event in a fixed time interval is Poisson
+with mean \( \mu = \lambda t \), where \( \lambda \) is the rate of
+occurrence of the event per unit of time and \( t \) is the length of 
+the time interval.  
+A process satisfying the three assumptions listed
+above is called a Poisson process.</p>
+
+<p>In the flying bomb example these conditions are not unreasonable.
+The longer the war lasts, the greater the chance that a given
+area will be hit at least once. Also, the probability that the
+same area will be hit twice the same day is, fortunately, very small.
+Perhaps less obviously, whether an area is hit on any given day
+is independent of what happens in neighboring areas, contradicting
+a common belief that bomb hits tend to cluster.</p>
+
+<p>The most important motivation for the Poisson distribution
+from the point of view of statistical estimation, however,
+lies in the relationship between the mean and the variance.
+We will stress this point when we discuss our example,
+where the assumptions of a limiting binomial or a Poisson
+process are not particularly realistic, but the Poisson model captures
+very well the fact that, as is often the case with count data,
+the variance tends to increase with the mean.</p>
+
+<p>A useful property of the Poisson distribution is that the
+sum of independent Poisson random variables is also Poisson.
+Specifically, if \( Y_1 \) and \( Y_2 \) are independent with
+\( Y_i \sim P(\mu_i) \) for \( i=1,2 \) then</p>
+
+\[ Y_1 + Y_2 \sim P(\mu_1+\mu_2). \]
+<p>This result generalizes in an obvious way to the sum of
+more than two Poisson observations.</p>
+
+<p>An important practical consequence of this result is that
+we can analyze individual or grouped data with equivalent results.  
+Specifically, suppose we have a group of \( n_i \) individuals with 
+identical covariate values.  
+Let \( Y_{ij} \) denote the number of events
+experienced by the \( j \)-th unit in the \( i \)-th group,
+and let \( Y_i \) denote the total number of events in group \( i \). 
+Then, under the usual assumption of independence, if
+\( Y_{ij}\sim P(\mu_i) \) for \( j=1,2,\ldots,n_i \), then
+\( Y_i \sim P(n_i\mu_i) \). In words, if the individual
+counts \( Y_{ij} \) are Poisson with mean \( \mu_i \), the 
+group total \( Y_i \) is Poisson with mean \( n_i \mu_i \).
+In terms of estimation, we obtain exactly the same
+likelihood function if we work with the individual counts
+\( Y_{ij} \) or the group counts \( Y_i \).</p>
+
+<h4>4.1.3 Log-Linear Models</h4>
+<p>Suppose that we have a sample of \( n \) observations \( y_1, y_2, \ldots, y_n \)
+which can be treated as realizations of independent Poisson
+random variables, with \( Y_i \sim P(\mu_i) \), and suppose that
+we want to let the mean \( \mu_i \) (and therefore the variance!)
+depend on a vector of explanatory variables \( \boldsymbol{x}_i \).</p>
+
+<p>We could entertain a simple linear model of the form</p>
+
+\[ \mu_i = \boldsymbol{x}_i'\boldsymbol{\beta}, \]
+<p>but this model has the disadvantage that the linear predictor 
+on the right hand side can assume any real value, 
+whereas the Poisson mean on the left hand side, which 
+represents an expected count, has to be non-negative.</p>
+
+<p>A straightforward solution to this problem is to model instead
+the <i>logarithm</i> of the mean using a linear model. 
+Thus, we take logs calculating
+\( 
+\eta_i = \log(\mu_i)
+ \)
+and assume that the transformed mean follows a linear model
+\( 
+\eta_i = \boldsymbol{x}_i'\boldsymbol{\beta}.
+ \)
+Thus, we consider a generalized linear model with link log.
+Combining these two steps in one we can write the log-linear
+model as</p>
+
+<a name='e_4_2'></a>\[\tag{4.2}\log(\mu_i) = \boldsymbol{x}_i'\boldsymbol{\beta}.\]
+<p>In this model 
+the regression coefficient \( \beta_j \) represents
+the expected change in the <i>log</i> of the mean 
+per unit change in the predictor \( x_j \). 
+In other words increasing \( x_j \) by one unit is associated with
+an increase of \( \beta_j \) in the log of the mean.</p>
+
+<p>Exponentiating Equation <a href='#e_4_2'>4.2</a> 
+we obtain a multiplicative model for the mean itself:</p>
+
+\[ \mu_i = \exp\{ \boldsymbol{x}_i'\boldsymbol{\beta} \}. \]
+<p>In this model, an exponentiated regression coefficient \( \exp\{\beta_j\} \)
+represents a multiplicative effect of the \( j \)-th predictor on the mean.
+Increasing \( x_j \) by one unit multiplies the mean by a factor
+\( \exp\{\beta_j\} \).</p>
+
+<p>A further advantage of using the log link stems from the 
+empirical observation that with count data the effects 
+of predictors are often multiplicative rather than additive. 
+That is, one typically observes small effects for small counts,
+and large effects for large counts.  
+If the effect is in fact proportional to the count, working in the 
+log scale leads to a much simpler model.</p>
+

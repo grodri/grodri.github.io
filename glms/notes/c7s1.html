@@ -1,0 +1,206 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h2>7. Survival Models</h2>
+<p>Our final chapter concerns models for the analysis of data which have
+three main characteristics:
+(1) the dependent variable or response is the waiting <i>time</i>
+until the occurrence of a well-defined event,
+(2) observations are <i>censored</i>, in the sense that for some units
+the event of interest has not occurred at the time the data are analyzed, and
+(3) there are predictors or <i>explanatory</i> variables whose effect on the waiting
+time we wish to assess or control.
+We start with some basic definitions.</p>
+
+<h3>7.1 The Hazard and Survival Functions</h3>
+<p>Let \( T \) be a non-negative random variable representing the waiting time
+until the occurrence of an event.
+For simplicity we will adopt the terminology of survival analysis,
+referring to the event of interest as &lsquo;death&rsquo; and
+to the waiting time as &lsquo;survival&rsquo; time, but the techniques to be
+studied have much wider applicability.
+They can be used, for example, to study age at marriage,
+the duration of marriage,
+the intervals between successive births to a woman,
+the duration of stay in a city (or in a job),
+and the length of life.
+The observant demographer will have noticed that these examples include
+the fields of fertility, mortality and migration.</p>
+
+<h4>7.1.1 The Survival Function</h4>
+<p>We will assume for now that \( T \) is a continuous random variable
+with probability density function (p.d.f.)  \( f(t) \) and cumulative
+distribution function (c.d.f.) \(  F(t) = \Pr\{ T < t \} \), giving
+the probability that the event has occurred by duration \( t \).</p>
+
+<p>It will often be convenient to work with the complement of the c.d.f,
+the <i>survival</i> function</p>
+
+<a name='e_7_1'></a>\[\tag{7.1}S(t) = \Pr\{ T \ge t \} = 1 - F(t) =  \int_t^\infty f(x) dx,\]
+<p>which gives the probability of being alive just before duration
+\( t \), or more generally, the probability that the event of interest
+has not occurred by duration \( t \).</p>
+
+<h4>7.1.2 The Hazard Function</h4>
+<p>An alternative characterization of the distribution of \( T \) is given by the
+<i>hazard</i> function, or instantaneous rate of occurrence of the event,
+defined as</p>
+
+<a name='e_7_2'></a>\[\tag{7.2}\lambda(t) = \lim_{dt\rightarrow0} \frac{\Pr\{t \le T < t + dt |
+T \ge t \} }{dt}.\]
+<p>The numerator of this expression is the conditional probability
+that the event will occur in the interval \( [t,t+dt) \) given that it
+has not occurred before, and the denominator is the width of the
+interval. Dividing one by the other we obtain a rate of event
+occurrence per unit of time. Taking the limit as the width of the
+interval goes down to zero, we obtain an instantaneous rate of
+occurrence.</p>
+
+<p>The conditional probability in the numerator may be written as the
+ratio of the joint probability that \( T \) is in the interval
+\( [t,t+dt) \) <i>and</i> \( T \ge t \) (which is, of course, the same as
+the probability that \( t \) is in the interval), to the probability
+of the condition \( T \ge t \). The former may be written as  \( f(t)dt \)
+for small \( dt \), while the latter is \( S(t) \) by definition. Dividing
+by \( dt \) and passing to the limit gives the useful result</p>
+
+<a name='e_7_3'></a>\[\tag{7.3}\lambda(t) = \frac{f(t)}{S(t)},\]
+<p>which some authors give as a definition of the hazard function.
+In words, the rate of occurrence of the event at duration \( t \) equals
+the density of events at \( t \), divided by the probability of surviving to
+that duration without experiencing the event.</p>
+
+<p>Note from Equation <a href='#e_7_1'>7.1</a>  that \( -f(t) \)  is the derivative of \( S(t) \).
+This suggests rewriting Equation <a href='#e_7_3'>7.3</a> as</p>
+
+\[ \lambda(t) = - \frac{d}{dt}\log S(t). \]
+<p>If we now integrate from 0 to \( t \) and introduce the boundary condition
+\( S(0) = 1 \) (since the event is sure not to have occurred by duration 0),
+we can solve the above expression to obtain a formula for the probability
+of surviving to duration \( t \) as a function of the hazard at all durations
+up to \( t \):</p>
+
+<a name='e_7_4'></a>\[\tag{7.4}S(t) = \exp \{ - \int_0^t \lambda(x)dx \}.\]
+<p>This expression should be familiar to demographers.
+The integral in curly brackets in this equation  is called the <i>cumulative hazard</i>  ( or cumulative risk) and is denoted</p>
+
+<a name='e_7_5'></a>\[\tag{7.5}\Lambda(t) = \int_0^t \lambda(x) dx.\]
+<p>You may think of \( \Lambda(t) \) as the sum of the risks you face going from
+duration 0 to \( t \).</p>
+
+<p>These results show that the survival and hazard functions
+provide alternative but equivalent characterizations of the distribution of \( T \).
+Given the survival function, we can always differentiate to obtain the
+density and then calculate the hazard using Equation <a href='#e_7_3'>7.3</a>.
+Given the hazard, we can always integrate to obtain the cumulative hazard
+and then exponentiate to obtain the survival function using Equation <a href='#e_7_4'>7.4</a>.
+An example will help fix ideas.</p>
+
+<i>Example:</i> The simplest possible survival distribution is obtained
+by assuming a constant risk over time, so the hazard is
+\[ \lambda(t) = \lambda \]
+<p>for all \( t \).  The corresponding survival function is</p>
+
+\[ S(t) = \exp \{ -\lambda t \}. \]
+<p>This distribution is called the exponential distribution with parameter \( \lambda \).
+The density may be obtained multiplying the survivor function by the hazard
+to obtain</p>
+
+\[ f(t) = \lambda \exp\{-\lambda t\}. \]
+<p>The mean turns out to be \( 1/\lambda \).
+This distribution plays a central role in survival analysis, although it is
+probably too simple to be useful in applications in its own right.\( \Box \)</p>
+
+<h4>7.1.3 Expectation of Life</h4>
+<p>Let \( \mu \) denote the mean  or expected value of \( T \). By definition,
+one would calculate \( \mu \) multiplying \( t \) by the density \( f(t) \) and
+integrating, so</p>
+
+\[ \mu = \int_0^\infty t f(t) dt. \]
+<p>Integrating by parts, and making use of the fact that \( -f(t) \) is
+the derivative of \( S(t) \), which has limits or boundary
+conditions \( S(0) = 1 \) and \( S(\infty) = 0 \), one can show that</p>
+
+\[\tag{7.6}\mu = \int_0^\infty  S(t) dt.\]
+<p>In words, the mean is simply the integral of the survival function.</p>
+
+<h4>7.1.4 A Note on Improper Random Variables*</h4>
+<p>So far we have assumed implicitly that the event of interest is bound to occur,
+so that \( S(\infty) = 0 \). In words, given enough time the proportion surviving
+goes down to zero.  This condition implies that the cumulative hazard must
+diverge, i.e.&nbsp;we must have \( \Lambda(\infty) = \infty \).
+Intuitively, the event will occur with certainty only if the cumulative risk
+over a long period is sufficiently high.</p>
+
+<p>There are, however, many events of possible interest that are not bound to
+occur.
+Some men and women remain forever single, some birth intervals never close,
+and some people are happy enough at their jobs that they never leave.
+What can we do in these cases? There are two approaches one can take.</p>
+
+<p>One approach is to note that we can still calculate the hazard and survival
+functions, which are well defined even if the event of interest is not
+bound to occur.
+For example we can study marriage in the entire population, which includes people
+who will never marry, and calculate marriage rates and proportions single.
+In this example \( S(t) \) would represent the proportion still single at age \( t \)
+and \( S(\infty) \) would represent the proportion who never marry.</p>
+
+<p>One limitation of this approach is that if the event is not certain to
+occur, then the waiting time \( T \) could be undefined  (or infinite)
+and thus not a proper random variable.
+Its density, which could be calculated from the hazard and survival,
+would be improper, i.e.&nbsp;it would fail to integrate to one.
+Obviously, the mean waiting time would not be defined.
+In terms of our example, we cannot calculate mean age
+at marriage for the entire population, simply because not everyone marries.
+But this limitation is of no great consequence if interest centers on the hazard
+and survivor functions, rather than the waiting time.
+In the marriage example we can even calculate a median age at marriage,
+provided we define it as the age by which half the population has married.</p>
+
+<p>The alternative approach is to condition the analysis on the event actually
+occurring.  In terms of our example, we could study marriage (perhaps
+retrospectively) for people who eventually marry, since for this group
+the actual waiting time \( T \) is always well defined.
+In this case we can calculate not just the conditional hazard and survivor
+functions, but also the mean.  In our marriage example, we could calculate the
+mean age at marriage for those who marry. We could even calculate a conventional
+median, defined as the age by which half the people who will eventually marry
+have done so.</p>
+
+<p>It turns out that the conditional density, hazard and survivor
+function for those who experience the event are related to the unconditional
+density, hazard and survivor for the entire population.  The conditional density
+is</p>
+
+\[ f^*(t) = \frac{f(t)}{1-S(\infty)}, \]
+<p>and it integrates to one.
+The conditional survivor function is</p>
+
+\[ S^*(t) = \frac{S(t)-S(\infty)}{ 1-S(\infty) }, \]
+<p>and goes down to zero as \( t \rightarrow \infty \).
+Dividing the density by the survivor function, we find the conditional hazard
+to be</p>
+
+\[ \lambda^*(t) =  \frac{ f^*(t) }{ S^*(t) } = \frac{ f(t) }{ S(t)-S(\infty) }. \]
+<p>Derivation of the mean waiting time for those who experience the event
+is left as an exercise for the reader.</p>
+
+<p>Whichever approach is adopted, care must be exercised to specify clearly
+which hazard or survival is being used.  For example, the conditional hazard
+for those who eventually experience the event is always higher than the
+unconditional hazard for the entire population.  Note also that
+in most cases all we observe is whether or not the event has occurred.
+If the event has not occurred,  we may be unable to determine
+whether it will eventually occur.
+In this context, only the unconditional hazard may be estimated from data,
+but one can always translate the results into conditional expressions,
+if so desired, using the results given above.</p>
+

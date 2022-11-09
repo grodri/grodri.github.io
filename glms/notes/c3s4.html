@@ -1,0 +1,179 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h3>3.4 The Comparison of Several Groups</h3>
+<p>Let us take a more general look at logistic regression models
+with a single predictor by considering the comparison
+of \( k \) groups. This will help us illustrate the logit
+analogues of one-way analysis of variance and
+simple linear regression models.</p>
+
+<h4>3.4.1 A k-by-Two Table</h4>
+<p>Consider a cross-tabulation of contraceptive use by age,
+as summarized in Table <a href='#t_3_4'>3.4</a>. The structure of
+the data is the same as in the previous section, except that
+we now have four groups rather than two.</p>
+
+<a name='t_3_4'></a><p class='text-center'>Table 3.4. Contraceptive Use by Age</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al'>Age</td><td class='ar'>Using</td><td class='ar'>Not Using</td><td class='ar'>Total</td></tr>
+<tr class='bb'><td class='al'>\(i\)</td><td class='ar'>\(y_i\)</td><td class='ar'>\(n_i-y_i\)</td><td class='ar'>\(n_i\)</td></tr>
+<tr class='bt'><td class='al'>\(<\)25</td><td class='ar'>72</td><td class='ar'>325</td><td class='ar'>397</td></tr>
+<tr><td class='al'>25&ndash;29</td><td class='ar'>105</td><td class='ar'>299</td><td class='ar'>404</td></tr>
+<tr><td class='al'>30&ndash;39</td><td class='ar'>237</td><td class='ar'>375</td><td class='ar'>612</td></tr>
+<tr class='bb'><td class='al'>40&ndash;49</td><td class='ar'>93</td><td class='ar'>101</td><td class='ar'>194</td></tr>
+<tr class='bt bb'><td class='al'>Total</td><td class='ar'>507</td><td class='ar'>1100</td><td class='ar'>1607</td></tr>
+</table>
+
+<p>The analysis of this table proceeds along the same lines as in the
+two-by-two case. The null model yields exactly the same estimate
+of the overall logit and its standard error as before.
+The deviance, however, is now 79.2 on three d.f.
+This value is highly significant, indicating that the assumption
+of a common probability of using contraception for the
+four age groups is not tenable.</p>
+
+<h4>3.4.2 The One-Factor Model</h4>
+<p>Consider now a one-factor model, where we allow each group
+or level of the discrete factor to have its own logit. We write
+the model as</p>
+
+\[ \mbox{logit}(\pi_i) = \eta + \alpha_i. \]
+<p>To avoid redundancy we adopt the reference cell method and
+set \( \alpha_1=0 \), as before.
+Then \( \eta \) is the logit of the reference group, and
+\( \alpha_i \) measures the difference in logits between
+level \( i \) of the factor and the reference level.
+This model is exactly analogous to an analysis of variance model.
+The model matrix \( \boldsymbol{X} \) consists of a column of ones representing
+the constant and \( k-1 \) columns of dummy variables representing
+levels two to \( k \) of the factor.</p>
+
+<p>Fitting this model to Table <a href='#t_3_4'>3.4</a> leads to the
+parameter estimates and standard errors in Table <a href='#t_3_5'>3.5</a>.
+The deviance for this model is of course zero because the
+model is saturated: it uses four parameters to model four groups.</p>
+
+<a name='t_3_5'></a><p class='text-center'>Table 3.5. Estimates and Standard Errors for Logit Model<br/>of Contraceptive Use by Age in Groups</p>
+<table class='tex-table'>
+<tr class='bt bb'><td colspan='2' align='left'>Parameter</td><td class='al'>Symbol</td><td class='ar'>Estimate</td><td class='ar'>Std.&nbsp;Error</td><td class='ar'>\(z\)-ratio</td></tr>
+<tr class='bt'><td colspan='2' align='left'>Constant</td><td class='al'>\(\eta\)</td><td class='ar'>\(-\)1.507</td><td class='ar'>0.130</td><td class='ar'>\(-\)11.57</td></tr>
+<tr><td class='al'>Age</td><td class='al'>25&ndash;29</td><td class='al'>\(\alpha_2\)</td><td class='ar'>0.461</td><td class='ar'>0.173</td><td class='ar'>2.67</td></tr>
+<tr><td class='al'></td><td class='al'>30&ndash;39</td><td class='al'>\(\alpha_3\)</td><td class='ar'>1.048</td><td class='ar'>0.154</td><td class='ar'>6.79</td></tr>
+<tr class='bb'><td class='al'></td><td class='al'>40&ndash;49</td><td class='al'>\(\alpha_4\)</td><td class='ar'>1.425</td><td class='ar'>0.194</td><td class='ar'>7.35</td></tr>
+</table>
+
+<p>The baseline logit of \( -1.51 \) for women under age 25 corresponds to
+odds of 0.22. Exponentiating the age coefficients we obtain
+odds ratios of 1.59, 2.85 and 4.16. Thus, the odds of using
+contraception increase by 59% and 185% as we move to ages 25&ndash;29
+and 30&ndash;39, and are quadrupled for ages 40&ndash;49, all compared to
+women under age 25.</p>
+
+<p>All of these estimates can be obtained directly from the frequencies
+in Table <a href='#t_3_4'>3.4</a> in terms of the logits of the observed
+proportions. For example the constant is \( \mbox{logit}(72/397)=-1.507 \),
+and the effect for women 25&ndash;29 is \( \mbox{logit}(105/404) \) minus the
+constant.</p>
+
+<p>\( \newcommand{\balpha}{\boldsymbol{\alpha}} \)
+To test the hypothesis of no age effects we can compare this model
+with the null model. Since the present model is saturated, the
+difference in deviances is exactly the same as the deviance of
+the null model, which was 79.2 on three d.f.&nbsp;and is highly significant.
+An alternative test of</p>
+
+\[ H_0: \alpha_2 = \alpha_3 = \alpha_4 = 0 \]
+<p>is based on the estimates and their variance-covariance matrix.
+Let \( \balpha= (\alpha_2,\alpha_3,\alpha_4)' \). Then</p>
+
+\[ \hat{\balpha} = \left( \begin{array}{r}
+    0.461\\1.048\\1.425
+    \end{array} \right)  \quad\mbox{and}\quad
+\hat{\mbox{var}}(\hat{\balpha}) = \left( \begin{array}{rrr}
+    0.030& 0.017& 0.017\\    0.017& 0.024& 0.017\\    0.017& 0.017& 0.038
+\end{array} \right), \]
+<p>and the Wald statistic is</p>
+
+\[ W = \hat{\balpha}' \: \hat{\mbox{var}}^{-1}(\hat{\balpha}) \: \hat{\balpha}
+  = 74.4 \]
+<p>on three d.f. Again, the Wald test gives results similar to
+the likelihood ratio test.</p>
+
+<h4>3.4.3 A One-Variate Model</h4>
+<p>Note that the estimated logits in Table <a href='#t_3_5'>3.5</a>
+(and therefore the odds and probabilities) increase
+monotonically with age.  In fact, the logits seem to increase by
+approximately the same amount as we move from one age group to the next.
+This suggests that the effect of age may actually be linear in the
+logit scale.</p>
+
+<p>To explore this idea we treat age as a variate rather than
+a factor. A thorough exploration would use the individual data
+with age in single years (or equivalently, a 35 by two table of
+contraceptive use by age in single years from 15 to 49).
+However, we can obtain a quick idea of whether the model
+would be adequate by keeping age grouped into four categories
+but representing these by the <i>mid-points</i> of the age
+groups. We therefore consider a model analogous to simple
+linear regression, where</p>
+
+\[ \mbox{logit}(\pi_i) = \alpha + \beta x_i, \]
+<p>where \( x_i \) takes the values 20, 27.5, 35 and 45, respectively,
+for the four age groups. This model fits into our general
+framework, and corresponds to the special case where the
+model matrix \( \boldsymbol{X} \) has two columns, a column of ones
+representing the constant and a column with the mid-points
+of the age groups, representing the linear effect of age.</p>
+
+<p>Fitting this model gives a deviance of 2.40 on two d.f.&nbsp;, which
+indicates a very good fit. The parameter estimates and
+standard errors are shown in Table <a href='#t_3_6'>3.6</a>.
+Incidentally, there is no explicit formula for the estimates of the constant
+and slope in this model, so we must rely on iterative procedures to obtain
+the estimates.</p>
+
+<a name='t_3_6'></a><p class='text-center'>Table 3.6. Estimates and Standard Errors for Logit Model<br/>of Contraceptive Use with a Linear Effect of Age</p>
+<table class='tex-table'>
+<tr class='bt bb'><td class='al'>Parameter</td><td class='ar'>Symbol</td><td class='ar'>Estimate</td><td class='ar'>Std.&nbsp;Error</td><td class='ar'>\(z\)-ratio</td></tr>
+<tr class='bt'><td class='al'>Constant</td><td class='ar'>\(\alpha\)</td><td class='ar'>\(-\)2.673</td><td class='ar'>0.233</td><td class='ar'>\(-\)11.46</td></tr>
+<tr class='bb'><td class='al'>Age (linear)</td><td class='ar'>\(\beta\)</td><td class='ar'>0.061</td><td class='ar'>0.007</td><td class='ar'>8.54</td></tr>
+</table>
+
+<p>The slope indicates that the logit of the probability of
+using contraception increases 0.061 for every year of age.
+Exponentiating this value we note that the odds of using
+contraception are multiplied by 1.063&mdash;that is, increase
+6.3%&mdash;for every year of age.
+Note, by the way, that \( e^\beta \approx 1+\beta \) for small \( |\beta| \).
+Thus, when the logit coefficient is small in magnitude, \( 100\beta \)
+provides a quick approximation to the percent change in the odds
+associated with a unit change in the predictor.
+In this example the effect is 6.3% and the approximation is 6.1%.</p>
+
+<p>To test the significance of the slope we can use the Wald
+test, which gives a \( z \) statistic of 8.54 or equivalently
+a chi-squared of 73.9 on one d.f. Alternatively, we
+can construct a likelihood ratio test by comparing this model
+with the null model. The difference in deviances is
+76.8 on one d.f. Comparing these results with those in the
+previous subsection shows that we have captured most of
+the age effect using a single degree of freedom.</p>
+
+<a name='f:kby2'></a><a name='f_3_2'></a><p style='text-align:center'>Figure 3.2 Observed and Fitted Logits for Model of<br/>Contraceptive Use with a Linear Effect of Age</p><img src="linlogit.png" class="img-responsive center-block"/>
+<p>Adding the estimated constant to the product of the slope by the
+mid-points of the age groups gives estimated logits at each age, and
+these may be compared with the logits of the observed proportions using
+contraception. The results of this exercise appear in Figure
+<a href='#f_3_2'>3.2</a>. The visual impression of the graph confirms that the fit
+is quite good. In this example the assumption of linear effects on the
+logit scale leads to a simple and parsimonious model.  It would
+probably be worthwhile to re-estimate this model using the individual
+ages.</p>
+

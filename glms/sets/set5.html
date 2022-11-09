@@ -1,0 +1,29 @@
+---
+layout: default
+section: glms
+tabs: "Problem Sets"
+---
+
+<h2 class="first">Irish Educational Transitions<br/>
+<small>Due Monday, December 5, 2016</small> </h2>
+</h2>
+<p><a href="http://lib.stat.cmu.edu">Statlib</a> is an excellent source of statistical data and programs. Their <a href="http://lib.stat.cmu.edu/datasets/irish.ed">Irish Educational Transitions</a> dataset has data for 500 Irish school children aged 11 in 1967. The outcome of interest is educational attainment, which for purposes of this analysis I have recoded in three categories: junior, senior and 3rd level, as variable  <code>educg</code>.</p>
+<p>The predictors of interest are gender, a measure of father's occupational prestige which I have recoded into quartiles as <code>prestigeg</code>, and the score in a reasoning test, which I also recoded into quartiles as <code>reasong</code>. The file <code>irished.dta</code> in the datasets section includes these recodes and drops primary school leavers and a few cases with missing data, for an effective sample size of 435.</p>
+<h3 id="multinomial-logits">[1] Multinomial Logits</h3>
+<p>(a) Fit a multinomial logit model explaining educational attaintment in terms of gender, parental occupational prestige, and scores in the reasoning test, using the recoded variables.</p>
+<p>(b) Interpret the coefficient for females in both equations.</p>
+<p>(c) Compute the average marginal effect of gender on the probability of achieving 3rd level, using the continuous approximation &quot;by hand&quot;.</p>
+<p>(d) Re-estimate the average marginal effect of gender on the probability of achieving 3rd level using the exact discrete calculation, also &quot;by hand&quot;.</p>
+<p>(e) How would you go about testing the goodness of fit of this model considering that we have individual data? No need to do anything, just explain what you would do.</p>
+<h3 id="sequential-logits">[2] Sequential Logits</h3>
+<p>(a) Fit a sequential logit model using the continuation ratio method, where you first focus on the probability of going beyond the junior level, and then look at the conditional probability of achieving 3rd form among those going beyond the junior level.</p>
+<p>(b) Interpret the coefficients for females in both equations in terms of odds or conditional odds. Is this result broadly consistent with the results of part 1?</p>
+<p>(c) Predict the average probability of reaching 3rd level if everyone was male and then if everyone was female, and compare your results with the corresponding answer from part 1.</p>
+<p>(d) Compare the sequential and multinomial logit models in terms of parsimony, goodness of fit, and how well they represent gender differences in educational attainment.</p>
+<p>(e) Comment of the coefficients that correspond to children in the top quartile of the reasoning test. Do we need marginal effects to determine if they have a higher probability of reaching 3rd level than comparable children with lower scores?</p>
+<h3 id="ordered-logits">[3] Ordered Logits</h3>
+<p>(a) Fit an ordered logit model to the same data using the same predictors.</p>
+<p>(b) Interpret the estimate of the first cutpoint in terms of odds or probabilities, keeping in mind the reference cell used in the model.</p>
+<p>(c) Interpret the coefficient of females in terms of (i) a latent variable, and (ii) the odds of progressing past junior and senior levels.</p>
+<p>(d) Predict the probability of reaching 3rd level if everyone was male and then if everyone was female, and compare your result with the corresponding answer from part 2.</p>
+<p>(e) How well does this model stack up against the previous two? Make sure you consider parsimony, goodness of fit, and how well the model reflects gender differences in educational attainment.</p>

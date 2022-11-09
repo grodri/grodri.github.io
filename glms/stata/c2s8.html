@@ -1,0 +1,345 @@
+---
+layout: default
+section: glms
+tab: "Stata Logs"
+pager: true
+---
+
+
+<h3 class="first">2.8 Analysis of Covariance Models</h3> 
+<P>
+The <code>anova</code> command in Stata can also fit analysis
+of covariance model, but we will continue to use regression with
+dummy or factor variables via <code>regress</code>. 
+<P>
+Here's the model treating social setting as a covariate with a 
+linear effect and program effort as a factor with three categories
+represented by two dummy variables
+<pre class='stata'>
+. regress change setting effort_mod effort_str
+
+<table class='stata'><tr><td><table class='stata'>
+<tr class='bb'><td class='br'>      Source </td><td class='bl'>       SS       df       MS   </td></tr>
+<tr class='bt'><td class='br'>       Model </td><td class='bl'>  2124.50633     3  708.168776</td></tr>
+<tr class='bb'><td class='br'>    Residual </td><td class='bl'>  525.693673    16  32.8558546</td></tr>
+<tr class='bt'><td class='br'>       Total </td><td class='bl'>      2650.2    19  139.484211</td></tr>
+</table></td><td>           Number of obs =      20
+           F(  3,    16) =   21.55
+           Prob > F      =  0.0000
+           R-squared     =  0.8016
+           Adj R-squared =  0.7644
+           Root MSE      =   5.732</td></tr></table>
+
+<table class='stata'>
+<tr class='bb bt'><td class='br'>      change </td><td class='bl'>      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]</td></tr>
+<tr class='bt'><td class='br'>     setting </td><td class='bl'>   .1692677   .1055505     1.60   0.128    -.0544894    .3930247</td></tr>
+<tr><td class='br'>  effort_mod </td><td class='bl'>   4.143915   3.191179     1.30   0.213    -2.621082    10.90891</td></tr>
+<tr><td class='br'>  effort_str </td><td class='bl'>   19.44761   3.729295     5.21   0.000     11.54186    27.35336</td></tr>
+<tr class='bb'><td class='br'>       _cons </td><td class='bl'>  -5.954036    7.16597    -0.83   0.418    -21.14521    9.237141</td></tr>
+</table>
+
+. estimates store ancova // save results for later use</pre>
+<P>
+Exactly the same model can be fitted using <i>factor variables</i>.
+We just tell Stata that effort_g is a factor and, by omission,
+that setting is a covariate. 
+(There is a <code>c.</code> prefix for covariates, but it is implied 
+in regression commands.)
+<pre class='stata'>
+. regress change setting i.effort_g
+
+<table class='stata'><tr><td><table class='stata'>
+<tr class='bb'><td class='br'>      Source </td><td class='bl'>       SS       df       MS   </td></tr>
+<tr class='bt'><td class='br'>       Model </td><td class='bl'>  2124.50633     3  708.168776</td></tr>
+<tr class='bb'><td class='br'>    Residual </td><td class='bl'>  525.693673    16  32.8558546</td></tr>
+<tr class='bt'><td class='br'>       Total </td><td class='bl'>      2650.2    19  139.484211</td></tr>
+</table></td><td>           Number of obs =      20
+           F(  3,    16) =   21.55
+           Prob > F      =  0.0000
+           R-squared     =  0.8016
+           Adj R-squared =  0.7644
+           Root MSE      =   5.732</td></tr></table>
+
+<table class='stata'>
+<tr class='bb bt'><td class='br'>      change </td><td class='bl'>      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]</td></tr>
+<tr class='bt'><td class='br'>     setting </td><td class='bl'>   .1692677   .1055505     1.60   0.128    -.0544894    .3930247</td></tr>
+<tr><td class='br'>             </td><td class='bl'>                                                                </td></tr>
+<tr><td class='br'>    effort_g </td><td class='bl'>                                                                </td></tr>
+<tr><td class='br'>   Moderate  </td><td class='bl'>   4.143915   3.191179     1.30   0.213    -2.621082    10.90891</td></tr>
+<tr><td class='br'>     Strong  </td><td class='bl'>   19.44761   3.729295     5.21   0.000     11.54186    27.35336</td></tr>
+<tr><td class='br'>             </td><td class='bl'>                                                                </td></tr>
+<tr class='bb'><td class='br'>       _cons </td><td class='bl'>  -5.954036    7.16597    -0.83   0.418    -21.14521    9.237141</td></tr>
+</table></pre>
+<P>
+The results agree with Tables 2.23 and 2.24. 
+Countries with strong programs show steeper fertility declines, 
+on average 19 percentage points more, than countries with weak programs 
+and the same social setting.  
+<P>
+This analysis has adjusted for linear effects of setting, whereas 
+the analysis of <a href='c2s7.html'>Section 2.7</a> adjusted for
+difference by setting grouped in three categories.
+As it happens, both analyses lead to similar estimates of the difference
+between strong and weak programs at the same level of setting.
+<P>
+<h4>Plotting Observed and Fitted</h4> 
+<P>
+Let us do Figure 2.5, a plot of change versus setting identifying 
+the level of program effort corresponding to each point.
+I will also superimpose the three parallel lines corresponding
+to the fitted model. 
+<P>
+This is easily done using the <code>graph twoway</code> command
+--which can be shortened to <code>twoway</code>-- to combine
+a <code>scatter</code> plot with three <code>line</code> plots, 
+one for each category of effort. 
+<pre class='stata'>
+. predict ancovafit
+(option xb assumed; fitted values)
+
+. twoway  (scatter change setting, mlabel(effort_g))  ///
+>         (line ancovafit setting if effort < 5, sort) ///
+>         (line ancovafit setting if effort_mod, sort)    ///
+>         (line ancovafit setting if effort_str, sort)    ///
+>         ,                                                               ///
+>         title("Figure 2.5: Fertility Change by Setting and Effort") ///
+>         subtitle("Analysis of Covariance Fit") legend(off)
+
+. graph export fig25.png, width(500)replace
+(file fig25.png written in PNG format)</pre>
+<P>
+<img src="fig25.png" class="img-responsive center-block"/> 
+<P>
+Note how each subplot can have its own <code>if</code> condition. 
+We also specify the <code>sort</code> option, which determines the
+order in which the points are drawn, pretty important when they will
+be joined by lines. (Try <code>line change setting</code> to see 
+what can happen if you do a line plot on unsorted data.
+With a linear fit like Figure 2.5 the consequence of leaving
+out <code>sort</code> is not apparent because all the points 
+lie in a straight line.)
+<P>
+If you wanted to label the points using the letters
+<i>w</i>, <i>m</I> and <i>s</i> for weak, moderate and strong, 
+as done in the notes, you would have to define a new label for 
+<code>effort_g</code>. 
+<P>
+<h4>Adjusted and Unadjusted Means</h4> 
+<P>
+Let us turn to the comparison of adjusted and unadjusted declines 
+in Table 2.26, a useful way to present regression results to a 
+non-technical audience.
+<P>
+We start by restoring the ancova estimates and then predict
+fertility decline in each country at its observed level of effort,
+but with social setting set to 72.1, which is the sample mean:
+<pre class='stata'>
+. estimates restore ancova
+(results ancova are active now)
+
+. gen adj_change = _b[_cons] + effort_mod * _b[effort_mod] + ///
+>         effort_str * _b[effort_str] + 72.1 * _b[setting]
+
+. label var adj_change "Adjusted change at mean setting"</pre>
+<P>
+Here we accessed the coefficients from the last regression as 
+<code>_b[<i>varname</i>]</code>, 
+but <code>_coef[<i>varname</i>]</code> also works.
+This is better than typing them from the output because it is less
+error prone and we don't lose precision. 
+<P>
+Next we tabulate our data by level of effort and summarize
+observed and predicted change. We use the <code>tabstat</code> 
+command instead of <code>tabulate, summarize</code> command
+used ealier because we need summary statistics for two variables:
+<pre class='stata'>
+. tabstat change adj_change, by(effort_g) statistics(mean)
+
+Summary statistics: mean
+  by categories of: effort_g (RECODE of effort (Program Effort))
+
+<table class='stata'>
+<tr class='bb'><td class='br'>effort_g </td><td class='bl'>    change  adj_ch~e</td></tr>
+<tr class='bt'><td class='br'>    Weak </td><td class='bl'>         5  6.250163</td></tr>
+<tr><td class='br'>Moderate </td><td class='bl'>  9.333333  10.39408</td></tr>
+<tr class='bb'><td class='br'>  Strong </td><td class='bl'>  27.85714  25.69777</td></tr>
+<tr class='bb bt'><td class='br'>   Total </td><td class='bl'>      14.3      14.3</td></tr>
+</table></pre>
+<P>
+Countries with strong program average a 28% decline in fertility,
+but they also tend to have higher settings; we estimate a slightly 
+smaller decline of about 26% at average social setting.
+The estimate is based on the model, which adjusts linearly for setting
+and assumes that the slope is the same at all levels of effort.
+The next step will be to examine this assumption.
+<P>
+By the way Stata can automate this type of calculation using the
+<code>margins</code> command introduced in version 11, or the 
+<code>adjust</code> command in earlier versions.  We proceeded from 
+first principles because the calculations are easy to do and you can 
+understand exactly what is being one.
+<P>
+On the other hand, once you get used to the <code>margins</code> 
+command you appreciate it's power. It understands factor variables, 
+and has the added advantage of producing standard errors of the
+adjusted predictions. 
+So here's how to predict fertility decline by levels of effort at 
+mean setting:
+<pre class='stata'>
+. quietly regress change setting i.effort_g 
+
+. margins i.effort_g, at( (mean) setting)
+
+Adjusted predictions                              Number of obs   =         20
+Model VCE    : OLS
+
+Expression   : Linear prediction, predict()
+at           : setting         =        72.1 (mean)
+
+<table class='stata'>
+<tr class='bt'><td class='br'>             </td><td class='bl'>            Delta-method                                        </td></tr>
+<tr class='bb'><td class='br'>             </td><td class='bl'>     Margin   Std. Err.      t    P>|t|     [95% Conf. Interval]</td></tr>
+<tr class='bt'><td class='br'>    effort_g </td><td class='bl'>                                                                </td></tr>
+<tr><td class='br'>       Weak  </td><td class='bl'>   6.250162    2.30248     2.71   0.015     1.369122     11.1312</td></tr>
+<tr><td class='br'>   Moderate  </td><td class='bl'>   10.39408   2.431767     4.27   0.001     5.238961    15.54919</td></tr>
+<tr class='bb'><td class='br'>     Strong  </td><td class='bl'>   25.69777   2.550846    10.07   0.000     20.29022    31.10532</td></tr>
+</table></pre>
+<P>
+Wasn't that easy? I ran the regression using factor variables,
+used </code>quietly</code> to supress the output, and then asked 
+for the effort margin at mean setting ... literally.
+<P>
+<h4>The Assumption of Parallelism</h4> 
+<P>
+We will now allow the linear relationship between change and setting
+to vary with level of effort by introducing an interaction between
+setting and the indicators of effort.
+Before we do that we center the index of social setting by subtracting 
+the mean, a practice I highly recommend to simplify the interpretation
+of 'main' effects when the model has interactions:
+<pre class='stata'>
+. quietly summarize setting
+
+. gen setting_c = setting - r(mean)</pre>
+<P>
+Here we used the fact that the mean is available as 
+<code>r(mean)</code> after <code>summarize</code>.
+(To see all the results that can be extracted this way type
+<code>return list</code>.)
+<P>
+We can now generate variables to represent the linear setting by
+effort interaction using the centered variable,
+and run the regression: 
+<pre class='stata'>
+. gen se_c_mod = setting_c * effort_mod
+
+. gen se_c_str = setting_c * effort_str
+
+. regress change setting_c effort_mod effort_str se_c_mod se_c_str
+
+<table class='stata'><tr><td><table class='stata'>
+<tr class='bb'><td class='br'>      Source </td><td class='bl'>       SS       df       MS   </td></tr>
+<tr class='bt'><td class='br'>       Model </td><td class='bl'>  2153.09941     5  430.619882</td></tr>
+<tr class='bb'><td class='br'>    Residual </td><td class='bl'>   497.10059    14   35.507185</td></tr>
+<tr class='bt'><td class='br'>       Total </td><td class='bl'>      2650.2    19  139.484211</td></tr>
+</table></td><td>           Number of obs =      20
+           F(  5,    14) =   12.13
+           Prob > F      =  0.0001
+           R-squared     =  0.8124
+           Adj R-squared =  0.7454
+           Root MSE      =  5.9588</td></tr></table>
+
+<table class='stata'>
+<tr class='bb bt'><td class='br'>      change </td><td class='bl'>      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]</td></tr>
+<tr class='bt'><td class='br'>   setting_c </td><td class='bl'>   .1835741   .1396981     1.31   0.210    -.1160486    .4831968</td></tr>
+<tr><td class='br'>  effort_mod </td><td class='bl'>   3.583729   3.662354     0.98   0.344    -4.271239     11.4387</td></tr>
+<tr><td class='br'>  effort_str </td><td class='bl'>    13.3332   8.209163     1.62   0.127    -4.273701     30.9401</td></tr>
+<tr><td class='br'>    se_c_mod </td><td class='bl'>  -.0868366   .2325831    -0.37   0.714    -.5856776    .4120045</td></tr>
+<tr><td class='br'>    se_c_str </td><td class='bl'>   .4567037   .6039241     0.76   0.462    -.8385847    1.751992</td></tr>
+<tr class='bb'><td class='br'>       _cons </td><td class='bl'>   6.355826   2.477298     2.57   0.022      1.04255     11.6691</td></tr>
+</table></pre>
+<P>
+Compare the parameter estimates with Table 2.27 in the notes.
+You also have all the information required to produce 
+the hierarchical anova in Table 2.28. 
+<P>
+Because we centered setting, the coefficients for moderate and strong
+programs summarize differences by effort at mean setting, rather than 
+at setting zero (which is well outside the range of the data). 
+Thus, fertility decline averages 13 percentage points more under strong 
+than under weak programs in countries with average social setting. 
+<P>
+The interaction terms can be used to compute how these differences 
+vary as we move away from the mean. 
+For example in countries which are ten points above the mean social 
+setting, the strong versus weak difference is  almost five percentage 
+points more than at the mean. 
+These differences, however, are not significant, as we can't reject
+the hypothesis that the three slopes are equal:
+<pre class='stata'>
+. test se_c_mod se_c_str
+
+ ( 1)  se_c_mod = 0
+ ( 2)  se_c_str = 0
+
+       F(  2,    14) =    0.40
+            Prob > F =    0.6761</pre>
+<P>
+<h4>Factor Variables in Ancova</h4> 
+<P>
+We can reproduce these results exactly using <i>factor variables</i>,
+using the double hash <code>##</code> convention to request main effects
+and interactions, 
+and the <code>i.</code> prefix to specify that grouped effort is to be 
+treated as a <i>factor</i>. 
+I discovered that we also need to use the <code>c.</code> prefix to 
+remind Stata that centered setting is to be treated as a <i>covariate</i>.
+(This was not needed in the previous section, but here Stata will attempt
+to build indicators for every value of centered setting if you omit it.)
+<pre class='stata'>
+. regress change c.setting_c##i.effort_g
+
+<table class='stata'><tr><td><table class='stata'>
+<tr class='bb'><td class='br'>      Source </td><td class='bl'>       SS       df       MS   </td></tr>
+<tr class='bt'><td class='br'>       Model </td><td class='bl'>  2153.09941     5  430.619882</td></tr>
+<tr class='bb'><td class='br'>    Residual </td><td class='bl'>   497.10059    14   35.507185</td></tr>
+<tr class='bt'><td class='br'>       Total </td><td class='bl'>      2650.2    19  139.484211</td></tr>
+</table></td><td>           Number of obs =      20
+           F(  5,    14) =   12.13
+           Prob > F      =  0.0001
+           R-squared     =  0.8124
+           Adj R-squared =  0.7454
+           Root MSE      =  5.9588</td></tr></table>
+
+<table class='stata'>
+<tr class='bb bt'><td class='br'>              change </td><td class='bl'>      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]</td></tr>
+<tr class='bt'><td class='br'>           setting_c </td><td class='bl'>   .1835741   .1396981     1.31   0.210    -.1160486    .4831968</td></tr>
+<tr><td class='br'>                     </td><td class='bl'>                                                                </td></tr>
+<tr><td class='br'>            effort_g </td><td class='bl'>                                                                </td></tr>
+<tr><td class='br'>           Moderate  </td><td class='bl'>   3.583729   3.662354     0.98   0.344    -4.271239     11.4387</td></tr>
+<tr><td class='br'>             Strong  </td><td class='bl'>    13.3332   8.209163     1.62   0.127    -4.273701     30.9401</td></tr>
+<tr><td class='br'>                     </td><td class='bl'>                                                                </td></tr>
+<tr><td class='br'>effort_g#c.setting_c </td><td class='bl'>                                                                </td></tr>
+<tr><td class='br'>           Moderate  </td><td class='bl'>  -.0868366   .2325831    -0.37   0.714    -.5856776    .4120045</td></tr>
+<tr><td class='br'>             Strong  </td><td class='bl'>   .4567037   .6039241     0.76   0.462    -.8385847    1.751992</td></tr>
+<tr><td class='br'>                     </td><td class='bl'>                                                                </td></tr>
+<tr class='bb'><td class='br'>               _cons </td><td class='bl'>   6.355826   2.477298     2.57   0.022      1.04255     11.6691</td></tr>
+</table></pre>
+<P>
+The <code>testparm</code> introduced earlier comes handy for
+testing the interaction term
+<pre class='stata'>
+. testparm c.setting_c#i.effort_g
+
+ ( 1)  2.effort_g#c.setting_c = 0
+ ( 2)  3.effort_g#c.setting_c = 0
+
+       F(  2,    14) =    0.40
+            Prob > F =    0.6761</pre>
+<P>
+<i>Exercise</i>. Plot the data and the regression lines implied
+by the model with a linear setting by effort interaction. Note
+how the difference between strong and weak programs increases with
+social setting. The interaction is not significant, however, so
+we have no evidence that the lines are not in fact parallel.
+</p>

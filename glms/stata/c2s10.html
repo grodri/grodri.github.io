@@ -1,0 +1,227 @@
+---
+layout: default
+section: glms
+tab: "Stata Logs"
+pager: true
+---
+
+
+<h3 class="first">2.10 Transforming the Data</h3> 
+<P>
+The final section in this chapter deals with Box-Cox transformations
+To avoid problems with negative values of the response variable,
+we add 1/2 to all observations:
+<pre class='stata'>
+. gen y = change + 0.5</pre>
+<P>
+Stata has a powerful <code>boxcox</code> command that can 
+fit models where both the response and optionally (a subset of) the 
+predictors are transformed. 
+(Earlier versions could transform only the outcome, 
+but in exchange provided a few additional options,
+including a plot that we will now do 'by hand'.)
+<P>
+<h4>The Box-Cox Transformation</h4> 
+<P>
+We will determine the optimal transformation for the analysis
+of covariance model of  <a href='c2s8.html'>Section 2.8</a>.
+If you are running this in a different session you will need to
+redefine the local macro with the predictors:
+<pre class='stata'>
+. local predictors setting effort_mod effort_str</pre>
+<P>
+We are interested in transforming the outcome or 'left-hand-side'  
+only. I will specify the option <code>model(lhs)</code> to make this
+clear, although it is the default and can be omitted. 
+I will also specify <code>nolog</code> to suppress the iteration log:
+<pre class='stata'>
+. boxcox y `predictors', model(lhs) nolog
+Fitting comparison model
+
+Fitting full model
+
+                                                  Number of obs   =         20
+                                                  LR chi2(3)      =      29.29
+Log likelihood = -59.245917                       Prob > chi2     =      0.000
+
+<table class='stata'>
+<tr class='bb bt'><td class='br'>           y </td><td class='bl'>      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]</td></tr>
+<tr class='bb bt'><td class='br'>      /theta </td><td class='bl'>   .6686079    .167689     3.99   0.000     .3399435    .9972724</td></tr>
+</table>
+
+Estimates of scale-variant parameters
+<table class='stata'>
+<tr class='bb bt'><td class='br'>             </td><td class='bl'>      Coef.            </td></tr>
+<tr class='bt'><td class='br'>Notrans      </td><td class='bl'>                       </td></tr>
+<tr><td class='br'>     setting </td><td class='bl'>   .0945824            </td></tr>
+<tr><td class='br'>  effort_mod </td><td class='bl'>   1.957216            </td></tr>
+<tr><td class='br'>  effort_str </td><td class='bl'>   7.661322            </td></tr>
+<tr class='bb'><td class='br'>       _cons </td><td class='bl'>  -3.247024            </td></tr>
+<tr class='bb bt'><td class='br'>      /sigma </td><td class='bl'>   2.282724            </td></tr>
+</table>
+
+<table class='stata'>
+<tr class='bt'><td>   Test         Restricted     LR statistic      P-value </td></tr>
+<tr class='bb'><td>    H0:       log likelihood       chi2       Prob > chi2</td></tr>
+<tr class='bt'><td>theta = -1      -100.56379        82.64           0.000  </td></tr>
+<tr><td>theta =  0       -67.15625        15.82           0.000  </td></tr>
+<tr class='bb'><td>theta =  1      -61.068635         3.65           0.056  </td></tr>
+</table>
+
+. scalar maxlogL = e(ll)</pre>
+<P>
+Stata suggests a power of 0.6686, which is in good agreement with what 
+one would expect from Figure 2.8 in the notes. 
+I'll show you how to do this figure below. 
+For now, note that we saved the maximized log-likelihood, which was 
+available as <code>e(ll)</code>, in a scalar called <code>maxlogL</code>.
+(To see a list of all quantities available for extraction after
+an estimation command type <code>ereturn list</code>.)
+<P>
+Stata also fits the model using the optimal transformation
+and shows the resulting coefficients, but not the standard errors.
+The latter are supressed because they do not account for the fact that 
+estimating the transformation itself introduces additional uncertainty.
+To test the significance of a coefficient you can compare the models
+with and without the corresponding variable using a likelihood ratio
+test. Note, however, that dropping a variable may change the 
+transformation being used.
+<P>
+My preferred approach is to use the Box-Cox procedure as general
+guidance on whether a transformation is needed and, if so, which value 
+in the 'ladder of powers' would do a good job. Having settled on 
+something like taking square roots, logs, or reciprocals, one can then 
+proceed conditionally on the chosen transformation. Stata can help 
+implement this approach in two ways.
+<P>
+First, Stata shows likelihood ratio tests for the hypotheses that the
+Box-Cox parameter is -1, 0 and 1, which correspond to the reciprocal,
+the log, and no transformation at all. 
+The last possibility cannot be rejected at the conventional five 
+percent level, indicating that there is no evidence that we need to 
+transform the response. 
+The log and reciprocal transformations are both soundly rejected.  
+If one insisted on transforming the data, taking square roots 
+would probably be best.
+<P>
+Second, we can plot a profile likelihood showing the relative merit of
+various transformations. Stata 6 used to do a graph similar to what
+we need as an option of the <code>boxcox</code> command, but the option 
+is not available in later versions. This provides us an opportunity to 
+do a little programming exercise. 
+(We could, of course,  type <code>version 6</code> and have Stata behave 
+as it did back then. One disadvantage of this approach is that we have 
+no control over the range of transformations plotted. Also, version 6
+used to omit a constant from the log-likelihood, so the reported values
+need to be adjusted for comparison with later versions.)
+<P>
+<H4> The Profile Log-Likelihood</H4> 
+<P>
+It turns out that we can compute the Box-Cox log-likelihood for any
+value of the parameter using two options of the <code>boxcox</code> 
+command which deal with the maximization procedure. 
+We specify the transformation as a starting value with the option 
+<code>from(<i>value</i>, copy)</code>,  and set the maximum number
+of iterations to zero with <code>iterate(0)</code>, 
+so Stata simply computes the log-likelihood, which we can then 
+retrieve from <code>e(ll)</code>. 
+A hack, really, but it beats having to program your own function. 
+<P>
+Next we write a short loop to compute the log-likelihood for
+exponent values between -1 and 2 in steps of 0.5. We also create
+two new variables, <code>p</code> to store the exponents, and
+<code>logL</code> to store the log-likelihoods. (If you want to
+learn more about Stata macros and loops see part 4 of my 
+<a href='/stata/programming.html'>Stata Tutorial</a>.)
+<pre class='stata'>
+. gen p = .
+(20 missing values generated)
+
+. gen logL = .
+(20 missing values generated)
+
+. local I = 1
+
+. forvalues p = -1(0.5)2  {
+  2.         quietly boxcox y `predictors', from(`p',copy) iterate(0)
+  3.         quietly replace p = `p' in `I'
+  4.         quietly replace logL = e(ll) in `I'
+  5.         local I = `I' + 1
+  6. }</pre>
+<P>
+The graph that follows uses a spline to join the points using
+a smooth curve. 
+We also draw a horizontal line to identify powers that are not 
+significantly different from the best.  This occurs when twice
+the difference in log-likelihoods is less than 3.84, the 95% 
+critical value for a chi-squared with one d.f. In the scale
+of logL this makes the line 3.84/2 units below the highest point 
+of the curve.
+<pre class='stata'>
+. gen cb =  maxlogL - 3.84/2  if p > -0.5 & p < 2
+(16 missing values generated)
+
+. graph twoway (mspline logL p, bands(7)) (line cb p) ,   ///
+>         title("Figure 2.8: Box-Cox Profile Log-Likelihood")  ///
+>         xtitle("lambda") ytitle("log-likelihood") legend(off)
+
+. graph export fig28.png, width(500) replace
+(file fig28.png written in PNG format)</pre>
+<P>
+<img src="fig28.png" class="img-responsive center-block"/> 
+<P>
+<h4>Atkinson's Score Test</h4> 
+<P>
+Our final calculation involves Atkinson's score test, which requires
+fitting the auxiliary variable given in Equation 2.31 in the notes.
+We compute the geometric mean, store it in a scalar called 
+<code>gmean</code>, use this to compute the auxiliary variable 
+<code>atkinson</code>, and then fit the extended model:
+<pre class='stata'>
+. gen logy = ln(y)
+
+. quietly summarize logy
+
+. scalar gmean = exp(r(mean))
+
+. gen atkinson = y * (ln(y/gmean) - 1 )
+
+. regress change `predictors' atkinson
+
+<table class='stata'><tr><td><table class='stata'>
+<tr class='bb'><td class='br'>      Source </td><td class='bl'>       SS       df       MS   </td></tr>
+<tr class='bt'><td class='br'>       Model </td><td class='bl'>  2287.80568     4  571.951421</td></tr>
+<tr class='bb'><td class='br'>    Residual </td><td class='bl'>  362.394315    15   24.159621</td></tr>
+<tr class='bt'><td class='br'>       Total </td><td class='bl'>      2650.2    19  139.484211</td></tr>
+</table></td><td>           Number of obs =      20
+           F(  4,    15) =   23.67
+           Prob > F      =  0.0000
+           R-squared     =  0.8633
+           Adj R-squared =  0.8268
+           Root MSE      =  4.9152</td></tr></table>
+
+<table class='stata'>
+<tr class='bb bt'><td class='br'>      change </td><td class='bl'>      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]</td></tr>
+<tr class='bt'><td class='br'>     setting </td><td class='bl'>   .1969659   .0911353     2.16   0.047     .0027155    .3912163</td></tr>
+<tr><td class='br'>  effort_mod </td><td class='bl'>   3.785032   2.739944     1.38   0.187     -2.05502    9.625084</td></tr>
+<tr><td class='br'>  effort_str </td><td class='bl'>   11.66637   4.380003     2.66   0.018     2.330614    21.00212</td></tr>
+<tr><td class='br'>    atkinson </td><td class='bl'>   .5916301   .2275638     2.60   0.020     .1065895    1.076671</td></tr>
+<tr class='bb'><td class='br'>       _cons </td><td class='bl'>  -3.858157   6.197538    -0.62   0.543     -17.0679    9.351583</td></tr>
+</table></pre>
+<P>
+The coefficient of the auxiliary variable is 0.59, so the optimal
+power is approximately 1-0.59 = 0.41, suggesting again that 
+something like a square root transformation might be indicated.
+The associated <i>t</i>-statistic is significant at the two percent level,
+but the more accurate likelihood ratio test statistic calculated earlier
+was only borderline.  Thus, we do not have strong evidence against 
+keeping the response in the original scale.
+<P>
+<i>Exercise 1:</i> Try the Box-Tidwell procedure described in Section 
+2.10.4 of the notes to see if a transformation of social setting would 
+be indicated.
+<P>
+<i>Exercise 2:</i> Run <code>boxcox</code> to estimate optimal
+(and possibly different) transformations of change and setting, 
+but obviously not of the two dummies representing levels of effort
+</p>

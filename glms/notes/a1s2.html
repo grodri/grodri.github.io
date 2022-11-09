@@ -1,0 +1,186 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h3>A.2 Tests of Hypotheses</h3>
+<p>We consider three different types of tests of hypotheses.</p>
+
+<h4>A.2.1 Wald Tests</h4>
+<p>Under certain regularity conditions, the maximum likelihood
+estimator \( \hat{\boldsymbol{\theta}} \) has approximately in large samples
+a (multivariate) normal distribution with mean equal to the
+true parameter value and variance-covariance matrix given by the
+inverse of the information matrix, so that</p>
+
+\[\tag{A.20}\hat{\boldsymbol{\theta}} \sim N_p( \boldsymbol{\theta}, \boldsymbol{I}^{-1}(\boldsymbol{\theta})).\]
+<p>The regularity conditions include the following:
+the true parameter value \( \boldsymbol{\theta} \) must be interior to the parameter space,
+the log-likelihood function must be thrice differentiable, and
+the third derivatives must be bounded.</p>
+
+<p>This result provides a basis for constructing tests of hypotheses
+and confidence regions. For example under the hypothesis</p>
+
+\[\tag{A.21}H_0:  \boldsymbol{\theta} = \boldsymbol{\theta}_0\]
+<p>for a fixed value \( \boldsymbol{\theta}_0 \), the quadratic form</p>
+
+\[\tag{A.22}W = (\hat{\boldsymbol{\theta}}-\boldsymbol{\theta}_0)' \mbox{var}^{-1}(\hat{\boldsymbol{\theta}})
+(\hat{\boldsymbol{\theta}}-\boldsymbol{\theta}_0)\]
+<p>has approximately in large samples a chi-squared distribution with
+\( p \) degrees of freedom.</p>
+
+<p>This result can be extended to arbitrary linear combinations
+of \( \boldsymbol{\theta} \), including sets of elements of \( \boldsymbol{\theta} \).
+For example if we partition \( \boldsymbol{\theta}'=(\boldsymbol{\theta}_1',\boldsymbol{\theta}_2') \),
+where \( \boldsymbol{\theta}_2 \) has \( p_2 \) elements,then we can test
+the hypothesis that the last \( p_2 \) parameters are zero</p>
+
+\[ H_o : \boldsymbol{\theta}_2 = 0, \]
+<p>by treating the quadratic form</p>
+
+\[ W = \hat{\boldsymbol{\theta}_2}' \, \mbox{var}^{-1}(\hat{\boldsymbol{\theta}_2}) \, \hat{\boldsymbol{\theta}_2} \]
+<p>as a chi-squared statistic with \( p_2 \) degrees of freedom.
+When the subset has only one element we usually take the square root
+of the Wald statistic and treat the ratio</p>
+
+\[ z = \frac{\hat{\theta_j}}{\sqrt{\mbox{var}(\hat{\theta}_j)}} \]
+<p>as a z-statistic (or a t-ratio).</p>
+
+<p>These results can be modified by replacing the variance-covariance
+matrix of the mle with any consistent estimator. In particular, we often
+use the inverse of the expected information matrix evaluated at the mle</p>
+
+\[ \widehat{\mbox{var}}(\hat{\boldsymbol{\theta}}) = \boldsymbol{I}^{-1}(\hat{\boldsymbol{\theta}}). \]
+<p>Sometimes calculation of the expected information is difficult,
+and we use the observed information instead.</p>
+
+<i>Example: Wald Test in the Geometric Distribution.</i>
+Consider again our sample of \( n=20 \) observations from a geometric
+distribution with sample mean \( \bar{y}=3 \). The mle was
+\( \hat{\pi}=0.25 \) and its variance, using the
+estimated expected information, is \( 1/426.67=0.00234 \).
+Testing the hypothesis that the true probability is \( \pi=0.15 \)
+gives
+\[ \chi^2 = (0.25-0.15)^2/0.00234 = 4.27 \]
+<p>with one degree of freedom. The associated p-value is 0.039,
+so we would reject \( H_0 \) at the 5% significance level. \( \Box \)</p>
+
+<h4>A.2.2 Score Tests</h4>
+<p>Under some regularity conditions the score itself has an
+asymptotic normal distribution with mean 0 and variance-covariance
+matrix equal to the information matrix, so that</p>
+
+\[\tag{A.23}\boldsymbol{u}(\boldsymbol{\theta}) \sim N_p(0,\boldsymbol{I}(\boldsymbol{\theta})).\]
+<p>This result provides another basis for constructing tests of
+hypotheses and confidence regions. For example under</p>
+
+\[ H_0: \boldsymbol{\theta} = \boldsymbol{\theta}_0 \]
+<p>the quadratic form</p>
+
+\[ Q = \boldsymbol{u}(\boldsymbol{\theta}_0)' \, \boldsymbol{I}^{-1}(\boldsymbol{\theta}_0) \, \boldsymbol{u}(\boldsymbol{\theta}_0) \]
+<p>has approximately in large samples a chi-squared distribution with
+\( p \) degrees of freedom.</p>
+
+<p>The information matrix may be evaluated at the hypothesized value
+\( \boldsymbol{\theta}_0 \) or at the mle \( \hat{\boldsymbol{\theta}} \). Under \( H_0 \) both versions
+of the test are valid; in fact, they are asymptotically equivalent.
+One advantage of using \( \boldsymbol{\theta}_0 \) is that calculation of the mle may be
+bypassed. In spite of their simplicity, score tests are rarely used.</p>
+
+<i>Example: Score Test in the Geometric Distribution.</i>
+Continuing with our example, let us calculate the score test of
+\( H_0: \pi=0.15 \) when \( n=20 \) and \( \bar{y}=3 \). The score evaluated
+at 0.15 is \( u(0.15)=-62.7 \), and the expected information
+evaluated at 0.15 is \( \boldsymbol{I}(0.15)=1045.8 \), leading to
+\[ \chi^2 = 62.7^2/1045.8= 3.76 \]
+<p>with one degree of freedom. Since the 5% critical value is
+\( \chi^2_{1,0.95}=3.84 \) we would accept \( H_0 \) (just). \( \Box \)</p>
+
+<h4>A.2.3 Likelihood Ratio Tests</h4>
+<p>The third type of test is based on a comparison of maximized
+likelihoods for nested models.
+Suppose we are considering two models,
+\( \omega_1 \) and \( \omega_2 \), such that \( \omega_1 \subset \omega_2 \).
+In words, \( \omega_1 \) is a subset of
+(or can be considered a special case of) \( \omega_2 \).
+For example, one
+may obtain the simpler model \( \omega_1 \) by setting some
+of the parameters in \( \omega_2 \) to zero, and we want to test
+the hypothesis that those elements are indeed zero.</p>
+
+<p>The basic idea is to compare the maximized likelihoods
+of the two models.
+The maximized likelihood under the smaller model \( \omega_1 \) is</p>
+
+\[\tag{A.24}\max_{\boldsymbol{\theta} \in \omega_1}
+\mbox{L}(\boldsymbol{\theta}, \boldsymbol{y}) = \mbox{L}(\hat{\boldsymbol{\theta}}_{\omega_1},\boldsymbol{y}),\]
+<p>where \( \hat{\boldsymbol{\theta}}_{\omega_1} \) denotes the mle of \( \boldsymbol{\theta} \)
+under model \( \omega_1 \).</p>
+
+<p>The maximized likelihood under the larger model \( \omega_2 \)
+has the same form</p>
+
+\[\tag{A.25}\max_{\boldsymbol{\theta} \in \omega_2}
+\mbox{L}(\boldsymbol{\theta}, \boldsymbol{y}) = \mbox{L}(\hat{\boldsymbol{\theta}}_{\omega_2},\boldsymbol{y}),\]
+<p>where \( \hat{\boldsymbol{\theta}}_{\omega_2} \) denotes the mle of \( \boldsymbol{\theta} \)
+under model \( \omega_2 \).</p>
+
+<p>The ratio of these two quantities,</p>
+
+\[\tag{A.26}\lambda = \frac{ \mbox{L}(\hat{\boldsymbol{\theta}}_{\omega_1},\boldsymbol{y}) }
+{\mbox{L}(\hat{\boldsymbol{\theta}}_{\omega_2},\boldsymbol{y})},\]
+<p>is bound to be between 0 (likelihoods are non-negative) and 1
+(the likelihood of the smaller model can&rsquo;t exceed that of the
+larger model because it is <i>nested</i> on it).
+Values close to 0 indicate that the smaller model
+is not acceptable, compared to the larger model,
+because it would make the observed data very unlikely.
+Values close to 1 indicate that the smaller model is
+almost as good as the large model, making the data just as likely.</p>
+
+<p>Under certain regularity conditions, minus twice the log of the
+likelihood ratio has approximately in large samples a chi-square
+distribution with degrees of freedom equal to the difference in
+the number of parameters between the two models. Thus,</p>
+
+\[\tag{A.27}-2\log\lambda =
+   2\log\mbox{L}(\hat{\theta}_{\omega_2},y)
+ - 2\log\mbox{L}(\hat{\theta}_{\omega_1},y)
+ \rightarrow \chi^2_\nu,\]
+<p>where the degrees of freedom are
+\( \nu=\mbox{dim}(\omega_2)-\mbox{dim}(\omega_1) \),
+the number of parameters in the larger model \( \omega_2 \) minus the
+number of parameters in the smaller model \( \omega_1 \).</p>
+
+<p>Note that calculation of a likelihood ratio test requires
+fitting two models (\( \omega_1 \) and \( \omega_2 \)),
+compared to only one model for the Wald test (\( \omega_2 \))
+and sometimes no model at all for the score test.</p>
+
+<i>Example: Likelihood Ratio Test in the Geometric Distribution.</i>
+Consider testing \( H_0: \pi=0.15 \) with a sample of \( n=20 \)
+observations from a geometric distribution, and suppose the
+sample mean is \( \bar{y}=3 \).
+The value of the likelihood under \( H_0 \)
+is \( \log\mbox{L}(0.15) = -47.69 \).
+Its unrestricted maximum value, attained at
+the mle, is \( \log\mbox{L}(0.25) = -44.98 \).
+Minus twice the difference between these values is
+\[ \chi^2 = 2(47.69-44.99) = 5.4 \]
+<p>with one degree of freedom. This value is significant at the 5% level
+and we would reject \( H_0 \). Note that in our example the
+Wald, score and likelihood ratio tests
+give similar, but not identical, results. \( \Box \)</p>
+
+<p>The three tests discussed in this section are asymptotically equivalent,
+and are therefore expected to give similar results in large samples.
+Their small-sample properties are not known,
+but some simulation studies suggest that
+the likelihood ratio test may be better that its competitors
+in small samples.</p>
+

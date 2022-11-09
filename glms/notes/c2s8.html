@@ -1,0 +1,311 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+pager: true
+---
+
+
+<h3>2.8 Analysis of Covariance Models</h3>
+<p>We now consider models where some of the predictors are
+continuous variates and some are discrete factors.
+We continue to use the family planning program data,
+but this time we treat social setting as a variate and
+program effort as a factor.</p>
+
+<h4>2.8.1 The Data and Notation</h4>
+<p>Table <a href='#t_2_22'>2.22</a> shows the effort data classified
+into three groups, corresponding to weak (0&ndash;4), moderate
+(5&ndash;14) and strong (15+) programs. For each group we list 
+the values of social setting and CBR decline.</p>
+
+<a name='t_2_22'></a><p class='text-center'>Table 2.22. Social Setting Scores and CBR Percent Declines<br/>by Levels of Family Planning Effort</p>
+<table class='tex-table'>
+<tr class='bt'><td colspan='8' align='center'>Family Planning Effort</td></tr>
+<tr><td colspan='2' align='center'>Weak</td><td class='ar'></td><td colspan='2' align='center'>Moderate</td><td class='ar'></td><td colspan='2' align='center'>Strong</td></tr>
+<tr class='bb'><td class='ar'>Setting</td><td class='ar'>Change</td><td class='ar'></td><td class='ar'>Setting</td><td class='ar'>Change</td><td class='ar'></td><td class='ar'>Setting</td><td class='ar'>Change</td></tr>
+<tr class='bt'><td class='ar'>46</td><td class='ar'>1</td><td class='ar'></td><td class='ar'>68</td><td class='ar'>21</td><td class='ar'></td><td class='ar'>89</td><td class='ar'>29</td></tr>
+<tr><td class='ar'>74</td><td class='ar'>10</td><td class='ar'></td><td class='ar'>70</td><td class='ar'>0</td><td class='ar'></td><td class='ar'>77</td><td class='ar'>25</td></tr>
+<tr><td class='ar'>35</td><td class='ar'>0</td><td class='ar'></td><td class='ar'>60</td><td class='ar'>13</td><td class='ar'></td><td class='ar'>84</td><td class='ar'>29</td></tr>
+<tr><td class='ar'>83</td><td class='ar'>9</td><td class='ar'></td><td class='ar'>55</td><td class='ar'>4</td><td class='ar'></td><td class='ar'>89</td><td class='ar'>40</td></tr>
+<tr><td class='ar'>68</td><td class='ar'>7</td><td class='ar'></td><td class='ar'>51</td><td class='ar'>7</td><td class='ar'></td><td class='ar'>87</td><td class='ar'>21</td></tr>
+<tr><td class='ar'>74</td><td class='ar'>6</td><td class='ar'></td><td class='ar'>91</td><td class='ar'>11</td><td class='ar'></td><td class='ar'>84</td><td class='ar'>22</td></tr>
+<tr class='bb'><td class='ar'>72</td><td class='ar'>2</td><td class='ar'></td><td class='ar'></td><td class='ar'></td><td class='ar'></td><td class='ar'>84</td><td class='ar'>29</td></tr>
+</table>
+
+<p>As usual, we modify our notation to reflect the structure of the data. 
+Let \( k \) denote the number of groups, or levels of the discrete factor,
+\( n_i \) the number of observations in group \( i \),
+\( y_{ij} \) the value of the response and 
+\( x_{ij} \) the value of the predictor 
+for the \( j \)-th unit in the \( i \)-th group, with
+\( j=1,\ldots,n_i \) and \( i=1,\ldots,k \).</p>
+
+<h4>2.8.2 The Additive Model</h4>
+<p>We keep the random structure of our model, treating \( y_{ij} \) as a 
+realization of a random variable \( Y_{ij}\sim N(\mu_{ij},\sigma^2) \).
+To express the dependence of the expected response \( \mu_{ij} \)
+on a discrete factor we have used an anova model of the
+form \( \mu_{ij}=\mu+\alpha_i \), whereas to model the effect 
+of a continuous predictor we have used a regression model
+of the form \( \mu_{ij} = \alpha + \beta x_{ij} \). 
+Combining these two models we obtain the additive analysis of
+covariance model</p>
+
+<a name='e_2_21'></a>\[\tag{2.21}\mu_{ij} = \mu + \alpha_i + \beta x_{ij}.\]
+<p>This model defines a series of straight-line regressions,
+one for each level of the discrete factor
+(you may want to peek at Figure <a href='#f_2_6'>2.6</a>). 
+These lines have different intercepts \( \mu+\alpha_i \),
+but a common slope \( \beta \), so they are <i>parallel</i>.
+The common slope \( \beta \) represents the effects of the continuous 
+variate at any level of the factor, and the differences in
+intercept  \( \alpha_i \) represent the effects of the discrete factor
+at any given value of the covariate.</p>
+
+<p>The model as defined in Equation <a href='#e_2_21'>2.21</a> is not identified: 
+we could add a constant \( \delta \) to each \( \alpha_i \) and subtract it 
+from \( \mu \) without changing any of the expected values. 
+To solve this problem we set
+\( \alpha_1=0 \), so \( \mu \) becomes the intercept for
+the reference cell, and \( \alpha_i \) becomes the difference
+in intercepts between levels \( i \) and one of the factor.</p>
+
+<p>The analysis of covariance model may be obtained as a special case of the 
+general linear model by letting the model matrix \( \boldsymbol{X} \) have a
+column of ones representing the constant, a set of \( k \) dummy variables 
+representing the levels of the discrete factor, 
+and a column with the values of the continuous variate. 
+The model is not of full column rank because the dummies add
+up to the constant, so we drop one of them, obtaining the
+reference cell parametrization. Estimation and testing
+then follows form the general results in Sections 2.2 and 2.3.</p>
+
+<p>Table <a href='#t_2_23'>2.23</a> shows the parameter estimates, standard
+errors and \( t \)-ratios after fitting the model to the
+program effort data with setting as a variate and effort
+as a factor with three levels.</p>
+
+<a name='t_2_23'></a><p class='text-center'>Table 2.23. Parameter Estimates for Analysis of Covariance Model<br/>of CBR Decline by Social Setting and Family Planning Effort</p>
+<table class='tex-table'>
+<tr class='bt bb'><td class='al'>Parameter</td><td class='al'></td><td class='al'>Symbol</td><td class='ar'>Estimate</td><td class='ar'>Std.Error</td><td class='ar'>\(t\)-ratio</td></tr>
+<tr class='bt'><td class='al'>Constant</td><td class='al'></td><td class='al'>\(\mu\)</td><td class='ar'>\(-\)5.954</td><td class='ar'>7.166</td><td class='ar'>\(-\)0.83</td></tr>
+<tr><td class='al'>Effort</td><td class='al'>moderate</td><td class='al'>\(\alpha_2\)</td><td class='ar'>4.144</td><td class='ar'>3.191</td><td class='ar'>1.30</td></tr>
+<tr><td class='al'></td><td class='al'>strong</td><td class='al'>\(\alpha_3\)</td><td class='ar'>19.448</td><td class='ar'>3.729</td><td class='ar'>5.21</td></tr>
+<tr class='bb'><td class='al'>Setting</td><td class='al'>(linear)</td><td class='al'>\(\beta\)</td><td class='ar'>0.1693</td><td class='ar'>0.1056</td><td class='ar'>1.60</td></tr>
+</table>
+
+<p>The results show that each point in the social setting scale is
+associated with a further 0.17 percentage points of CBR decline
+at any given level of effort.
+Countries with  moderate and strong programs
+show additional CBR declines of 19 and 4 percentage points, respectively,
+compared to countries with weak programs at the same social setting.</p>
+
+<a name='f:ancova'></a><a name='f_2_6'></a><p style='text-align:center'>Figure 2.6 Analysis of Covariance Model for CBR Decline<br/>by Social Setting Score and Level of Program Effort</p>
+<img src='acplot.png' class='img-responsive center-block'/>
+<p>Figure <a href='#f_2_6'>2.6</a> depicts the analysis of covariance
+model in graphical form.
+We have plotted CBR decline as a function of social setting
+using the letters w, m and s for weak, moderate and strong
+programs, respectively. The figure also shows the fitted
+lines for the three types of programs. The vertical
+distances between the lines represent the effects of program 
+effort at any given social setting. The common slope represents 
+the effect of setting at any given level of effort.</p>
+
+<h4>2.8.3 The Hierarchical Anova Table</h4>
+<p>Fitting the analysis of covariance model to our data 
+gives a \( \mbox{RSS} \) of 525.7 on 16 d.f.&nbsp;(20 observations minus
+four parameters: the constant, two intercepts and one slope).
+Combining this result with the \( \mbox{RSS} \)&rsquo;s for the null
+model and for the model of Section 2.4 with a linear effect
+of setting, leads to the hierarchical analysis of variance
+shown in Table <a href='#t_2_24'>2.24</a>.</p>
+
+<a name='t_2_24'></a><p class='text-center'>Table 2.24. Hierarchical Anova for Analysis of Covariance Model<br/>of CBR Decline by Social Setting and Family Planning Effort</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al'>Source of</td><td class='ar'>Sum of</td><td class='ar'>Degrees of</td><td class='ar'>Mean</td><td class='ar'>\(F\)-</td></tr>
+<tr class='bb'><td class='al'>variation</td><td class='ar'>squares</td><td class='ar'>freedom</td><td class='ar'>squared</td><td class='ar'>ratio</td></tr>
+<tr class='bt'><td class='al'>Setting (linear)</td><td class='ar'>1201.1</td><td class='ar'>1</td><td class='ar'>1201.1</td><td class='ar'>36.5</td></tr>
+<tr><td class='al'>Effort\(|\)Setting</td><td class='ar'>923.4</td><td class='ar'>2</td><td class='ar'>461.7</td><td class='ar'>14.1</td></tr>
+<tr class='bb'><td class='al'>Residual</td><td class='ar'>525.7</td><td class='ar'>16</td><td class='ar'>32.9</td><td></td></tr>
+<tr class='bt bb'><td class='al'>Total</td><td class='ar'>2650.2</td><td class='ar'>19</td><td></td><td></td></tr>
+</table>
+
+<p>The most interesting statistic in this table is the \( F \)-test for 
+the net effect of program effort, which is 
+14.1 on two and 16 d.f.&nbsp;and is highly significant, so we reject 
+the hypothesis \( H_0: \alpha_2=\alpha_3=0 \) of no program effects.
+Looking at the \( t \)-ratios in Table <a href='#t_2_23'>2.23</a> we
+see that the difference between strong and weak
+programs is significant, while that between moderate
+and weak programs is not, confirming our earlier conclusions.
+The difference between strong and moderate programs, which is not 
+shown in the table, is also significant.</p>
+
+<p>From these results we can calculate proportions of
+variance explained in the usual fashion. In this
+example setting explains 45.3% of the variation in
+CBR declines and program effort explains an additional
+34.5%, representing 63.7% of what remained unexplained,
+for a total of 80.1%. You should be able to translate
+these numbers into simple, partial and multiple
+correlation coefficients or ratios.</p>
+
+<h4>2.8.4 Gross and Net Effects</h4>
+<p>The estimated net effects of setting and effort based on 
+the analysis of covariance model may be compared with 
+the estimated gross effects based on the simple linear regression
+model for setting and the one-way analysis of variance model
+for effort.  The results are presented in a format analogous
+to multiple classification analysis in Table <a href='#t_2_25'>2.25</a>,
+where we have used the reference cell method rather than the
+&lsquo;usual&rsquo; restrictions.</p>
+
+<a name='t_2_25'></a><p class='text-center'>Table 2.25. Gross and Net Effects of Social Setting Score<br/>and Level of Family Planning Effort on CBR Decline</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al' rowspan='2'>Predictor</td><td class='al' rowspan='2'>Category</td><td colspan='2' align='center'>Effect</td><td></td><td></td></tr>
+<tr class='bb'><td class='ar'>Gross</td><td class='ar'>Net</td><td></td><td></td></tr>
+<tr class='bt'><td class='al'>Setting</td><td class='al'>(linear)</td><td class='ar'>0.505</td><td class='ar'>0.169</td><td></td><td></td></tr>
+<tr><td class='al'>Effort</td><td class='al'>Weak</td><td class='ar'>&ndash;</td><td class='ar'>&ndash;</td><td class='ar'></td><td></td></tr>
+<tr><td class='al'></td><td class='al'>Moderate</td><td class='ar'>4.33</td><td class='ar'>4.14</td><td></td><td></td></tr>
+<tr class='bb'><td class='al'></td><td class='al'>Strong</td><td class='ar'>22.86</td><td class='ar'>19.45</td><td></td><td></td></tr>
+</table>
+
+<p>The effect of social setting is reduced substantially after adjusting
+for program effort. On the other hand, the effects of program effort,
+measured by comparing strong and moderate programs with weak ones,
+are hardly changed after adjustment for social setting.</p>
+
+<p>If interest centers on the effects of program effort, it may
+be instructive to calculate CBR declines by categories of program
+effort unadjusted and adjusted for linear effects of setting.
+To obtain adjusted means we use the fitted model to predict
+CBR decline with program effort set at the observed values
+but social setting set at the sample mean, which is 72.1 points.
+Thus, we calculate expected CBR decline at level \( i \) of
+effort holding setting constant at the mean as
+\(  \hat{\mu_i} = \hat{\mu} + \hat{\alpha}_i + \hat{\beta}\: 72.1 \).
+The results are shown in Table <a href='#t_2_26'>2.26</a>.</p>
+
+<a name='t_2_26'></a><p class='text-center'>Table 2.26. CBR Decline by Family Planning Effort<br/>Before and After Linear Adjustment for Social Setting</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al' rowspan='2'>Effort</td><td colspan='2' align='center'>CBR Decline</td></tr>
+<tr class='bb'><td class='ar'>Unadjusted</td><td class='ar'>Adjusted</td></tr>
+<tr class='bt'><td class='al'>Weak</td><td class='ar'>5.00</td><td class='ar'>6.25</td></tr>
+<tr><td class='al'>Moderate</td><td class='ar'>9.33</td><td class='ar'>10.40</td></tr>
+<tr class='bb'><td class='al'>Strong</td><td class='ar'>27.86</td><td class='ar'>25.70</td></tr>
+</table>
+
+<p>Thus, countries with strong program show on average a
+28% decline in the CBR, but these countries tend to have
+high social settings. If we adjusted linearly for this
+advantage, we would expect them to show only a 26% decline.
+Clearly, adjusting for social setting does not change things
+very much.</p>
+
+<p>Note that the analysis in this sections parallels the results
+in Section 2.7. The only difference is the treatment of
+social setting as a discrete factor with three levels or as a
+continuous variate with a linear effect.</p>
+
+<h4>2.8.5 The Assumption of Parallelism</h4>
+<p>In order to test the assumption of equal slopes in the
+analysis of covariance model we consider a more general
+model where</p>
+
+\[\tag{2.22}\mu_{ij} = (\mu + \alpha_i) + (\beta + \gamma_i) x_{ij}.\]
+<p>In this formulation each of the \( k \) groups has its own
+intercept \( \mu+\alpha_i \) and its own slope \( \beta+\gamma_i \).</p>
+
+<p>As usual, this model is overparametrized and we introduce
+the reference cell restrictions, setting \( \alpha_1=\gamma_1=0 \).
+As a result, \( \mu \) is the constant and \( \beta \) is the slope
+for the reference cell, \( \alpha_i \) and \( \gamma_i \) are the
+differences in intercept and slope, respectively,
+between level \( i \) and level one of the discrete factor.
+(An alternative is to drop \( \mu \) and \( \beta \), so that
+\( \alpha_i \) is the constant and \( \gamma_i \) is the slope
+for group \( i \). The reference cell method, however, extends
+more easily to models with more than one discrete factor.)</p>
+
+<p>The parameter \( \alpha_i \) may be interpreted as the effect of 
+level \( i \) of the factor, compared to level one,
+when the covariate is zero. 
+(This value will not be
+of interest if zero is not in the range of the data.)
+On the other hand, \( \beta \) is the expected increase in
+the response per unit increment in the variate when the
+factor is at level one.
+The parameter \( \gamma_i \) is the additional expected
+increase in the response per unit increment in the variate
+when the factor is at level \( i \) rather than one.
+Also, the product \( \gamma_i x \) is the additional effect
+of level \( i \) of the factor when the covariate has value
+\( x \) rather than zero.</p>
+
+<p>Before fitting this model to the program effort data
+we take the precaution of centering social setting by
+subtracting its mean. This simple transformation simplifies
+interpretation of the intercepts, since a value of zero 
+represents the mean setting and is therefore definitely in 
+the range of the data. 
+The resulting parameter estimates, standard errors and 
+\( t \)-ratios are shown in Table <a href='#t_2_27'>2.27</a>.</p>
+
+<a name='t_2_27'></a><p class='text-center'>Table 2.27. Parameter Estimates for 
+Ancova Model with Different Slopes<br/>for CBR Decline by Social Setting and Family Planning Effort</p>
+<table class='tex-table'>
+<tr class='bt bb'><td class='al'>Parameter</td><td class='al'></td><td class='al'>Symbol</td><td class='ar'>Estimate</td><td class='ar'>Std.Error</td><td class='ar'>\(t\)-ratio</td></tr>
+<tr class='bt'><td class='al'>Constant</td><td class='al'></td><td class='al'>\(\mu\)</td><td class='ar'>6.356</td><td class='ar'>2.477</td><td class='ar'>2.57</td></tr>
+<tr><td class='al'>Effort</td><td class='al'>moderate</td><td class='al'>\(\alpha_2\)</td><td class='ar'>3.584</td><td class='ar'>3.662</td><td class='ar'>0.98</td></tr>
+<tr><td class='al'></td><td class='al'>strong</td><td class='al'>\(\alpha_3\)</td><td class='ar'>13.333</td><td class='ar'>8.209</td><td class='ar'>1.62</td></tr>
+<tr><td class='al'>Setting</td><td class='al'>(linear)</td><td class='al'>\(\beta\)</td><td class='ar'>0.1836</td><td class='ar'>0.1397</td><td class='ar'>1.31</td></tr>
+<tr><td class='al'>Setting \(\times\)</td><td class='al'>moderate</td><td class='al'>\(\gamma_2\)</td><td class='ar'>\(-\)0.0868</td><td class='ar'>0.2326</td><td class='ar'>\(-\)0.37</td></tr>
+<tr class='bb'><td class='al'>Effort</td><td class='al'>strong</td><td class='al'>\(\gamma_3\)</td><td class='ar'>0.4567</td><td class='ar'>0.6039</td><td class='ar'>0.46</td></tr>
+</table>
+
+<p>The effect of setting is practically the same for countries
+with weak and moderate programs, but appears to be more
+pronounced in countries with strong programs. Note that
+the slope is 0.18 for weak programs but increases to
+0.64 for strong programs.
+Equivalently, the effect of strong programs compared to
+weak ones seems to be somewhat more pronounced at higher
+levels of social setting.  
+For example  strong programs show 13 percentage points 
+more CBR decline than weak programs at average levels
+of setting, but the difference increases to 18 percentage points
+if setting is 10 points above the mean. 
+However, the \( t \) ratios suggest
+that none of these interactions is significant.</p>
+
+<p>To test the hypothesis of parallelism (or no interaction)
+we need to consider the joint significance of the two 
+coefficients representing differences in slopes, i.e.&nbsp;we
+need to test  \( H_0: \gamma_2=\gamma_3=0 \). This
+is easily done comparing the model of this subsection,
+which has a \( \mbox{RSS} \) of 497.1 on 14 d.f., with the 
+parallel lines model of the previous subsection, which
+had a \( \mbox{RSS} \) of 525.7 on 16 d.f. The calculations are set out
+in Table <a href='#t_2_28'>2.28</a>.</p>
+
+<a name='t_2_28'></a><p class='text-center'>Table 2.28. Hierarchical Anova for Model with Different Slopes<br/>of CBR Decline by Social Setting and Family Planning Effort</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al'>Source of</td><td class='ar'>Sum of</td><td class='ar'>Degrees of</td><td class='ar'>Mean</td><td class='ar'>\(F\)-</td></tr>
+<tr class='bb'><td class='al'>variation</td><td class='ar'>squares</td><td class='ar'>freedom</td><td class='ar'>squared</td><td class='ar'>ratio</td></tr>
+<tr class='bt'><td class='al'>Setting (linear)</td><td class='ar'>1201.1</td><td class='ar'>1</td><td class='ar'>1201.1</td><td class='ar'>33.8</td></tr>
+<tr><td class='al'>Effort ( intercepts)</td><td class='ar'>923.4</td><td class='ar'>2</td><td class='ar'>461.7</td><td class='ar'>13.0</td></tr>
+<tr><td class='al'>Setting \(\times\) Effort (slopes)</td><td class='ar'>28.6</td><td class='ar'>2</td><td class='ar'>14.3</td><td class='ar'>0.4</td></tr>
+<tr><td class='al'>Residual</td><td class='ar'>497.1</td><td class='ar'>14</td><td class='ar'>35.5</td><td></td></tr>
+<tr class='bb'><td class='al'>Total</td><td class='ar'>2650.2</td><td class='ar'>19</td><td></td><td></td></tr>
+</table>
+
+<p>The test for parallelism gives an \( F \)-ratio of 0.4 on two 
+and 14 d.f., and is clearly not significant. We therefore
+accept the hypothesis of parallelism and conclude that we
+have no evidence of an interaction between program effort and
+social setting.</p>

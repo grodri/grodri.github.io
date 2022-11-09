@@ -1,0 +1,319 @@
+---
+layout: default
+section: glms
+tab: "Stata Logs"
+pager: true
+---
+
+
+<h3 class="first">2.7 Two-Way Analysis of Variance</h3> 
+<P>
+Let us start by creating a copy of program effort and
+grouping it into categories 0-4, 5-14 and 15+. This time
+we will make the copying, recoding and labelling in just
+one command, using <code>effort_g</code> for effort in groups.
+<pre class='stata'>
+. recode effort (0/4=1 "Weak") (5/14=2 "Moderate") ///
+>         (15/max=3 "Strong"),    gen(effort_g) label(effort_g)
+(20 differences between effort and effort_g)</pre>
+<P>
+Here's  a table showing steeper declines in countries with
+strong programs, with a smaller difference between weak and moderate:
+<pre class='stata'>
+. tabulate effort_g, summarize(change)
+
+<table class='stata'>
+<tr><td class='br'>  RECODE of </td><td class='bl'>                                    </td></tr>
+<tr><td class='br'>     effort </td><td class='bl'> Summary of % Change in CBR between </td></tr>
+<tr><td class='br'>   (Program </td><td class='bl'>            1965 and 1975           </td></tr>
+<tr class='bb'><td class='br'>    Effort) </td><td class='bl'>        Mean   Std. Dev.       Freq.</td></tr>
+<tr class='bt'><td class='br'>       Weak </td><td class='bl'>           5           4           7</td></tr>
+<tr><td class='br'>   Moderate </td><td class='bl'>   9.3333333    7.393691           6</td></tr>
+<tr class='bb'><td class='br'>     Strong </td><td class='bl'>   27.857143   6.3358391           7</td></tr>
+<tr class='bt'><td class='br'>      Total </td><td class='bl'>        14.3   11.810343          20</td></tr>
+</table></pre>
+<P>
+<h4>An Additive Model</h4> 
+ 
+Let us create dummy variables for moderate and strong programs.
+<pre class='stata'>
+. gen effort_mod = effort_g==2 // or effort <=5  & effort < 15
+
+. gen effort_str = effort_g==3 // or effort >=15 & !missing(effort)</pre>
+<P>
+The comments show how we could create these dummies directly from
+the original variable, bypassing the creation of the grouped factor.
+<P>
+We are now ready to fit the additive model with weak programs
+in low setting countries as the reference cell:
+<pre class='stata'>
+. regress change setting_med setting_high effort_mod effort_str
+
+<table class='stata'><tr><td><table class='stata'>
+<tr class='bb'><td class='br'>      Source </td><td class='bl'>       SS       df       MS   </td></tr>
+<tr class='bt'><td class='br'>       Model </td><td class='bl'>  2075.80829     4  518.952073</td></tr>
+<tr class='bb'><td class='br'>    Residual </td><td class='bl'>   574.39171    15  38.2927807</td></tr>
+<tr class='bt'><td class='br'>       Total </td><td class='bl'>      2650.2    19  139.484211</td></tr>
+</table></td><td>           Number of obs =      20
+           F(  4,    15) =   13.55
+           Prob > F      =  0.0001
+           R-squared     =  0.7833
+           Adj R-squared =  0.7255
+           Root MSE      =  6.1881</td></tr></table>
+
+<table class='stata'>
+<tr class='bb bt'><td class='br'>      change </td><td class='bl'>      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]</td></tr>
+<tr class='bt'><td class='br'> setting_med </td><td class='bl'>  -1.680829   3.854967    -0.44   0.669    -9.897497    6.535839</td></tr>
+<tr><td class='br'>setting_high </td><td class='bl'>   2.387565    4.45653     0.54   0.600    -7.111304    11.88643</td></tr>
+<tr><td class='br'>  effort_mod </td><td class='bl'>   3.836269   3.574561     1.07   0.300    -3.782727    11.45527</td></tr>
+<tr><td class='br'>  effort_str </td><td class='bl'>    20.6715   4.339232     4.76   0.000     11.42265    29.92036</td></tr>
+<tr class='bb'><td class='br'>       _cons </td><td class='bl'>   5.379275    3.10526     1.73   0.104     -1.23943    11.99798</td></tr>
+</table></pre>
+<P>
+Compare these estimates with the results in Table 2.15 
+and the anova with Table 2.16 in the lecture notes.
+<P>
+Countries with strong family planning programs show steeper
+declines than countries with weak programs at the same level 
+of social setting, on average 21 percentage points more. 
+<P>
+This statement is based on the assumption of additivity,
+namely that the difference in outcomes across categories of
+program effort is the same at every level of setting. 
+We will test this assumption <a href='#2wayi'>below</a>. 
+<P>
+<h4>Factor Variables</h4> 
+<P>
+Before we do that, let us show how we can get exactly the
+same results, and admittedly with less effort, using
+<i>factor variables</i>. We simply use the categorical
+versions of our predictors with the <code>i.</code> prefix
+to instruct Stata to treat them as factors:
+<pre class='stata'>
+. regress change i.setting_g i.effort_g
+
+<table class='stata'><tr><td><table class='stata'>
+<tr class='bb'><td class='br'>      Source </td><td class='bl'>       SS       df       MS   </td></tr>
+<tr class='bt'><td class='br'>       Model </td><td class='bl'>  2075.80829     4  518.952073</td></tr>
+<tr class='bb'><td class='br'>    Residual </td><td class='bl'>   574.39171    15  38.2927807</td></tr>
+<tr class='bt'><td class='br'>       Total </td><td class='bl'>      2650.2    19  139.484211</td></tr>
+</table></td><td>           Number of obs =      20
+           F(  4,    15) =   13.55
+           Prob > F      =  0.0001
+           R-squared     =  0.7833
+           Adj R-squared =  0.7255
+           Root MSE      =  6.1881</td></tr></table>
+
+<table class='stata'>
+<tr class='bb bt'><td class='br'>      change </td><td class='bl'>      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]</td></tr>
+<tr class='bt'><td class='br'>   setting_g </td><td class='bl'>                                                                </td></tr>
+<tr><td class='br'>     Medium  </td><td class='bl'>  -1.680829   3.854967    -0.44   0.669    -9.897497    6.535839</td></tr>
+<tr><td class='br'>       High  </td><td class='bl'>   2.387565    4.45653     0.54   0.600    -7.111304    11.88643</td></tr>
+<tr><td class='br'>             </td><td class='bl'>                                                                </td></tr>
+<tr><td class='br'>    effort_g </td><td class='bl'>                                                                </td></tr>
+<tr><td class='br'>   Moderate  </td><td class='bl'>   3.836269   3.574561     1.07   0.300    -3.782727    11.45527</td></tr>
+<tr><td class='br'>     Strong  </td><td class='bl'>    20.6715   4.339232     4.76   0.000     11.42265    29.92036</td></tr>
+<tr><td class='br'>             </td><td class='bl'>                                                                </td></tr>
+<tr class='bb'><td class='br'>       _cons </td><td class='bl'>   5.379275    3.10526     1.73   0.104     -1.23943    11.99798</td></tr>
+</table></pre>
+<P>
+Stata 13 conveniently labels the categories. Stata 11 or 12 use
+the numeric codes and you have to remember that 
+setting 2 and 3 are medium and  high, and 
+effort 2 and 3 are moderate and strong programs.
+<P>
+<h4>Fitted Values</h4> 
+<P>
+Let us reproduce Table 2.17 in the notes, showing fitted means
+by setting and effort. I will use <code>predict</code> to
+generate fitted values, and then simply tabulate them by the
+two relevant factors:
+<pre class='stata'>
+. predict anovafit
+(option xb assumed; fitted values)
+
+. label var anovafit "Two-way anova fit"
+
+. tabulate setting_g effort_g , summarize(anovafit) means
+
+                        Means of Two-way anova fit
+
+<table class='stata'>
+<tr><td class='br'>    Social </td><td class='blbr'>   RECODE of effort (Program     </td><td class='bl'>          </td></tr>
+<tr><td class='br'>   Setting </td><td class='blbr'>            Effort)              </td><td class='bl'>          </td></tr>
+<tr class='bb'><td class='br'> (Grouped) </td><td class='blbr'>      Weak   Moderate     Strong </td><td class='bl'>     Total</td></tr>
+<tr class='bt'><td class='br'>       Low </td><td class='blbr'> 5.3792748  9.2155437          . </td><td class='bl'> 7.5714285</td></tr>
+<tr><td class='br'>    Medium </td><td class='blbr'> 3.6984456  7.5347152  24.369947 </td><td class='bl'> 8.5999999</td></tr>
+<tr class='bb'><td class='br'>      High </td><td class='blbr'> 7.7668395  11.603108  28.438341 </td><td class='bl'> 23.749999</td></tr>
+<tr class='bt'><td class='br'>     Total </td><td class='blbr'> 5.0000001  9.3333331  27.857142 </td><td class='bl'>      14.3</td></tr>
+</table></pre>
+<P>
+Can you get the missing cell in the upper right corner? 
+How about the margins?
+<P>
+<h4><a name="2wayi"></a>A Two-Factor Interaction</h4> 
+<P>
+Let us now consider a model with an interaction between
+social setting and program effort, so differences in fertility
+decline by effort will vary by setting. To do this "by hand"
+we need to create four dummy variables. At this point it becomes
+hard to create reasonable names in 12 characters or less.
+I'll use one character for each variable and three for each
+category. An alternative is to use camelCasing, which saves
+the spaces used by the underscores.
+<pre class='stata'>
+. gen se_med_mod = setting_med  * effort_mod
+
+. gen se_med_str = setting_med  * effort_str
+
+. gen se_hi_mod  = setting_high * effort_mod
+
+. gen se_hi_str  = setting_high * effort_str
+
+. regress change setting_med setting_high effort_mod effort_str ///
+>         se_med_mod se_med_str se_hi_mod se_hi_str
+note: se_hi_str omitted because of collinearity
+
+<table class='stata'><tr><td><table class='stata'>
+<tr class='bb'><td class='br'>      Source </td><td class='bl'>       SS       df       MS   </td></tr>
+<tr class='bt'><td class='br'>       Model </td><td class='bl'>     2189.45     7  312.778571</td></tr>
+<tr class='bb'><td class='br'>    Residual </td><td class='bl'>      460.75    12  38.3958333</td></tr>
+<tr class='bt'><td class='br'>       Total </td><td class='bl'>      2650.2    19  139.484211</td></tr>
+</table></td><td>           Number of obs =      20
+           F(  7,    12) =    8.15
+           Prob > F      =  0.0009
+           R-squared     =  0.8261
+           Adj R-squared =  0.7247
+           Root MSE      =  6.1964</td></tr></table>
+
+<table class='stata'>
+<tr class='bb bt'><td class='br'>      change </td><td class='bl'>      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]</td></tr>
+<tr class='bt'><td class='br'> setting_med </td><td class='bl'>   3.333333    5.05937     0.66   0.522    -7.690086    14.35675</td></tr>
+<tr><td class='br'>setting_high </td><td class='bl'>   6.333333   7.155029     0.89   0.393    -9.256136     21.9228</td></tr>
+<tr><td class='br'>  effort_mod </td><td class='bl'>   8.583333   4.732607     1.81   0.095    -1.728132     18.8948</td></tr>
+<tr><td class='br'>  effort_str </td><td class='bl'>   19.33333   6.692917     2.89   0.014      4.75072    33.91595</td></tr>
+<tr><td class='br'>  se_med_mod </td><td class='bl'>  -14.58333   8.578579    -1.70   0.115    -33.27445    4.107784</td></tr>
+<tr><td class='br'>  se_med_str </td><td class='bl'>  -.3333333   9.797427    -0.03   0.973    -21.68009    21.01343</td></tr>
+<tr><td class='br'>   se_hi_mod </td><td class='bl'>  -6.583333   9.959379    -0.66   0.521    -28.28296    15.11629</td></tr>
+<tr><td class='br'>   se_hi_str </td><td class='bl'>          0  (omitted)                                          </td></tr>
+<tr class='bb'><td class='br'>       _cons </td><td class='bl'>   2.666667   3.577515     0.75   0.470    -5.128068     10.4614</td></tr>
+</table></pre>
+<P>
+Oops, Stata dropped a term. Why? Because there are no countries with 
+strong programs in low settings, so we have only eight groups,
+but are trying to represent their means using nine parameters, 
+which is obviously one too many.  
+<P>
+Fortunately this doesn't affect testing. We can use the sum of
+squares to build the hierarchical anova in Table 2.21,
+and Stata can test the interaction for us, dropping automatically
+the redundant term:
+<pre class='stata'>
+. test se_med_mod se_med_str se_hi_mod se_hi_str
+
+ ( 1)  se_med_mod = 0
+ ( 2)  se_med_str = 0
+ ( 3)  se_hi_mod = 0
+ ( 4)  o.se_hi_str = 0
+       Constraint 4 dropped
+
+       F(  3,    12) =    0.99
+            Prob > F =    0.4318</pre>
+<P>
+We have no evidence that the differences by effort vary with social
+setting. 
+<P>
+This makes the issue of interpreting parameters moot, but it may be 
+worth noting briefly the problems caused by the empty cell. As things 
+stand, the coefficient of moderate effort compares moderate with weak 
+at low setting, but the coefficient of strong effort compares strong 
+with weak at high setting. 
+(Table 2.20 in the notes may help see this point. When the term for 
+high and strong is dropped, the only difference between weak and strong 
+programs at high setting is the coefficient of strong.)
+<P>
+The parametrization I like best for this problem combines the main 
+effects of effort with the interactions, so we obtain differences between 
+strong and weak, and between moderate and weak programs, at each level 
+of setting. This allows us to omit the difference between strong
+and weak programs at low setting, which is the one we can't identify.
+I will not pursue this tack at this point, but will return to the idea
+when we have to interpret a significant interaction.
+<P>
+<h4>Factor Interactions</h4> 
+<P>
+We can fit the same model using <i>factor variables</i>, we
+just need to use the <code>i.</code> prefix to indicate that
+grouped setting and effort should be treated as factors, not
+covariates, combined with a hash <code>#</code> to indicate
+interactions. 
+<P>
+Stata understands a single or double hash, typed without
+spaces after a factor specification:
+<P>
+<ul>
+<li><p> A single hash,
+as in <code>i.setting_g#i.effort_g</code>, takes the first cell
+in the cross-tabulation of setting and effort groups 
+as the baseline and creates eight dummies, one for each
+of the other cells. 
+In this parametrization each combination of levels is compared 
+directly to the baseline, unless you explicity include the
+main effects as well.
+</p></li>
+<li><p>
+A double hash, 
+as in <code>i.setting_g##i.effort_g</code>,
+creaes main effects and interactions, and corresponds to the
+parametrization we used above. Recall that in this case
+"main" effects are really differences between categories of
+one factor when the other factor is at the baseline, and the
+"interactions" are <i>additional</i> differences when the
+other factor is not at the baseline. This is equivalent to
+writing <code>i.setting_g i.effort_g i_setting_g#i.effort_g</code>
+</p></li></ul>
+<P>
+In our example we have the added complication that one of the
+cells, (1,3) is empty. Stata detects this and drops the last
+term:
+<pre class='stata'>
+. regress change i.setting_g##i.effort_g
+note: 1b.setting_g#3.effort_g identifies no observations in the sample
+note: 3.setting_g#3.effort_g omitted because of collinearity
+
+<table class='stata'><tr><td><table class='stata'>
+<tr class='bb'><td class='br'>      Source </td><td class='bl'>       SS       df       MS   </td></tr>
+<tr class='bt'><td class='br'>       Model </td><td class='bl'>     2189.45     7  312.778571</td></tr>
+<tr class='bb'><td class='br'>    Residual </td><td class='bl'>      460.75    12  38.3958333</td></tr>
+<tr class='bt'><td class='br'>       Total </td><td class='bl'>      2650.2    19  139.484211</td></tr>
+</table></td><td>           Number of obs =      20
+           F(  7,    12) =    8.15
+           Prob > F      =  0.0009
+           R-squared     =  0.8261
+           Adj R-squared =  0.7247
+           Root MSE      =  6.1964</td></tr></table>
+
+<table class='stata'>
+<tr class='bb bt'><td class='br'>            change </td><td class='bl'>      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]</td></tr>
+<tr class='bt'><td class='br'>         setting_g </td><td class='bl'>                                                                </td></tr>
+<tr><td class='br'>           Medium  </td><td class='bl'>   3.333333    5.05937     0.66   0.522    -7.690086    14.35675</td></tr>
+<tr><td class='br'>             High  </td><td class='bl'>   6.333333   7.155029     0.89   0.393    -9.256136     21.9228</td></tr>
+<tr><td class='br'>                   </td><td class='bl'>                                                                </td></tr>
+<tr><td class='br'>          effort_g </td><td class='bl'>                                                                </td></tr>
+<tr><td class='br'>         Moderate  </td><td class='bl'>   8.583333   4.732607     1.81   0.095    -1.728132     18.8948</td></tr>
+<tr><td class='br'>           Strong  </td><td class='bl'>   19.33333   6.692917     2.89   0.014      4.75072    33.91595</td></tr>
+<tr><td class='br'>                   </td><td class='bl'>                                                                </td></tr>
+<tr><td class='br'>setting_g#effort_g </td><td class='bl'>                                                                </td></tr>
+<tr><td class='br'>       Low#Strong  </td><td class='bl'>          0  (empty)                                            </td></tr>
+<tr><td class='br'>  Medium#Moderate  </td><td class='bl'>  -14.58333   8.578579    -1.70   0.115    -33.27445    4.107784</td></tr>
+<tr><td class='br'>    Medium#Strong  </td><td class='bl'>  -.3333333   9.797427    -0.03   0.973    -21.68009    21.01343</td></tr>
+<tr><td class='br'>    High#Moderate  </td><td class='bl'>  -6.583333   9.959379    -0.66   0.521    -28.28296    15.11629</td></tr>
+<tr><td class='br'>      High#Strong  </td><td class='bl'>          0  (omitted)                                          </td></tr>
+<tr><td class='br'>                   </td><td class='bl'>                                                                </td></tr>
+<tr class='bb'><td class='br'>             _cons </td><td class='bl'>   2.666667   3.577515     0.75   0.470    -5.128068     10.4614</td></tr>
+</table></pre>
+<P>
+Unfortunately, when we use factor variables we can't control which of the 
+dummies is dropped.  All we can do is change the baseline, or combine 
+categories, but that is not particularly helpful.
+</p>

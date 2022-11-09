@@ -1,0 +1,166 @@
+---
+layout: default
+section: glms
+tab: "R Logs"
+pager: true
+---
+
+
+<h2>Models for Clustered and Panel Data</h2>
+<p>We will illustrate the analysis of clustered or panel data using three examples, two dealing with linear models
+and one with logits models. The linear model examples use clustered school data on IQ and language ability,
+and longitudinal state-level data on Aid to Families with Dependent Children (AFDC).</p>
+<h3>8.1 Clustered Linear Model</h3>
+<p>Snijders and Boskers (1999), Multilevel Analysis, have data for 2287 8-th grade children in 131 schools in
+The Netherlands. The data are available from http://stat.gamma.rug.nl/snijders, follow the link to the ML book.
+The data are in the file MLBOOK1.DAT, which includes variable names as well as the data. I split that into two
+separate files and made all variable names lowercase. The data needed here are available in a Stata file.</p>
+
+
+<pre class='r weave-r'>
+> library(foreign)
+
+> sn <- read.dta("http://data.princeton.edu/wws509/datasets/snijders.dta")
+</pre>
+
+<h4>OLS</h4>
+<p>We are interested in the relationship between verbal IQ and the score in a language test.
+OLS gives a highly significant coefficient of 2.65 with a standard error of 0.072:</p>
+
+
+<pre class='r weave-r'>
+> ols <- lm(langpost ~ iq_verb, data=sn)
+
+> coef(summary(ols))
+            Estimate Std. Error  t value      Pr(>|t|)
+(Intercept) 9.528484 0.86682065 10.99245  1.995001e-27
+iq_verb     2.653896 0.07215406 36.78096 5.020594e-233
+</pre>
+
+<h4>Random Effects</h4>
+<p>We consider the fact that the observations are probably correlated within each school because of
+unobserved school characteristics that affect language scores (such as a good language teacher).</p>
+
+
+<pre class='r weave-r'>
+> library(lme4)
+
+> re <- lmer(langpost ~ iq_verb + (1 | schoolnr), data = sn, REML = FALSE)
+
+> summary(re)
+Linear mixed model fit by maximum likelihood  ['lmerMod']
+Formula: langpost ~ iq_verb + (1 | schoolnr)
+   Data: sn
+
+     AIC      BIC   logLik deviance df.resid 
+ 15259.8  15282.7  -7625.9  15251.8     2283 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-4.0958 -0.6370  0.0580  0.7069  3.1467 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ schoolnr (Intercept)  9.497   3.082   
+ Residual             42.227   6.498   
+Number of obs: 2287, groups:  schoolnr, 131
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept) 11.16511    0.87879   12.71
+iq_verb      2.48809    0.07005   35.52
+
+Correlation of Fixed Effects:
+        (Intr)
+iq_verb -0.937
+</pre>
+
+<p>The coefficient of verbal IQ is 2.49 with a standard error of 0.07 and is still highly significant.
+We have also learned that the language scores are correlated within schools, in fact 18.3% of the
+variation in language scores net of verbal IQ can be attributed to the schools (the rest is due to
+the pupils). The intra-class correlation is highly significant, as shown by a test statistic of 225.9
+(conservatively a chi-squared with 1 d.f.)</p>
+<h4>Fixed Effects (Within)</h4>
+<p>The best way to estimate fixed-effect models in R is using the <code>plm</code> package.</p>
+
+
+<pre class='r weave-r'>
+> library(plm)
+
+> fe <- plm(langpost ~ iq_verb, data = sn, model = "within", index = "schoolnr")
+
+> summary(fe)
+Oneway (individual) effect Within Model
+
+Call:
+plm(formula = langpost ~ iq_verb, data = sn, model = "within", 
+    index = "schoolnr")
+
+Unbalanced Panel: n=131, T=4-35, N=2287
+
+Residuals :
+   Min. 1st Qu.  Median 3rd Qu.    Max. 
+-25.800  -4.140   0.352   4.550  19.400 
+
+Coefficients :
+        Estimate Std. Error t-value  Pr(>|t|)    
+iq_verb 2.414772   0.071647  33.704 < 2.2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Total Sum of Squares:    138670
+Residual Sum of Squares: 90806
+R-Squared:      0.34517
+Adj. R-Squared: 0.32525
+F-statistic: 1135.95 on 1 and 2155 DF, p-value: < 2.22e-16
+</pre>
+
+<p>Our results are very robust, the coefficient of verbal IQ is 2.41 with a standard error of 0.071.
+We feel pretty confident on our conclusions.</p>
+<h4>Group Means (Between)</h4>
+<p>If you are not deterred by the ecological fallacy you could have analyzed group means.
+COpmuting means and sample size is easy with the <code>dplyr</code> library. (The <code>plm</code> makes it even
+easier with the &quot;between&quot; model, but uses unweighted means.)</p>
+
+
+<pre class='r weave-r'>
+> library(dplyr)
+
+>  msn <- summarize(group_by(sn, schoolnr), 
++ 	langpost=mean(langpost), iq_verb=mean(iq_verb), w =n())
+
+> be <- lm(langpost ~ iq_verb, data = msn, weight = w)
+
+> summary(be)
+
+Call:
+lm(formula = langpost ~ iq_verb, data = msn, weights = w)
+
+Weighted Residuals:
+    Min      1Q  Median      3Q     Max 
+-37.879  -8.088  -1.064   7.022  28.485 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   -5.210      3.962  -1.315    0.191    
+iq_verb        3.899      0.334  11.674   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 13.26 on 129 degrees of freedom
+Multiple R-squared:  0.5137,	Adjusted R-squared:   0.51 
+F-statistic: 136.3 on 1 and 129 DF,  p-value: < 2.2e-16
+</pre>
+
+<p>This gives a much larger coefficient of 3.90, albeit with a larger standard error of 0.334.
+Clearly working with aggregate data would overestimate the relationship between verbal IQ
+and language scores. Note that the random-effects estimate is between the within and between
+estimates (it always is).</p>
+<p>The following figure shows the data, separate regression fits for each of the 131 schools,
+and the between, within, and random-effects estimates.</p>
+<img src="snijders.png" style="display:block;margin:auto">
+<p style="text-align:center">Language Scores and Verbal IQ</a></p>
+<p>The red line is the between-groups estimate, which overstates the relationship between IQ
+and language scores. The blue line is the within-groups or fixed-effects estimator.
+The green line is the random-effects estimator, which is always an average of the within
+and between, and in this case comes very close to the within-groups regressions.</p>

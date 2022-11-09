@@ -1,0 +1,426 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h3>3.6 Multi-factor Models: Model Selection</h3>
+<p>Let us consider a full analysis of the contraceptive
+use data in Table <a href='#t_3_1'>3.1</a>, including all three predictors:
+age, education and desire for more children.</p>
+
+<p>We use three subscripts to reflect the structure of the data,
+so \( \pi_{ijk} \) is the probability of using contraception
+in the \( (i,j,k) \)-th group, where \( i=1,2,3,4 \) indexes the
+age groups, \( j=1,2 \) the levels of education and \( k=1,2 \)
+the categories of desire for more children.</p>
+
+<h4>3.6.1 Deviances for One and Two-Factor Models</h4>
+<p>There are 19 basic models of interest for these data, which
+are listed for completeness in Table <a href='#t_3_13'>3.13</a>.
+Not all of these models would be of interest in any given
+analysis.
+The table shows the model in abbreviated notation, the
+formula for the linear predictor,
+the deviance and its degrees of freedom.  \(\def\ts{\mbox{ }}\)
+</p>
+
+<a name='t_3_13'></a><p class='text-center'>Table 3.13. Deviance Table for Logit Models of Contraceptive Use</p>
+<table class='tex-table'>
+<tr class="bt bb"><td>Model</td><td colspan="7">\(\mbox{logit}(\pi_{ijk})\)</td><td align='right'>Dev.</td><td align='right'>d.f.</td></tr>
+<tr><td style='padding-top:5px;'>Null</td><td>\(\eta\)            </td><td>    </td><td>    </td><td>    </td><td>    </td><td>     </td><td>   </td><td class='r'>  165.77</td><td class='r'> 15</td></tr>
+<tr><td></td></tr>
+<tr><td class='sh'><i>One Factor</i></td></tr>
+<tr><td class='l'>\(A\)ge</td><td>      \(\eta\) </td><td> \(+\ts\alpha_i\) </td><td>    </td><td>    </td><td>    </td><td>     </td><td>    </td><td class='r'> 86.58</td><td class='r'> 12</td></tr>
+<tr><td class='l'>\(E\)ducation</td><td>\(\eta\) </td><td>    </td><td> \(+\ts\beta_j\) </td><td>    </td><td>    </td><td>     </td><td>    </td><td class='r'>  165.07</td><td class='r'> 14</td></tr>
+<tr><td class='l'>\(D\)esire</td><td>   \(\eta\) </td><td>    </td><td>    </td><td> \(+\ts\gamma_k\) </td><td>    </td><td>     </td><td>    </td><td class='r'> 74.10</td><td class='r'> 14</td></tr>
+<tr><td></td></tr>
+<tr><td class='sh'><i>Two Factors</i></td></tr>
+<tr><td class='l'>\(A +\ts E\)</td><td>   \(\eta\) </td><td> \(+\ts\alpha_i\) </td><td> \(+\ts\beta_j\) </td><td>    </td><td>     </td><td>     </td><td>     </td><td class='r'> 80.42</td><td class='r'>  11</td></tr>
+<tr><td class='l'>\(A +\ts D\)</td><td>   \(\eta\) </td><td> \(+\ts\alpha_i\) </td><td>    </td><td> \(+\ts\gamma_k\) </td><td>     </td><td>     </td><td>     </td><td class='r'> 36.89</td><td class='r'>  11</td></tr>
+<tr><td class='l'>\(E +\ts D\)</td><td>   \(\eta\) </td><td>    </td><td> \(+\ts\beta_j\) </td><td> \(+\ts\gamma_k\) </td><td>     </td><td>     </td><td>     </td><td class='r'> 73.87</td><td class='r'>  13</td></tr>
+<tr><td class='l'>\(A E\)</td><td> \(\eta\) </td><td> \(+\ts\alpha_i\) </td><td> \(+\ts\beta_j\) </td><td>    </td><td> \(+\ts{\alpha\beta}_{ij}\) </td><td>    </td><td>     </td><td class='r'> 73.03</td><td class='r'> 8</td></tr>
+<tr><td class='l'>\(A D\)</td><td> \(\eta\) </td><td> \(+\ts\alpha_i\) </td><td>    </td><td> \(+\ts\gamma_k\) </td><td>     </td><td> \(+\ts{\alpha\gamma}_{ik}\) </td><td>     </td><td class='r'> 20.10</td><td class='r'> 8</td></tr>
+<tr><td class='l'>\(E D\)</td><td> \(\eta\) </td><td>    </td><td> \(+\ts\beta_j\) </td><td> \(+\ts\gamma_k\) </td><td>     </td><td>     </td><td> \(+\ts{\beta\gamma}_{jk}\) </td><td class='r'> 67.64</td><td class='r'>  12</td></tr>
+<tr><td></td></tr>
+<tr><td class='sh'><i>Three Factors</i></td></tr>
+<tr><td class='l'>\(A +\ts E +\ts D\)</td><td>   \(\eta\) </td><td> \(+\ts\alpha_i\) </td><td> \(+\ts\beta_j\) </td><td> \(+\ts\gamma_k\) </td><td>     </td><td>     </td><td>     </td><td class='r'> 29.92</td><td class='r'>  10</td></tr>
+<tr><td class='l'>\(A E +\ts D\)</td><td> \(\eta\) </td><td> \(+\ts\alpha_i\) </td><td> \(+\ts\beta_j\) </td><td> \(+\ts\gamma_k\) </td><td> \(+\ts{\alpha\beta}_{ij}\) </td><td>     </td><td>     </td><td class='r'> 23.15</td><td class='r'> 7</td></tr>
+<tr><td class='l'>\(A D +\ts E\)</td><td> \(\eta\) </td><td> \(+\ts\alpha_i\) </td><td> \(+\ts\beta_j\) </td><td> \(+\ts\gamma_k\) </td><td>     </td><td> \(+\ts{\alpha\gamma}_{ik}\) </td><td>     </td><td class='r'> 12.63</td><td class='r'> 7</td></tr>
+<tr><td class='l'>\(A +\ts E D\)</td><td> \(\eta\) </td><td> \(+\ts\alpha_i\) </td><td> \(+\ts\beta_j\) </td><td> \(+\ts\gamma_k\) </td><td>     </td><td>     </td><td> \(+\ts{\beta\gamma}_{jk}\) </td><td class='r'> 23.02</td><td class='r'> 9</td></tr>
+<tr><td class='l'>\(A E +\ts A D\)</td><td>   \(\eta\) </td><td> \(+\ts\alpha_i\) </td><td> \(+\ts\beta_j\) </td><td> \(+\ts\gamma_k\) </td><td> \(+\ts{\alpha\beta}_{ij}\) </td><td> \(+\ts{\alpha\gamma}_{ik}\) </td><td>     </td><td class='r'> 5.80</td><td class='r'> 4</td></tr>
+<tr><td class='l'>\(A E +\ts E D\)</td><td>   \(\eta\) </td><td> \(+\ts\alpha_i\) </td><td> \(+\ts\beta_j\) </td><td> \(+\ts\gamma_k\) </td><td> \(+\ts{\alpha\beta}_{ij}\) </td><td>     </td><td> \(+\ts{\beta\gamma}_{jk}\) </td><td class='r'> 13.76</td><td class='r'> 6</td></tr>
+<tr><td class='l'>\(A D +\ts E D\)</td><td>   \(\eta\) </td><td> \(+\ts\alpha_i\) </td><td> \(+\ts\beta_j\) </td><td> \(+\ts\gamma_k\) </td><td>     </td><td> \(+\ts{\alpha\gamma}_{ik}\) </td><td> \(+\ts{\beta\gamma}_{jk}\) </td><td class='r'> 10.82</td><td class='r'> 6</td></tr>
+<tr class="bb"><td class='l'>\(A E +\ts A D +\ts E D\)</td><td>\(\eta\) </td><td> \(+\ts\alpha_i\) </td><td> \(+\ts\beta_j\) </td><td> \(+\ts\gamma_k\) </td><td> \(+\ts{\alpha\beta}_{ij}\) </td><td> \(+\ts{\alpha\gamma}_{ik}\) </td><td> \(+\ts{\beta\gamma}_{jk}\) </td><td class='r'> 2.44</td><td class='r'> 3</td></tr>
+</table>
+
+<p>Note first that the null model does not fit the data. The assumption
+of a common probability of using contraception for all 16 groups of
+women is clearly untenable.</p>
+
+<p>Next in the table we find the three possible one-factor models.
+Comparison of these models with the null model provides evidence
+of significant <i>gross</i> effects of age and desire for more children,
+but not of education. The likelihood ratio chi-squared tests
+are 91.7 on one d.f.&nbsp;for desire, 79.2 on three d.f.&nbsp;for age,
+and 0.7 on one d.f.&nbsp;for education.</p>
+
+<p>Proceeding down the table we find the six possible two-factor models,
+starting with the additive ones. Here we find evidence of significant
+<i>net effects</i> of age and desire for more children after
+controlling for one other factor.  For example the test for an
+effect of desire net of age is a chi-squared of 49.7 on one d.f.,
+obtained by comparing the additive model \( A+D \) on age and desire
+the one-factor model \( A \) with age alone.
+Education has a significant effect net of age, but not net of
+desire for more children. For example the test for the net effect
+of education controlling for age is 6.2 on one d.f., and follows
+from the comparison of the \( A+E \) model with \( A \).
+None of the additive models fits the data, but the closest one
+to a reasonable fit is \( A+D \).</p>
+
+<p>Next come the models involving <i>interactions</i> between two factors.
+We use the notation \( E D \) to denote the model with the main effects of
+\( E \) and \( D \) as well as the  \( E \times D \) interaction. Comparing each of
+these models with the corresponding additive model on the same two
+factors we obtain a test of the interaction effect. For example
+comparing the model \( E D \) with the additive model \( E+D \) we can test
+whether the effect of desire for more children varies with education.
+Making these comparisons we find evidence of interactions between age
+and desire for more children (\( \chi^2=16.8 \) on three d.f.), and between
+education and desire for more children (\( \chi^2=6.23 \) on one d.f.), but
+not between age and education (\( \chi^2=7.39 \) on three d.f.).</p>
+
+<p>All of the results described so far could be obtained from
+two-dimensional tables of the type analyzed in the previous
+sections.
+The new results begin to appear as we consider the
+nine possible three-factor models.</p>
+
+<h4>3.6.2 Deviances for Three-Factor Models</h4>
+<p>The first entry is
+the <i>additive</i> model \( A+E+D \), with a deviance of 29.9 on ten d.f.
+This value represents a significant improvement over any of the
+additive models on two factors. Thus, we have evidence that
+there are significant net effects of age, education and
+desire for more children, considering each factor after
+controlling the other two. For example the test for a net
+effect of education controlling the other two variables
+compares the three-factor additive model \( A+E+D \) with the
+model without education, namely \( A+D \). The difference of
+6.97 on one d.f.&nbsp;is significant, with a P-value of 0.008.
+However, the three-factor additive model does not fit the
+data.</p>
+
+<p>The next step is to add  <i>one interaction</i> between two
+of the factors. For example the model \( A E+D \) includes
+the main effects of \( A \), \( E \) and \( D \) and the
+\( A \times E \) interaction.
+The interactions of desire for more children with
+age and with education produce significant gains over
+the additive model (\( \chi^2=17.3 \) on three d.f.&nbsp;and
+\( \chi^2=6.90 \) on one d.f., respectively), whereas the
+interaction between age and education is not significant
+(\( \chi^2=6.77 \) with three d.f.).
+These tests for interactions differ from those
+based on two-factor models in that they take into
+account the third factor.
+The best of these models is clearly the one with
+an interaction between age and desire for more children,
+\( A D + E \). This is also the first model in our list that
+actually passes the goodness of fit test, with a
+deviance of 12.6 on seven d.f.</p>
+
+<p>Does this mean that we can stop our search for an adequate
+model? Unfortunately, it does not. The goodness of fit test
+is a joint test for all terms omitted in the model. In
+this case we are testing for the \( A E \), \( E D  \) and \( A E D \)
+interactions simultaneously, a total of seven parameters.
+This type of omnibus test lacks power against specific
+alternatives. It is possible that one of the omitted terms
+(or perhaps some particular contrast) would be significant by
+itself, but its effect may not stand out in the aggregate.
+At issue is whether the remaining deviance of 12.6 is
+spread out uniformly over the remaining d.f.&nbsp;or is
+concentrated in a few d.f. If you wanted to be absolutely
+sure of not missing anything you might want to aim for a
+deviance below 3.84, which is the five percent critical
+value for one d.f., but this strategy would lead to over-fitting
+if followed blindly.</p>
+
+<p>Let us consider the models involving <i>two interactions</i> between two
+factors, of which there are three. Since the \( A D \) interaction seemed
+important we restrict attention to models that include this term, so we
+start from \( A D + E \), the best model so far. Adding the age by
+education interaction \( A E \) to this model reduces the deviance by 6.83
+at the expense of three d.f. A formal test concludes that this
+interaction is not significant. If we add instead the education by
+desire interaction \( E D \) we reduce the deviance by  only 1.81 at the
+expense of one d.f. This interaction is clearly not significant. A
+model-building strategy based on <i>forward selection</i> of variables
+would stop here and choose \( A D + E \) as the best model on grounds of
+parsimony and goodness of fit.</p>
+
+<p>An alternative approach is to start with the saturated model and impose
+progressive simplification. Deleting the <i>three-factor interaction</i>
+yields the model \( A E + A D + E D \) with three two-factor interactions,
+which fits the data rather well, with a deviance of just 2.44 on three
+d.f. If we were to delete the \( A D \) interaction the deviance would rise
+by 11.32 on three d.f., a significant loss.  Similarly, removing the \( A
+E \) interaction would incur a significant loss of 8.38 on 3 d.f.  We
+can, however, drop the \( E D \) interaction with a non-significant
+increase in deviance of 3.36 on one d.f. At this point we can also
+eliminate the \( A E \) interaction, which is no longer significant, with a
+further loss of 6.83 on three d.f.  Thus, a <i>backward elimination</i>
+strategy ends up choosing the same model as forward selection.</p>
+
+<p>Although you may find these results reassuring, there is a fact that
+both approaches overlook: the \( A E \) and \( D E \) interactions are jointly
+significant! The change in deviance as we move from \( A D + E \) to the
+model with three two-factor interactions is 10.2 on four d.f., and
+exceeds (although not by much) the five percent critical value of 9.5.
+This result indicates that we need to consider the more complicated
+model with all three two-factor interactions. Before we do that,
+however, we need to discuss parameter estimates for selected models.</p>
+
+<h4>3.6.3 The Additive Model: Gross and Net Effects</h4>
+<p>Consider first Table <a href='#t_3_14'>3.14</a>, where we adopt an
+approach similar to multiple classification analysis to
+compare the gross and net effects of all three factors.
+We use the reference cell method, and include the omitted
+category for each factor (with a dash where the estimated
+effect would be) to help the reader identify the baseline.</p>
+
+<a name='t_3_14'></a><p class='text-center'>Table 3.14. Gross and Net Effects of Age, Education and Desire<br/>for More Children on Current Use of Contraception</p>
+<table class='tex-table'>
+<tr class='bt'><td colspan='2' align='left'>Variable and</td><td class='ar'>Gross</td><td class='ar'>Net</td></tr>
+<tr class='bb'><td class='al'></td><td class='al'>category</td><td class='ar'>effect</td><td class='ar'>effect</td></tr>
+<tr class='bt'><td colspan='2' align='left'>Constant</td><td class='ar'>&ndash;</td><td class='ar'>\(-\)1.966</td></tr>
+<tr><td class='al'>Age</td><td class='al'>\(<\)25</td><td class='ar'>&ndash;</td><td class='ar'>&ndash;</td></tr>
+<tr><td class='al'></td><td class='al'>25&ndash;29</td><td class='ar'>0.461</td><td class='ar'>0.389</td></tr>
+<tr><td class='al'></td><td class='al'>30&ndash;39</td><td class='ar'>1.048</td><td class='ar'>0.909</td></tr>
+<tr><td class='al'></td><td class='al'>40&ndash;49</td><td class='ar'>1.425</td><td class='ar'>1.189</td></tr>
+<tr><td colspan='2' align='left'>Education</td><td></td><td></td></tr>
+<tr><td class='al'></td><td class='al'>Lower</td><td class='ar'>&ndash;</td><td class='ar'>&ndash;</td></tr>
+<tr><td class='al'></td><td class='al'>Upper</td><td class='ar'>-0.093</td><td class='ar'>0.325</td></tr>
+<tr><td colspan='2' align='left'>Desires More</td><td></td><td></td></tr>
+<tr><td class='al'></td><td class='al'>Yes</td><td class='ar'>&ndash;</td><td class='ar'>&ndash;</td></tr>
+<tr class='bb'><td class='al'></td><td class='al'>No</td><td class='ar'>1.049</td><td class='ar'>0.833</td></tr>
+</table>
+
+<p>The gross or unadjusted effects are based on the single-factor models
+\( A \), \( E \) and \( D \). These effects represent overall differences between
+levels of each factor, and as such they have descriptive value even if
+the one-factor models do not tell the whole story. The results can
+easily be translated into odds ratios. For example not wanting another
+child is associated with an increase in the odds of using contraception
+of 185%. Having upper primary or higher education rather than lower
+primary or less appears to reduce the odds of using contraception by
+almost 10%.</p>
+
+<p>The net or adjusted effects are based on the three-factor
+additive model \( A+E+D \). This model assumes that the effect of
+each factor is the same for all categories of the others.
+We know, however, that this is not the case&mdash;particularly with desire
+for more children, which has an effect that varies by age&mdash;so
+we have to interpret the results carefully. The net
+effect of desire for more children shown in Table <a href='#t_3_14'>3.14</a>
+represents an average effect across all age groups and may
+not be representative of the effect at any particular age.
+Having said that, we note that desire for no more children
+has an important effect net of age and education:
+on the average, it is associated with an increase in the odds
+of using contraception of 130%.</p>
+
+<p>The result for education is particularly interesting. Having upper
+primary or higher education is associated with an increase in the
+odds or using contraception of 38%, compared to having lower
+primary or less, after we control for age and desire for more
+children. The gross effect was close to zero. To understand this
+result bear in mind that contraceptive use in Fiji occurs mostly
+among older women who want no more children. Education has no
+effect when considered by itself because in Fiji more educated
+women are likely to be younger than less educated women, and thus
+at a stage of their lives when they are less likely to have
+reached their desired family size, even though they may want fewer
+children. Once we adjust for their age, calculating the net
+effect, we obtain the expected association. In this example age is
+said to act as a <i>suppressor</i> variable, masking the
+association between education and contraceptive use.</p>
+
+<p>We could easily add columns to Table <a href='#t_3_14'>3.14</a> to trace
+the effects of one factor after controlling for one or both of the
+other factors. We could, for example, examine the effect of
+education adjusted for age, the effect adjusted for desire for
+more children, and finally the effect adjusted for both factors.
+This type of analysis can yield useful insights into the
+confounding influences of other variables.</p>
+
+<h4>3.6.4 The Model with One Interaction Effect</h4>
+<p>Let us now examine parameter estimates for the model with an age
+by desire for more children interaction \( A D + E \), where</p>
+
+\[ \mbox{logit}(\pi_{ijk}) = \eta + \alpha_i + \beta_j + \gamma_j
+    + (\alpha\gamma)_{ik}. \]
+<p>The parameter estimates depend on the restrictions used in
+estimation. We use the reference cell method, so that
+\( \alpha_1=\beta_1=\gamma_1=0 \), and \( (\alpha\gamma)_{ik}=0  \) when
+either \( i=1 \) or \( k=1 \).</p>
+
+<p>In this model \( \eta \) is the logit of the probability of
+using contraception in the reference cell, that is,
+for women under 25 with lower primary or less education
+who want another child. On the other hand \( \beta_2 \) is
+the effect of upper primary or higher education,
+compared to lower primary or less, for women in any
+age group or category of desire for another child.
+The presence of an interaction makes interpretation of the
+estimates for age and desire somewhat more involved:</p>
+
+<table class="tex-list"><tr><td>\(\alpha_i\)</td><td>
+represents the effect of age group \(i\), compared to age \(<\) 25,
+for women who want more children.
+</tr></tr><tr><td>\(\gamma_2\)</td><td>
+represents the effect of wanting
+no more children, compared to desiring more, for women
+under age 25.
+</tr></tr><tr><td>\((\alpha\gamma)_{i2}\)</td><td>
+the interaction term, can be interpreted as the
+<i> additional</i> effect of wanting no more children among women in age
+group \(i\), compared to women under age 25.
+</tr></tr></table>
+<p>It is possible to simplify slightly the presentation of the
+results by combining the interactions with some of the main effects.
+In the present example, it is convenient to present
+the estimates of \( \alpha_i \) as the age effects for women
+who want another child, and to present
+\( \gamma_2+(\alpha\gamma)_{i2} \) as the effect of not
+wanting another child for women in age group \( i \).</p>
+
+<p>Calculation of the necessary dummy variables proceeds exactly
+as in Section 3.5.
+This strategy leads to the parameter estimates in Table <a href='#t_3_15'>3.15</a>.</p>
+
+<a name='t_3_15'></a><p class='text-center'>Table 3.15. The Estimates</p>
+<table class='tex-table'>
+<tr class='bt bb'><td class='al'>Variable</td><td class='al'>Category</td><td class='al'>Symbol</td><td class='ar'>Estimate</td><td class='ar'>Std.&nbsp;Err</td><td class='ar'>\(z\)-ratio</td></tr>
+<tr class='bt'><td colspan='2' align='left'>Constant</td><td class='al'>\(\eta\)</td><td class='ar'>\(-\)1.803</td><td class='ar'>0.180</td><td class='ar'>\(-\)10.01</td></tr>
+<tr><td class='al'>Age</td><td class='al'>25&ndash;29</td><td class='al'>\(\alpha_2\)</td><td class='ar'>0.395</td><td class='ar'>0.201</td><td class='ar'>1.96</td></tr>
+<tr><td class='al'></td><td class='al'>30&ndash;39</td><td class='al'>\(\alpha_3\)</td><td class='ar'>0.547</td><td class='ar'>0.198</td><td class='ar'>2.76</td></tr>
+<tr><td class='al'></td><td class='al'>40&ndash;49</td><td class='al'>\(\alpha_4\)</td><td class='ar'>0.580</td><td class='ar'>0.347</td><td class='ar'>1.67</td></tr>
+<tr><td class='al'>Education</td><td class='al'>Upper</td><td class='al'>\(\beta_2\)</td><td class='ar'>0.341</td><td class='ar'>0.126</td><td class='ar'>2.71</td></tr>
+<tr><td class='al'>Desires</td><td class='al'>\(<\)25</td><td class='al'>\(\gamma_2\)</td><td class='ar'>0.066</td><td class='ar'>0.331</td><td class='ar'>0.20</td></tr>
+<tr><td class='al'>no more</td><td class='al'>25&ndash;29</td><td class='al'>\(\gamma_2+(\alpha\gamma)_{22}\)</td><td class='ar'>0.325</td><td class='ar'>0.242</td><td class='ar'>1.35</td></tr>
+<tr><td class='al'>at age</td><td class='al'>30&ndash;39</td><td class='al'>\(\gamma_2+(\alpha\gamma)_{32}\)</td><td class='ar'>1.179</td><td class='ar'>0.175</td><td class='ar'>6.74</td></tr>
+<tr class='bb'><td class='al'></td><td class='al'>40&ndash;49</td><td class='al'>\(\gamma_2+(\alpha\gamma)_{42}\)</td><td class='ar'>1.428</td><td class='ar'>0.354</td><td class='ar'>4.04</td></tr>
+</table>
+
+<p>To aid in interpretation as well as model criticism, Figure <a href='#f_3_4'>3.4</a>
+plots observed logits based on the original data in Table <a href='#t_3_1'>3.1</a>,
+and fitted logits based on the model with an age by desire interaction.</p>
+
+<a name='f:cuse3'></a><a name='f_3_4'></a><p style='text-align:center'>Figure 3.4 Logit Model of Contraceptive Use By Age, Education and<br/>Desire for Children, With Age by Desire Interaction</p><img src="cuse3.png" class="img-responsive center-block"/>
+<p>The graph shows four curves tracing contraceptive use by age for groups
+defined by education and desire for more children. The curves are
+labelled using \( L \) and \( U \) for lower and upper education, and \( Y \) and
+\( N \) for desire for more children. The lowest curve labelled \( LY \)
+corresponds to women with lower primary education or less who want more
+children, and shows a slight increase in contraceptive use up to age
+35&ndash;39 and then a small decline. The next curve labelled \( UY \) is for
+women with upper primary education or more who also want more children.
+This curve is parallel to the previous one because the effect of
+education is additive on age. The constant difference between these two
+curves corresponds to a 41% increase in the odds ratio as we move from
+lower to upper primary education. The third curve, labelled \( LN \), is
+for women with lower primary education or less who want no more
+children. The distance between this curve and the first one represents
+the effect of wanting no more children at different ages. This effect
+increases sharply with age, reaching an odds ratio of four by age
+40&ndash;49. The fourth curve, labelled \( UN \), is for women with upper
+primary education or more who want no more children. The distance
+between this curve and the previous one is the effect of education,
+which is the same whether women want more children or not, and is also
+the same at every age.</p>
+
+<p>The graph also shows the observed logits, plotted using different
+symbols for each of the four groups defined by education and desire.
+Comparison of observed and fitted logits shows clearly the strengths and
+weaknesses of this model:
+it does a fairly reasonable job reproducing the logits of
+the proportions using contraception in each group <i>except</i>
+for ages 40&ndash;49 (and to a lesser extend the group \( < \) 25),
+where it seems to underestimate the educational differential.
+There is also some indication that this failure may be more pronounced
+for women who want more children.</p>
+
+<h4>3.6.5 Best Fitting and Parsimonious Models</h4>
+<p>How can we improve the model of the last section? The most obvious
+solution is to move to the model with all three two-factor
+interactions, \( AE + AD + ED \), which has a deviance of 2.44 on three
+d.f.&nbsp;and therefore fits the data extremely well. This model implies
+that the effect of each factor depends on the levels of the other two,
+but not on the combination of levels of the other two. Interpretation
+of the coefficients in this model is not as simple as it would be in an
+additive model, or in a model involving only one interaction.  The best
+strategy in this case is to plot the fitted model and inspect the
+resulting curves.</p>
+
+<a name='f:cuse4'></a><a name='f_3_5'></a><p style='text-align:center'>Figure 3.5 Observed and Fitted Logits of Contraceptive Use<br/>Based on Model with Three Two-Factor Interactions</p><img src="cuse4.png" class="img-responsive center-block"/>
+<p>Figure <a href='#f_3_5'>3.5</a> shows fitted values based on the more complex
+model. The plot tells a simple story. Contraceptive use for spacing
+increases slightly up to age 35 and then declines for the less educated
+but continues to increase for the more educated. Contraceptive use for
+limiting increases sharply with age up to age 35 and then levels off
+for the less educated, but continues to increase for the more educated.
+The figure shows that the effect of wanting no more children increases
+with age, and appears to do so for both educational groups in the same
+way (look at the distance between the LY and LN curves, and between the
+UY and UN curves). On the other hand, the effect of education is
+clearly more pronounced at ages 40&ndash;49 than at earlier ages, and also
+seems slightly larger for women who want more children than for those
+who do not (look at the distance between the LY and UY curves, and
+between the LN and UN curves).</p>
+
+<p>One can use this knowledge to propose improved models that fit the data
+without having to use all three two-factor interactions. One approach
+would note that all interactions with age involve contrasts between
+ages 40&ndash;49 and the other age groups, so one could collapse age into
+only two categories for purposes of modelling the interactions. A
+simplified version of this approach is to start from the model \( AD +E \)
+and add one d.f.&nbsp;to model the larger educational effect for ages
+40&ndash;49. This can be done by adding a dummy variable that takes the
+value one for women aged 40&ndash;49 who have upper primary or more
+education. The resulting model has a deviance of 6.12 on six d.f.,
+indicating a good fit. Comparing this value with the deviance of 12.6
+on seven d.f.&nbsp;for the \( AD+E \) model, we see that we reduced the deviance
+by 6.5 at the expense of a single d.f. The model \( AD+AE \) includes all
+three d.f.&nbsp;for the age by education interaction, and has a deviance of
+5.8 on four d.f. Thus, the total contribution of the \( AE \) interaction
+is 6.8 on three d.f. Our one-d.f.&nbsp;improvement has captured roughly 90%
+of this interaction.</p>
+
+<p>An alternative approach is to model the effects of education and desire
+for no more children as smooth functions of age. The logit of the
+probability of using contraception is very close to a linear function
+of age for women with upper primary education who want no more
+children, who could serve as a new reference cell. The effect of
+wanting more children could be modelled as a linear function of age,
+and the effect of education could be modelled as a quadratic function
+of age. Let \( L_{ijk} \) take the value one for lower primary or less
+education and zero otherwise, and let \( M_{ijk} \) be a dummy variable
+that takes the value one for women who want more children and zero
+otherwise. Then the proposed model can be written as</p>
+
+\[ \mbox{logit}(\pi_{ijk}) = \alpha+\beta x_{ijk} +
+(\alpha_E+\beta_E x_{ijk}+\gamma_E x_{ijk}^2)L_{ijk} +
+(\alpha_D+\beta_D x_{ijk}) M_{ijk}. \]
+<p>Fitting this model, which requires only seven parameters,
+gives a deviance of 7.68 on nine d.f. The only weakness of
+the model is that it assumes equal effects of education on
+use for limiting and use for spacing, but these effects are
+not well-determined.
+Further exploration of these models is left as an exercise.</p>
+

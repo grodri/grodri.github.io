@@ -1,0 +1,613 @@
+---
+layout: default
+section: glms
+tab: "Stata Logs"
+pager: true
+---
+
+
+<h2 class='first'>4.A Models for Over-Dispersed Count Data</h2> 
+<P> 
+We use data from Long (1990) on the number of publications produced 
+by Ph.D. biochemists to illustrate the application of Poisson,
+over-dispersed Poisson, negative binomial and zero-inflated 
+Poisson models.
+<P> 
+The variables in the dataset are
+<P> 
+&nbsp;<span class='em'>art</span>: articles in last three years of Ph.D.<br/> 
+&nbsp;<span class='em'>fem</span>: coded one for females<br/> 
+&nbsp;<span class='em'>mar</span>: coded one if married<br/> 
+&nbsp;<span class='em'>kid5</span>: number of children under age six<br/> 
+&nbsp;<span class='em'>phd</span>: prestige of Ph.D. program<br/> 
+&nbsp;<span class='em'>ment</span>: articles by mentor in last three years<br/> 
+<P> 
+These data have also been analyzed by Long and Freese (2001), 
+and are available from the Stata website:
+<pre class='stata'>
+. use http://www.stata-press.com/data/lf2/couart2,clear
+(Academic Biochemists / S Long)
+ 
+. summarize art
+ 
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+         art |       915    1.692896    1.926069          0         19
+ 
+. di r(Var)
+3.7097416
+</pre> 
+<P> 
+The mean number of articles is 1.69 and the variance is 3.71, 
+a bit more than twice the mean. 
+The data are over-dispersed, but of course we haven't considered any 
+covariates yet.
+<P> 
+<h4>A Poisson Model</h4> 
+<P> 
+Let us fit the model used by Long and Freese(2001), a simple additive model 
+using all five predictors. 
+We could use <code>poisson</code> to obtain the estimates and then 
+<code>estat gof</code> to get the deviance, 
+but will use instead the <code>glm</code> command to obtain both
+the deviance and Pearson's chi-squared statistics immediately.
+We will also store the estimates for later use.
+<pre class='stata'>
+. glm art fem mar kid5 phd ment, family(poisson) nolog
+ 
+Generalized linear models                          No. of obs      =       915
+Optimization     : ML                              Residual df     =       909
+                                                   Scale parameter =         1
+Deviance         =  1634.370984                    (1/df) Deviance =  1.797988
+Pearson          =   1662.54655                    (1/df) Pearson  =  1.828984
+ 
+Variance function: V(u) = u                        [Poisson]
+Link function    : g(u) = ln(u)                    [Log]
+ 
+                                                   AIC             =  3.621981
+Log likelihood   = -1651.056316                    BIC             = -4564.031
+ 
+------------------------------------------------------------------------------
+             |                 OIM
+         art |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         fem |  -.2245942   .0546138    -4.11   0.000    -.3316352   -.1175532
+         mar |   .1552434   .0613747     2.53   0.011     .0349512    .2755356
+        kid5 |  -.1848827   .0401272    -4.61   0.000    -.2635305   -.1062349
+         phd |   .0128226   .0263972     0.49   0.627     -.038915    .0645601
+        ment |   .0255427   .0020061    12.73   0.000     .0216109    .0294746
+       _cons |   .3046168   .1029822     2.96   0.003     .1027755    .5064581
+------------------------------------------------------------------------------
+ 
+. estimates store poisson
+</pre> 
+<P> 
+We see that the model obviously doesn't fit the data.
+The five-percent critical value for a chi-squared with 909 d.f. is
+<pre class='stata'>
+. di invchi2tail(909,0.05)
+980.25178
+</pre> 
+<P> 
+and the deviance and Pearson's chi-squared are both in the 1600s.
+<P> 
+<a name='x2'></a><h3>Extra-Poisson Variation</h3> 
+<P> 
+We now assume that the variance is proportional rather than equal to
+the mean, and estimate the scale parameter &phi; dividing Pearson's 
+chi-squared by its d.f.:
+<pre class='stata'>
+. scalar phi = e(deviance_p)/e(df)
+ 
+. di phi
+1.8289841
+ 
+. di sqrt(phi)
+1.3523994
+</pre> 
+<P> 
+We see that the variance is about 83% larger than the mean. This means
+that we should adjust the standard errors multiplying by 1.35, the
+square root of 1.83.
+<P> 
+The <code>glm</code> command can do this for us via the 
+<code>scale()</code> option, which takes as argument either a numeric
+value, in this case 1.8289841, or simply <code>x2</code> to indicate
+that the adjustment should be based on Pearson's chi-squared:
+<pre class='stata'>
+. glm art fem mar kid5 phd ment, family(poisson) scale(x2) nolog
+ 
+Generalized linear models                          No. of obs      =       915
+Optimization     : ML                              Residual df     =       909
+                                                   Scale parameter =         1
+Deviance         =  1634.370984                    (1/df) Deviance =  1.797988
+Pearson          =   1662.54655                    (1/df) Pearson  =  1.828984
+ 
+Variance function: V(u) = u                        [Poisson]
+Link function    : g(u) = ln(u)                    [Log]
+ 
+                                                   AIC             =  3.621981
+Log likelihood   = -1651.056316                    BIC             = -4564.031
+ 
+------------------------------------------------------------------------------
+             |                 OIM
+         art |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         fem |  -.2245942   .0738596    -3.04   0.002    -.3693564    -.079832
+         mar |   .1552434   .0830031     1.87   0.061    -.0074397    .3179265
+        kid5 |  -.1848827    .054268    -3.41   0.001     -.291246   -.0785194
+         phd |   .0128226   .0356995     0.36   0.719    -.0571472    .0827924
+        ment |   .0255427    .002713     9.41   0.000     .0202253    .0308602
+       _cons |   .3046168    .139273     2.19   0.029     .0316468    .5775869
+------------------------------------------------------------------------------
+(Standard errors scaled using square root of Pearson X2-based dispersion.)
+ 
+. estimates store overdisp
+</pre> 
+<P> 
+You can verify that these standard errors are about 35% larger than before.
+Using this procedure we have essentially attributed all the lack of fit 
+to pure error.
+<P> 
+You may want to try <code>poisson</code> with the the <code>robust</code> option
+to compute standard errors using the robust or 'sandwich' estimator.
+You will get very similar results.
+
+<P> 
+In either case all tests have to be done using Wald's statistic.
+Likelihood ratio tests are not possible because we are not making
+full distributional assumptions about the outcome, relying instead 
+on assumptions about the mean and variance.
+<P> 
+<a name='nb'></a><h3>Negative Binomial Regression</h3> 
+<P> 
+We now fit a negative binomial model with the same predictors:
+<pre class='stata'>
+. nbreg art fem mar kid5 phd ment, nolog
+ 
+Negative binomial regression                      Number of obs   =        915
+                                                  LR chi2(5)      =      97.96
+Dispersion     = mean                             Prob > chi2     =     0.0000
+Log likelihood = -1560.9583                       Pseudo R2       =     0.0304
+ 
+------------------------------------------------------------------------------
+         art |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         fem |  -.2164184   .0726724    -2.98   0.003    -.3588537   -.0739832
+         mar |   .1504895   .0821063     1.83   0.067    -.0104359    .3114148
+        kid5 |  -.1764152   .0530598    -3.32   0.001    -.2804105     -.07242
+         phd |   .0152712   .0360396     0.42   0.672    -.0553652    .0859075
+        ment |   .0290823   .0034701     8.38   0.000     .0222811    .0358836
+       _cons |    .256144   .1385604     1.85   0.065    -.0154294    .5277174
+-------------+----------------------------------------------------------------
+    /lnalpha |  -.8173044   .1199372                     -1.052377   -.5822318
+-------------+----------------------------------------------------------------
+       alpha |   .4416205   .0529667                      .3491069    .5586502
+------------------------------------------------------------------------------
+Likelihood-ratio test of alpha=0:  chibar2(01) =  180.20 Prob>=chibar2 = 0.000
+ 
+. estimates store nbreg
+ 
+. scalar sigma2 = e(alpha)
+</pre> 
+<P> 
+Stata's <code>alpha</code> is the variance of the multiplicative
+random effect and corresponds to &sigma;<sup>2</sup> in the notes.
+It is estimated to be 0.44 and is highly significant (non-zero).
+<P> 
+To test the significance of this parameter you may think of
+computing twice the difference in log-likelihoods between this model
+and the Poisson model, 180.2, and treating it as a chi-squared with
+one d.f. The usual asymptotics do not apply, however, because the
+null hypothesis is on a boundary of the parameter space.  
+<P> 
+There is some work showing that a better approximation is to treat
+the statistic as as 50:50 mixture of zero and a chi-squared with one
+d.f. and Stata implements this procedure, reporting the statistic as
+<code>chi2bar</code>. 
+Alternatively, treating the statistic as a chi-squared one gives a
+conservative test.
+Either way, we have overwhelming evidence of overdispersion.
+<P> 
+For testing hypotheses about the regression coefficients we can use
+either Wald tests or likelihood ratio tests, which are possible 
+because we have made full distributional assumptions. </p>
+
+<h4>Unobserved Heterogeneity</h4>
+<P> 
+Stata has a function <code>gammaden(a, b, g, x)</code> to compute
+the density of a gamma distribution with shape <code>a</code>,
+scale <code>b</code>, and location shift <code>g</code>. In our
+notation the shape is &alpha;, the scale is 1/&beta; and the shift is 0.
+In particular, the density when the random effect has variance <code>v</code>
+is <code>gammaden(1/v, v, 0, x)</code>. This can be used to plot the density.</p>
+<pre class="stata">
+.  scalar v = e(alpha)
+
+.  twoway function y = gammaden(1/v, v, 0, x), range(0 3)
+
+. graph export gamden.png, width(500) replace
+</pre>
+<img src="gamden.png">
+<p>
+We can also compute quantiles. The Mata function <code>invgammap(a, p)</code>
+computes quantles of the <em>standard</em> gamma distribution with
+shape <code>a</code>, which has scale 1 and shift 0. When the
+distribution has variance <code>v</code> the quartiles are
+<code>invgammap(1/v, (1,2,3)/4) * v</code>.</p>
+<pre class="stata">
+
+. mata: v = st_numscalar("v")
+
+. mata: invgammap(1/v, (1..3)/4) * v
+                 1             2             3
+     +-------------------------------------------+
+  1 |  .5114167237   .8572696907   1.334765048  |
+    +-------------------------------------------+
+</pre>
+<p>
+Biochemists at Q1 of the distribution of unobserved heterogeneity publish 49% fewer papers 
+than expected from their observed characteristics, while those at the median publish 14%
+fewer and those at Q3 publish 33% more than expected.</p>
+
+<h4> Comparing Estimates and Standard Errors</h4> 
+<P> 
+The parameter estimates based on the negative binomial model are not
+very different from those based on the Poisson regression model. 
+Let us compare them side by side
+<pre class='stata'>
+. estimates table poisson overdisp nbreg, se
+ 
+-----------------------------------------------------
+    Variable |  poisson      overdisp      nbreg     
+-------------+---------------------------------------
+art          |
+         fem | -.22459423   -.22459423   -.21641842  
+             |  .05461376    .07385961    .07267238  
+         mar |  .15524338    .15524338    .15048945  
+             |  .06137469    .08300309    .08210628  
+        kid5 |  -.1848827    -.1848827   -.17641524  
+             |  .04012717    .05426796    .05305978  
+         phd |  .01282258    .01282258    .01527116  
+             |  .02639719    .03569955    .03603961  
+        ment |  .02554275    .02554275    .02908234  
+             |  .00200608    .00271302    .00347007  
+       _cons |  .30461683    .30461683    .25614402  
+             |  .10298215      .139273     .1385604  
+-------------+---------------------------------------
+lnalpha      |
+       _cons |                           -.81730442  
+             |                            .11993723  
+-----------------------------------------------------
+                                         legend: b/se
+</pre> 
+<P> 
+Both sets of parameters estimates would lead to the same conclusions.
+<P> 
+Looking at the standard errors reported just below the
+coefficients, we see that both approaches to over-dispersion lead 
+to very similar estimates and that ordinary Poisson regression
+underestimates the standard errors
+<P> 
+<h4>Goodness of Fit</h4> 
+<P> 
+One way to compute the deviance of the negative binomial model is
+to feed the estimate of the variance into <code>glm</code>,
+which can fit these models for a <i>fixed</i> value of the scale
+parameter
+<pre class='stata'>
+. local v = e(alpha)
+ 
+. glm art fem mar kid5 phd ment, family(nb `v') nolog
+ 
+Generalized linear models                          No. of obs      =       915
+Optimization     : ML                              Residual df     =       909
+                                                   Scale parameter =         1
+Deviance         =    1004.2815                    (1/df) Deviance =   1.10482
+Pearson          =  944.5494622                    (1/df) Pearson  =  1.039108
+ 
+Variance function: V(u) = u+(.4416000000000001)u^2 [Neg. Binomial]
+Link function    : g(u) = ln(u)                    [Log]
+ 
+                                                   AIC             =  3.425046
+Log likelihood   = -1560.958338                    BIC             =  -5194.12
+ 
+------------------------------------------------------------------------------
+             |                 OIM
+         art |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         fem |  -.2164184   .0726706    -2.98   0.003    -.3588501   -.0739867
+         mar |   .1504895   .0821062     1.83   0.067    -.0104358    .3114147
+        kid5 |  -.1764152   .0530587    -3.32   0.001    -.2804084   -.0724221
+         phd |   .0152712   .0360382     0.42   0.672    -.0553624    .0859047
+        ment |   .0290823   .0034657     8.39   0.000     .0222896    .0358751
+       _cons |    .256144   .1385256     1.85   0.064    -.0153613    .5276493
+------------------------------------------------------------------------------
+</pre> 
+<P> 
+We see that the negative binomial model fits much better than
+the Poisson, but still has a deviance (just) above the five
+percent critical value.
+<P> 
+<h4>The Variance Function</h4> 
+<P> 
+The over-dispersed Poisson and negative binomial models
+have different variance functions. One way to check which one
+may be more appropriate is to create groups based on the linear 
+predictor, compute the mean and variance for each group, and
+finally plot the mean-variance relationship.
+<P> 
+Here are groups based on the negative binomial linear predictor,
+created using <code>egen</code> with the <code>cut()</code> subcommand
+and the <code>group()</code> option to create 20 groups of
+approximate equal size
+<pre class='stata'>
+. predict xb
+(option mu assumed; predicted mean art)
+ 
+. egen group = cut(xb), group(20)
+</pre> 
+<P> 
+Now we collapse to a dataset of means and standard deviations
+(<code>collapse</code> does not do variances, but we can always
+square the standard deviation). 
+We also compute the over-dispersed Poisson and negative binomial
+variance functions and plot everything
+<pre class='stata'>
+. preserve
+ 
+. collapse (mean) art (sd) sart=art, by(group)
+ 
+. gen vart = sart^2
+ 
+. gen v_p = art * phi
+ 
+. gen v_nb = art*(1+art*sigma2)
+ 
+. twoway (scatter vart art) (line v_p art, lp(dash)) ///
+>     (mspline v_nb art, bands(10) ) ///
+>    , xtitle(Mean) ytitle(Variance) title("Mean-Variance Relationship") ///
+>    subtitle("Articles Published by Ph.D. Biochemists") ///
+>    legend( order(2 "Poisson" 3 "Neg.Bin.") ring(0) pos(5) cols(1))
+ 
+. graph export c4afig1.png, width(500) replace
+(file c4afig1.png written in PNG format)
+ 
+. restore
+</pre> 
+<P> 
+<img src="c4afig1.png" class="img-responsive center-block"/> 
+<P> 
+The Poisson variance function does a pretty good job for the
+bulk of the data, but fails to capture the high variances of the 
+most productive scholars. 
+
+The negative binomial variance function is not too different but, 
+being a quadratic, can rise faster and does a better job 
+at the high end. 
+
+We conclude that the negative binomial model provides a better
+description of the data than the over-dispersed Poisson model.
+<P> 
+<a name='zip'></a><h3>Zero-Inflated Poisson</h3> 
+<P> 
+A frequent occurrence with count data is an excess of zeroes
+compared to what's expected under a Poisson model. This is
+actually a problem with our data:
+<pre class='stata'>
+. gen zobs = art == 0
+ 
+. estimates restore poisson
+(results poisson are active now)
+ 
+. predict mup
+(option mu assumed; predicted mean art)
+ 
+. gen zfitp = exp(-mup)
+ 
+. sum zobs zfitp
+ 
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+        zobs |       915    .3005464    .4587464          0          1
+       zfitp |       915    .2092071    .0794247   .0000659   .4113403
+</pre> 
+<P> 
+We see that 30.0% of the scientists in the sample published
+no articles in the last three years of their Ph.D., but the
+Poisson model predicts that only 20.9% would have no publications.
+Clearly the model underestimates the probability of zero counts.
+<P> 
+One way to model this type of situation is to assume that the
+data come from a mixture of two populations, 
+one where the counts is <i>always zero</i>, and another where 
+the count has a Poisson distribution with mean &mu;. 
+In this model zero counts can come from  either population, 
+while positive counts come only from the second one. 
+<P> 
+In the context of publications by Ph.D. biochemists we can imagine
+that some had in mind jobs where publications wouldn't be important,
+while others were aiming for academic jobs where a record of
+publications was expected.
+Members of the first group would publish zero articles, 
+whereas members of the second group would publish 0,1,2,..., 
+a count that may be assumed to have a Poisson distribution. 
+<P> 
+The distribution of the outcome can then be modeled in terms of
+two parameters, &pi; the probability of 'always zero', and &mu;,
+the mean number of publications for those not in the 'always zero'
+group. A natural way to introduce covariates is to model the
+logit of the probability &pi; of always zero and the log of the 
+mean &mu; for those not in the always zero class.
+<P> 
+Stata implements this combination in the <code>zip</code> command
+when the counts are assumed Poisson.
+A parallel development using a negative binomial model for the
+counts in the second group leads to the  <code>zinb</code> command.
+In both cases the model for the probability of always zero is
+specified in the <code>inflate()</code> option. 
+<P> 
+Here is a zero-inflated Poisson model with all covariates in
+both equations:
+<pre class='stata'>
+. zip art fem mar kid5 phd ment, inflate(fem mar kid5 phd ment) nolog
+ 
+Zero-inflated Poisson regression                  Number of obs   =        915
+                                                  Nonzero obs     =        640
+                                                  Zero obs        =        275
+ 
+Inflation model = logit                           LR chi2(5)      =      78.56
+Log likelihood  = -1604.773                       Prob > chi2     =     0.0000
+ 
+------------------------------------------------------------------------------
+         art |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+art          |
+         fem |  -.2091446   .0634047    -3.30   0.001    -.3334155   -.0848737
+         mar |    .103751    .071111     1.46   0.145     -.035624     .243126
+        kid5 |  -.1433196   .0474293    -3.02   0.003    -.2362793   -.0503599
+         phd |  -.0061662   .0310086    -0.20   0.842     -.066942    .0546096
+        ment |   .0180977   .0022948     7.89   0.000     .0135999    .0225955
+       _cons |    .640839   .1213072     5.28   0.000     .4030814    .8785967
+-------------+----------------------------------------------------------------
+inflate      |
+         fem |   .1097465   .2800813     0.39   0.695    -.4392028    .6586958
+         mar |  -.3540107   .3176103    -1.11   0.265    -.9765155    .2684941
+        kid5 |   .2171001    .196481     1.10   0.269    -.1679956    .6021958
+         phd |   .0012702   .1452639     0.01   0.993    -.2834418    .2859821
+        ment |   -.134111   .0452461    -2.96   0.003    -.2227918   -.0454302
+       _cons |  -.5770618   .5093853    -1.13   0.257    -1.575439     .421315
+------------------------------------------------------------------------------
+ 
+. estimates store zip
+</pre> 
+<P> 
+Looking at the inflate equation we see that the only significant
+predictor of being in the 'always zero' class is the number of
+articles published by the mentor, with each article by the mentor
+associated with 12.6% lower odds of never publishing. 
+<P> 
+Looking at the equation for the mean number or articles among those
+not in the always zero class, we find significant disadvantages for
+females and scientists with children under five, and a large
+positive effect of the number of publications by the mentor,
+with each article associated with a 1.8% increase in the expected
+number of publications.
+<P> 
+To verify that the model solves the problem of excess zeroes we
+predict &pi; and &mu;, and calculate the combined probability of
+no publications. 
+<P> 
+Stata's <code>predict</code> computes the probability of always
+zero with the option <code>pr</code> and the Poisson linear
+predictor using the option <code>xb</code>. A third option
+we will not use, <code>n</code>, predicts the expected count
+as <code>(1-pr)*exp(xb)</code>. 
+Here's how to predict &pi; and &mu;
+<pre class='stata'>
+. predict pz, pr
+ 
+. predict xbz, xb
+ 
+. gen muz = exp(xbz)
+ 
+. gen zfitz = pz + (1-pz)*exp(-muz)
+ 
+. sum zfitz
+ 
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+       zfitz |       915    .2985684    .1280144   .0007119   .5815108
+</pre> 
+<P> 
+So the model solves the problem of excess zeroes, predicting
+that 29.9% of the biochemists will publish no articles, much
+closer to the observed value of 30.0%. 
+<P> 
+<h4>Model Comparison with AIC</h4> 
+<P> 
+As it happens,
+for this data the negative binomial solves the problem too.
+Here's the probablity of zero articles in the negative binomial
+<pre class='stata'>
+. estimates restore nbreg
+(results nbreg are active now)
+ 
+. predict munb
+(option n assumed; predicted number of events)
+ 
+. scalar tau = 1/sigma2
+ 
+. gen zfitnb = (tau/(munb+tau))^tau
+ 
+. sum zfitnb
+ 
+    Variable |       Obs        Mean    Std. Dev.       Min        Max
+-------------+--------------------------------------------------------
+      zfitnb |       915    .3035957    .0781645    .015145   .4801816
+</pre> 
+<P> 
+The model predicts that 30.4% of the biochemists would publish no
+articles in the last three years of their Ph.D., very close to the
+observed value of 30.0%.
+<P> 
+To choose between the negative binomial and zero inflated models
+we need to resort to other criteria. A very simple way to compare
+models with different numbers of parameters is to compute
+Akaike's Information Criterion (AIC), which we define as
+<P> 
+ 
+<i>AIC = -2logL + 2p</i> 
+ 
+<P> 
+where <i>p</i> is the number of parameters in the model. The
+first term is essentially the deviance and the second a penalty
+for the number of parameters. For our data
+<pre class='stata'>
+. di "Negative binomial", -2*e(ll)+2*e(rank)
+Negative binomial 3135.9167
+ 
+. estimates restore zip
+(results zip are active now)
+ 
+. di "Zip", -2*e(ll)+2*e(rank)
+Zip 3233.5457
+</pre> 
+<P> 
+For this dataset the negative binomial model is a clear winner in 
+terms of parsimony and goodness of fit. 
+Other diagnostic criteria we could look at 
+are the marginal distribution of predicted and observed counts 
+and the variance functions.
+<P> 
+<h4>Zero-Truncated and Hurdle Models</h4> 
+<P> 
+Other models we haven't covered are the zero-truncated Poisson
+and negative binomial, designed for data that do not include
+zeroes. A common example is length of stay in a hospital, which
+is at least one day. A sensible approach is to fit a Poisson
+or negative binomial model that excludes zero and rescales the
+other probabilities to sum to one. One should be careful 
+interpreting these models because &mu; is not the expected outcome, 
+but the mean of an underlying distribution that includes the zeros.
+These models are implemented in the Stata commands 
+<code>ztp</code> and <code>ztnb</code>.
+<P> 
+An alternative approach to excess (or a dearth) of zeroes is
+to use a two-stage process, with a logit model to distinguish
+between zero and positive counts and then a zero-truncated
+Poisson or negative binomial model for the positive counts.
+In our example we could use a logit model to differentiate those
+who publish from those who don't, and then a truncated Poisson or 
+negative binomial model for the number of articles of those
+who publish at least one. 
+These models are often called <i>hurdle</i> models.
+They can be fitted in Stata using the <code>logit</code> and 
+<code>poisson</code> or <code>nbreg</code> commands,
+simply adding the log-likelihoods from each stage.
+<P> 
+Comparing hurdle and zero-inflated models I find the distinction
+between zero and one or more to be clearer with hurdle models,
+but the interpretation of the mean is clearer with zero-inflated
+models.
+</p>

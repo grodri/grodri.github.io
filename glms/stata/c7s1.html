@@ -1,0 +1,507 @@
+---
+layout: default
+section: glms
+tab: "Stata Logs"
+pager: true
+---
+
+
+<h2 class='first'>7.  Survival Models in Stata</h2> 
+<P> 
+Stata has extensive facilities for fitting survival models. 
+We will discuss only the use of Poisson regression to fit 
+piece-wise exponential survival models.
+<P> 
+<h3>7.5  Infant and Child Mortality in Colombia</h3> 
+<P> 
+The datasets page has the original tabulation of children by sex, 
+cohort, age and survival status (dead or still alive at interview),
+as analyzed by Somoza (1980). 
+<P> 
+As is often the case with survival data, a good part of the
+effort is to convert the raw data into the counts of events
+and exposure needed for analysis.
+<P> 
+<h4>Data Preparation</h4> 
+<P> 
+We will start by reading the data and collapsing over sex,
+and will then compute events and exposure to reproduce 
+Table 7.1 in the lecture notes.
+</p>
+<pre class='stata'>
+. use http://data.princeton.edu/wws509/datasets/somoza,clear
+(Infant and Child Survival in Colombia, 1976)
+ 
+. collapse (sum) alive (sum) dead, by (cohort age)
+</pre> 
+<P> 
+We make sure the data are sorted by cohort and then age, 
+use <code>egen</code> to count the total number of children 
+in each cohort, and then use <code>replace</code> with a 
+<code>by cohort</code> prefix to [re]compute the number of
+children alive at the start of each age group, calculated
+as the number who started the previous age group
+minus those still alive at the previous age group and 
+minus those who died in the previous age group. 
+Having done this we can drop kids older than 10, 
+as we are only interested in survival to age ten.
+<pre class='stata'>
+. sort cohort age // make sure data are sorted
+ 
+. egen start = total(alive+dead), by(cohort) 
+ 
+. by cohort: replace start = ///
+>   start[_n-1] - alive[_n-1] - dead[_n-1] if _n > 1
+(21 real changes made)
+ 
+. drop if age > 7
+(3 observations deleted)
+</pre> 
+<P> 
+The next step is to use <code>recode</code> to generate a 
+variable representing the width of the age intervals in months. 
+We then use <code>generate</code> to compute exposure, 
+assuming everyone is exposed the full width of the interval 
+except those censored or who die in the interval, 
+who are exposed on average half the interval. 
+We divide by 12 to express exposure in person-years.
+<pre class='stata'>
+. recode age 4=6 5=12 6=36 7=60, gen(width) // interval width in months
+(12 differences between age and width)
+ 
+. gen exposure = width * (start - 0.5 * (alive + dead))/12  // in years
+</pre> 
+<P> 
+Finally we list the results. For convenience we rename dead to 
+<code>deaths</code> and set a format so <code>exposure</code> 
+prints with one decimal. 
+The results coincide with Table 7.1 in the notes.
+<pre class='stata'>
+. rename dead deaths
+ 
+. format expo %8.1f
+ 
+. list cohort age deaths expo, sep(7)
+ 
+     +-------------------------------------------+
+     |  cohort           age   deaths   exposure |
+     |-------------------------------------------|
+  1. | 1941-59    0-1 months      168      278.4 |
+  2. | 1941-59    1-3 months       48      538.8 |
+  3. | 1941-59    3-6 months       63      794.4 |
+  4. | 1941-59   6-12 months       89     1550.8 |
+  5. | 1941-59     1-2 years      102     3006.0 |
+  6. | 1941-59     2-5 years       81     8743.5 |
+  7. | 1941-59    5-10 years       40    14270.0 |
+     |-------------------------------------------|
+  8. | 1960-67    0-1 months      197      403.2 |
+  9. | 1960-67    1-3 months       48      786.0 |
+ 10. | 1960-67    3-6 months       62     1165.3 |
+ 11. | 1960-67   6-12 months       81     2294.8 |
+ 12. | 1960-67     1-2 years       97     4500.5 |
+ 13. | 1960-67     2-5 years      103    13201.5 |
+ 14. | 1960-67    5-10 years       39    19525.0 |
+     |-------------------------------------------|
+ 15. | 1968-76    0-1 months      195      495.3 |
+ 16. | 1968-76    1-3 months       55      956.7 |
+ 17. | 1968-76    3-6 months       58     1381.4 |
+ 18. | 1968-76   6-12 months       85     2604.5 |
+ 19. | 1968-76     1-2 years       87     4618.5 |
+ 20. | 1968-76     2-5 years       70     9814.5 |
+ 21. | 1968-76    5-10 years       10     5802.5 |
+     +-------------------------------------------+
+</pre> 
+<P> 
+We label the dataset and save it. 
+The resulting file is available in the datasets section
+as <code>somoza2</code>.
+<pre class='stata'>
+. label data "Infant and Child Mortality in Colombia, 1976"
+ 
+. notes : "Events and Exposure in Table 7.1, WWS 509 Notes"
+ 
+. save ../datasets/somoza2, replace
+file ../datasets/somoza2.dta saved
+</pre> 
+<P> 
+<h4>Offset and Predictors</h4> 
+<P> 
+In preparation for modeling let us calculate the logarithm of
+exposure time, to be used as an <i>offset</i>. 
+We will also create the usual dummy variables for age
+and cohort. We don't really need these given the convenience
+of <i>factor variables</i> in Stata 11, but we'll calculate
+them anyway to obtain more nicely labeled output
+<pre class='stata'>
+. gen logexp = log(exposure)
+ 
+. gen age_1_3m  = age==2
+ 
+. gen age_3_6m  = age==3
+ 
+. gen age_6_12m = age==4
+ 
+. gen age_1_2y  = age==5
+ 
+. gen age_2_5y  = age==6
+ 
+. gen age_5_10y = age==7
+ 
+. local age age_1_3m age_3_6m age_6_12m age_1_2y age_2_5y age_5_10y
+ 
+. gen cohort_60_67 = cohort == 2
+ 
+. gen cohort_68_76 = cohort == 3
+ 
+. local cohort cohort_60_67 cohort_68_76
+</pre> 
+<P> 
+<a name="pwe"></a><h4>Exponential Survival</h4> 
+<P> 
+Let us fit the null model, which is equivalent to a simple
+exponential survival model. 
+We will also store the estimates for use in later tests
+<pre class='stata'>
+. poisson deaths, offset(logexp)
+ 
+Iteration 0:   log likelihood =  -2184.107  
+Iteration 1:   log likelihood =  -2184.107  (backed up)
+ 
+Poisson regression                                Number of obs   =         21
+                                                  LR chi2(0)      =       0.00
+                                                  Prob > chi2     =          .
+Log likelihood =  -2184.107                       Pseudo R2       =     0.0000
+ 
+------------------------------------------------------------------------------
+      deaths |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       _cons |  -3.996449   .0237156  -168.52   0.000     -4.04293   -3.949967
+      logexp |   (offset)
+------------------------------------------------------------------------------
+ 
+. estat gof
+ 
+         Goodness-of-fit chi2  =  4239.871
+         Prob > chi2(20)       =    0.0000
+ 
+. estimates store null
+</pre> 
+<P> 
+Note the astronomical deviance. 
+The estimate of the constant happens to be the log of the 
+overall mortality rate. Let's verify this fact
+<pre class='stata'>
+. di "Fitted rate = " exp(_b[_cons])
+Fitted rate = .0183808
+ 
+. quietly summarize deaths
+ 
+. scalar ndeaths = r(sum)
+ 
+. quietly summarize exposure
+ 
+. di "Observed Rate = " ndeaths/r(sum)
+Observed Rate = .0183808
+</pre> 
+<P> 
+We have an overall mortality rate of 18.4 deaths per
+thousand child-years of exposure.
+<P> 
+<h4>Three Exponentials</h4> 
+<P> 
+On to the one-factor models. 
+We start with the cohort model, which is equivalent to a separate 
+exponential survival model for each cohort:
+<pre class='stata'>
+. poisson deaths `cohort', offset(logexp)
+ 
+Iteration 0:   log likelihood = -2160.0647  
+Iteration 1:   log likelihood = -2159.5266  
+Iteration 2:   log likelihood = -2159.5264  
+Iteration 3:   log likelihood = -2159.5264  
+ 
+Poisson regression                                Number of obs   =         21
+                                                  LR chi2(2)      =      49.16
+                                                  Prob > chi2     =     0.0000
+Log likelihood = -2159.5264                       Pseudo R2       =     0.0113
+ 
+------------------------------------------------------------------------------
+      deaths |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+cohort_60_67 |  -.3020391   .0573319    -5.27   0.000    -.4144075   -.1896707
+cohort_68_76 |   .0742177   .0589726     1.26   0.208    -.0413664    .1898017
+       _cons |  -3.899487   .0411345   -94.80   0.000    -3.980109   -3.818865
+      logexp |   (offset)
+------------------------------------------------------------------------------
+ 
+. di exp(_b[cohort_60_67]), exp(_b[cohort_68_76])
+.73930913 1.0770412
+ 
+. estat gof
+ 
+         Goodness-of-fit chi2  =   4190.71
+         Prob > chi2(18)       =    0.0000
+</pre> 
+<P> 
+Compare these results with the gross effect estimates in Table 7.3. 
+Note that the hazard rate declined 26% between the 1941-59 and 
+1960-67 cohorts, but appears to have increased almost 8% for the 
+1968-76 cohort compared to the 1941-59 cohort. 
+(We will return to this issue.) 
+<P> 
+The astronomical deviance shows that this model does not provide
+a reasonable description of the data. It is, however, better than
+the model where all cohorts follow the same exponential survival
+curve, as evidenced by the model chi-squared or the Wald test
+<pre class='stata'>
+. lrtest null .
+ 
+Likelihood-ratio test                                  LR chi2(2)  =     49.16
+(Assumption: null nested in .)                         Prob > chi2 =    0.0000
+ 
+. test `cohort'
+ 
+ ( 1)  [deaths]cohort_60_67 = 0
+ ( 2)  [deaths]cohort_68_76 = 0
+ 
+           chi2(  2) =   48.00
+         Prob > chi2 =    0.0000
+</pre> 
+<P> 
+Both tests are highly significant indicating that overall mortality
+rates are not the same across cohorts.
+<P> 
+<h4>Piece-Wise Exponential Survival</h4> 
+<P> 
+Now we consider the age model, where the hazard depends on the age 
+of the child:
+<pre class='stata'>
+. poisson deaths `age', offset(logexp)
+ 
+Iteration 0:   log likelihood = -100.89918  
+Iteration 1:   log likelihood = -100.49174  
+Iteration 2:   log likelihood = -100.49167  
+Iteration 3:   log likelihood = -100.49167  
+ 
+Poisson regression                                Number of obs   =         21
+                                                  LR chi2(6)      =    4167.23
+                                                  Prob > chi2     =     0.0000
+Log likelihood = -100.49167                       Pseudo R2       =     0.9540
+ 
+------------------------------------------------------------------------------
+      deaths |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    age_1_3m |  -1.972627   .0916964   -21.51   0.000    -2.152349   -1.792906
+    age_3_6m |  -2.161858   .0851481   -25.39   0.000    -2.328745   -1.994971
+   age_6_12m |  -2.487891   .0755466   -32.93   0.000    -2.635959   -2.339822
+    age_1_2y |  -3.004351   .0726789   -41.34   0.000    -3.146799   -2.861904
+    age_2_5y |  -4.085932   .0756487   -54.01   0.000      -4.2342   -3.937663
+   age_5_10y |  -5.355204   .1141125   -46.93   0.000     -5.57886   -5.131547
+       _cons |  -.7426813   .0422577   -17.58   0.000    -.8255049   -.6598577
+      logexp |   (offset)
+------------------------------------------------------------------------------
+ 
+. estimates store age
+ 
+. mata exp(st_matrix("e(b)"))
+                 1             2             3             4             5             6             7
+    +---------------------------------------------------------------------------------------------------+
+  1 |  .1390909507   .1151110572   .0830850445   .0495708909   .0168074734   .0047235073   .4758363547  |
+    +---------------------------------------------------------------------------------------------------+
+ 
+. estat gof
+ 
+         Goodness-of-fit chi2  =  72.64056
+         Prob > chi2(14)       =    0.0000
+</pre> 
+<P> 
+The age model is equivalent to a piece-wise exponential survival model 
+with no cohort effects. 
+Compare the results with the gross effects in Table 7.3. 
+Note the dramatic decrease in risk with age. 
+At age one the risk of death is only 5% of what it is 
+in the first month of life. 
+<P> 
+This model still doesn't fit the data, as evidenced by the
+deviance or goodness of fit chi-squared. It is, however,
+a remarkable improvement over the null, as indicated by the
+model chi-squared or the Wald test
+<pre class='stata'>
+. lrtest null .
+ 
+Likelihood-ratio test                                  LR chi2(6)  =   4167.23
+(Assumption: null nested in age)                       Prob > chi2 =    0.0000
+ 
+. test `age'
+ 
+ ( 1)  [deaths]age_1_3m = 0
+ ( 2)  [deaths]age_3_6m = 0
+ ( 3)  [deaths]age_6_12m = 0
+ ( 4)  [deaths]age_1_2y = 0
+ ( 5)  [deaths]age_2_5y = 0
+ ( 6)  [deaths]age_5_10y = 0
+ 
+           chi2(  6) = 4689.27
+         Prob > chi2 =    0.0000
+</pre> 
+<P> 
+You can see why demographers prefer age-specific mortality rates.
+<P> 
+<a name="ph"></a><h4>The Proportional Hazards Model</h4> 
+<P> 
+Now on to the additive model with main effects of age and cohort, 
+which is equivalent to a proportional hazards model:
+<pre class='stata'>
+. poisson deaths `age' `cohort', offset(logexp)
+ 
+Iteration 0:   log likelihood = -67.794175  
+Iteration 1:   log likelihood = -67.263248  
+Iteration 2:   log likelihood = -67.263109  
+Iteration 3:   log likelihood = -67.263109  
+ 
+Poisson regression                                Number of obs   =         21
+                                                  LR chi2(8)      =    4233.69
+                                                  Prob > chi2     =     0.0000
+Log likelihood = -67.263109                       Pseudo R2       =     0.9692
+ 
+------------------------------------------------------------------------------
+      deaths |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+    age_1_3m |  -1.972688   .0916965   -21.51   0.000    -2.152409   -1.792966
+    age_3_6m |   -2.16332   .0851488   -25.41   0.000    -2.330208   -1.996431
+   age_6_12m |  -2.491674    .075551   -32.98   0.000    -2.639752   -2.343597
+    age_1_2y |  -3.014052   .0727035   -41.46   0.000    -3.156548   -2.871556
+    age_2_5y |  -4.115382   .0758262   -54.27   0.000    -4.263999   -3.966766
+   age_5_10y |  -5.435887    .114768   -47.36   0.000    -5.660828   -5.210945
+cohort_60_67 |  -.3242407   .0573352    -5.66   0.000    -.4366156   -.2118657
+cohort_68_76 |  -.4783589   .0593256    -8.06   0.000     -.594635   -.3620828
+       _cons |  -.4484824   .0545389    -8.22   0.000    -.5553767    -.341588
+      logexp |   (offset)
+------------------------------------------------------------------------------
+ 
+. di exp(_b[cohort_60_67]),exp(_b[cohort_68_76])
+.72307619 .61979973
+ 
+. estat gof
+ 
+         Goodness-of-fit chi2  =  6.183445
+         Prob > chi2(12)       =    0.9066
+</pre> 
+<P> 
+Note that this model fits reasonably well, with a deviance
+of 6.18 on 12 d.f., so the assumption of proportional hazards
+is consistent with the data. 
+<P> 
+Compare the results with the net effect estimates in Table 7.3,
+and note that the anomaly with the youngest cohort has dissappeared.
+The estimates now indicate a steady decline in mortality across 
+cohorts. 
+Taking the 1941-59 cohort as a baseline, mortality at every age from 
+zero to ten was 28% lower for the 1960-67 cohort and 36% lower for 
+the  more recent 1968-76 cohort. 
+Can you explain why this trend did not emerge until we controlled 
+for age? <i>Hint</i>: the survey was conducted in 1976. 
+<P> 
+Here's a likelihood ratio test for the cohort effect adjusted for age. 
+Note that we compare the age model (which we saved) with the additive 
+model that has age and cohort. That is followed by the Wald test.
+<pre class='stata'>
+. lrtest age .
+ 
+Likelihood-ratio test                                  LR chi2(2)  =     66.46
+(Assumption: age nested in .)                          Prob > chi2 =    0.0000
+ 
+. test `cohort'
+ 
+ ( 1)  [deaths]cohort_60_67 = 0
+ ( 2)  [deaths]cohort_68_76 = 0
+ 
+           chi2(  2) =   68.59
+         Prob > chi2 =    0.0000
+</pre> 
+<P> 
+The cohort differences within age groups are highly significant.
+<P> 
+<a name="surv"></a><h4>Estimating Survival Probabilities</h4> 
+<P> 
+Let us calculate the fitted life table shown in Table 7.4 of the 
+lecture notes. 
+The <code>predict</code> command following a Poisson regression 
+calculates the expected number of events, so we need to divide by 
+exposure to obtain fitted rates. An alternative is to use the 
+<code>xb</code> and <code>nooffset</code> options (you need both) 
+to obtain the linear predictor or log-hazard, which you can then 
+exponentiate to obtain the fitted hazard rate.
+<pre class='stata'>
+. predict events
+(option n assumed; predicted number of events)
+ 
+. gen hazard  = events/exposure
+</pre> 
+<P> 
+At this point recall that the age intervals have different widths. 
+We stored the widths in months in the variable width. We will now 
+convert it to years, so it is in the same units as exposure.
+<pre class='stata'>
+. quietly replace width=width/12
+</pre> 
+<P> 
+Now we will sort the data by age within each cohort and calculate 
+the cumulative hazard for each cohort as a running sum of the hazard 
+times the interval width. 
+We then use the fact that <i>S(t)= exp{-&Lambda;(t)}</i> to obtain 
+the survival function.
+<pre class='stata'>
+. sort cohort age
+ 
+. by cohort: gen cumhaz = sum(hazard * width)
+ 
+. gen survival = exp( -cumhaz)
+</pre> 
+<P> 
+The last thing to do is print our handy work. 
+I will use the <code>tabulate</code> command rather than 
+<code>list</code> to obtain a suitable two-way layout. 
+I specify the "mean" to list the single value in each combination 
+of age and cohort.
+<pre class='stata'>
+. tab age cohort, sum(survival) mean
+ 
+                             Means of survival
+ 
+   Age (in |    Year of birth (cohort)
+   groups) |   1941-59    1960-67    1968-76 |     Total
+-----------+---------------------------------+----------
+ 0-1 month | .94817483  .96225142  .96755451 | .95932692
+ 1-3 month | .93424243  .95200676  .95871794 | .94832238
+ 3-6 month | .91725492  .93945819  .94787562 | .93486291
+ 6-12 mont | .89333057  .92167562  .93247539 | .91582719
+ 1-2 years |  .8657589  .90101755  .91453147 |  .8937693
+ 2-5 years | .83910966  .88087672  .89698023 |  .8723222
+ 5-10 year |  .8275159   .8720594  .88927853 | .86295128
+-----------+---------------------------------+----------
+     Total | .88934103  .91847795  .92963053 | .91248317
+</pre> 
+<P> 
+We see that the probability of surviving to age one increased
+from 89.3% to 92.2% and then to 93.2% across cohorts.
+The complement of the probability of surviving to age one
+is known as the infant mortality rate (although it is a
+probability, not a rate) and is usually expressed per
+thousand births; it declined from 106.7 to 78.3 to 67.5
+across cohorts.
+<P> 
+<h4>Other Methods</h4> 
+<P> 
+Stata has commands for fitting some of the parametric models 
+discussed in the bibliographic notes, such as the Weibull model. 
+It also has non-parametric methods, including procedures for 
+calculating Kaplan-Meier estimates and for fitting Cox regression 
+models by partial likelihood. Finally, Stata has facilities for 
+generating person-year files. </p>
+
+<p><img src="/images/new.png" align="left" class="img-responsive center-block"/>&nbsp;
+Follow the link below for another example applying a piecewise exponential
+survival model, this time to recidivism using individual rather than grouped data
+and illustrating the creation of person-year files.
+</p>

@@ -1,0 +1,249 @@
+---
+layout: default
+section: glms
+tab: "R Logs"
+pager: true
+---
+
+
+<h2>  Piecewise Exponential Models</h2>
+<p>  
+This is an illustration of piecewise exponential survival using R, 
+relying on the functions <code>survSplit()</code> to create pseudo-observations
+and <code>glm()</code> to fit the model using the Poisson equivalence.
+I also use the package <code>dplyr</code> for data manipulation.
+</p>
+<div class="alert alert-warning">This page has been updated to use version 2.40-1
+of the survival package, which was released on  October 30, 2016. 
+The call to <code>survSplit()</code> now uses a formula interface. 
+The old page <a href='/wws509/r/recidivism-old.html'>is here</a>.
+Tip of the hat to Jack Hoskins for bringing this issue to my attention.</div>
+
+<h4>The Data</h4>
+ <p> 
+The dataset we will consider is analyzed in Wooldridge (2002) and
+credited to Chung, Schmidt and Witte (1991). The data pertain to a 
+random sample of convicts released from prison between July 1, 1977
+and June 30, 1978.  Of interest is the time until they return to
+prison.  The information was collected retrospectively by looking at
+records in April 1984, so the maximum length of observation is 81
+months.  The data are available from the Stata website in binary
+format. We use the <code>foreign</code> library to read them into R.
+create an id and 
+</p>
+<pre class='R'>
+&gt; library(foreign)
+&gt; recid <- read.dta("http://www.stata.com/data/jwooldridge/eacsap/recid.dta")
+&gt; nrow(recid)
+[1] 1445
+</pre>
+<p>
+  I get a warning that "R cannot read factor labels from Stata 5 files"
+but it seems harmless, as the data look Ok.
+The file has a censoring indicator, which we subtract from 1 to get
+a failure indicator. We also create an id variable and list 
+observation number 9, which goes back to prison after 54 months.
+</p>
+<pre class='R'>
+&gt; recid <- mutate(recid, fail = 1 - cens, id = row_number())
+&gt; filter(recid, id == 9) %>% select(id, durat, fail)
+   id durat fail
+1   9    54    1
+</pre>
+<h4>Creating Pseudo-Observations</h4>
+<p>  
+  To create pseudo-observations for survival analysis we will
+use the <code>survSplit()</code> function in the `survival` package.
+We will split the data into single-year
+intervals of duration from 0-12 to 48-60 with an open-ended 
+category 60+. </p>
+
+<pre class='R'>
+> library(survival)
+> breaks <- seq(12, 60, by=12)
+> recidx <- survSplit(Surv(durat, fail) ~ ., data = recid, 
++   cut = breaks, episode = "interval", start = "start")
+</pre>
+<p>The function codes the interval variable using 
+integer codes, and we turn that into a factor for convenience
+We calculate exposure time for each episode as the difference
+between duration at the start and end.</p>
+<pre class="R">
+> recidx <- mutate(recidx, exposure = durat - start,  
++      interval = factor(interval,  labels = paste("(", 
++      c(0,breaks), ",", c(breaks,100), "]", sep=""))) %>%
++    rename(events = fail)
+> nrow(recidx)
+[1] 6718
+</pre>
+<p>
+Finally we show how the observation for subject 9 above becomes
+five pseudo-observations, with 12 months of exposure in years
+one to four with no events, and 6 months of exposure in year 
+five with one event. </p>
+<pre class="R">
+> filter(recidx, id == 9) %>% 
++   select(id, start, durat, interval, events, exposure)
+   id start durat interval events exposure
+1  9     0    12   (0,12]     0       12
+2  9    12    24  (12,24]     0       12
+3  9    24    36  (24,36]     0       12
+4  9    36    48  (36,48]     0       12
+5  9    48    54  (48,60]     1        6
+</pre>
+
+<h4>A PWE Proportional Hazards Model</h4>
+<p>  
+We are now ready to fit a proportional hazards model with
+a piecewise exponential baseline where the hazard changes from
+year to year. We use the same model as Wooldridge(2002),
+involving ten predictors, all fixed covariates.
+</p>
+<pre class="R">
+&gt; fit=glm(events~interval+workprg+priors+tserved+felon+alcohol+drugs+
++     black+married+educ+age+offset(log(exposure)), 
++      data=recidx, family=poisson)
+&gt; summary(fit)
+
+Call:
+glm(formula = events ~ interval + workprg + priors + tserved + 
+    felon + alcohol + drugs + black + married + educ + age + 
+    offset(log(exposure)), family = poisson, data = recidx)
+#
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-1.6130  -0.4598  -0.3468  -0.2543   3.4746  
+
+Coefficients:
+                   Estimate Std. Error z value Pr(>|z|)    
+(Intercept)      -3.8301275  0.2802673 -13.666  &lt; 2e-16 ***
+interval(12,24]   0.0365320  0.1093618   0.334  0.73834    
+interval(24,36]  -0.3738156  0.1296119  -2.884  0.00393 ** 
+interval(36,48]  -0.8115436  0.1564015  -5.189 2.12e-07 ***
+interval(48,60]  -0.9382311  0.1683212  -5.574 2.49e-08 ***
+interval(60,100] -1.5471779  0.2033489  -7.608 2.77e-14 ***
+workprg           0.0838291  0.0907942   0.923  0.35586    
+priors            0.0872458  0.0134735   6.475 9.46e-11 ***
+tserved           0.0130089  0.0016859   7.716 1.20e-14 ***
+felon            -0.2839252  0.1061488  -2.675  0.00748 ** 
+alcohol           0.4324425  0.1057211   4.090 4.31e-05 ***
+drugs             0.2747141  0.0978635   2.807  0.00500 ** 
+black             0.4335560  0.0883623   4.907 9.27e-07 ***
+married          -0.1540477  0.1092119  -1.411  0.15838    
+educ             -0.0214162  0.0194440  -1.101  0.27071    
+age              -0.0035800  0.0005222  -6.855 7.13e-12 ***
+---
+Signif. codes:  0 &lsquo;***&rsquo; 0.001 &lsquo;**&rsquo; 0.01 &lsquo;*&rsquo; 0.05 &lsquo;.&rsquo; 0.1 &lsquo; &rsquo; 1
+
+(Dispersion parameter for poisson family taken to be 1)
+
+    Null deviance: 3691.4  on 6717  degrees of freedom
+Residual deviance: 3379.1  on 6702  degrees of freedom
+AIC: 4515.1
+
+Number of Fisher Scoring iterations: 6
+</pre>
+<p>
+The results are exactly the same as in the 
+<a href="..\stata\recidivism.html">sister page using Stata</a>. 
+We see that the risk of recidivism is about the same
+in the first two years, but then decreases substantially
+with duration since release. 
+At any given duration felons have 25% lower risk of recidivism than
+non-felons with the same observed characteristics.  Subjects
+imprisoned for alcohol or drug related offenses have much
+higher risk of recidivism, everything else being equal.
+
+<h4>Survival Probabilities</h4>
+  
+We now illustrate the calculation of survival probabilities.
+We start with the baseline hazard, which we obtain by
+adding the constant to the interval coefficients using zero 
+for (0-12] to obtain log-hazards, and exponentiating to get 
+hazards.
+To obtain the cumulative or integrated hazard we multiply
+each hazard by the width of the interval, which happens to be
+12 for all intervals, and sum. 
+We then obtain the survival as the exponential of the
+negative cumulative hazard.
+Note that we only need the first five years.
+</p>
+<pre class='R'>
+&gt; b = coef(fit)
+&gt; h = exp( b[1] + c(0,b[2:6]) )
+&gt; H = cumsum( 12*h)
+&gt; S = exp(-H)
+&gt; S
+                  interval(12,24]  interval(24,36] 
+       0.7706799        0.5882188        0.4916958 
+ interval(36,48]  interval(48,60] interval(60,100] 
+       0.4379748        0.3955312        0.3741986 
+</pre>
+<p> These calculations apply to the reference cell and are
+not very meaningful because they set age to zero (and age, 
+by the way, is measured in months).  
+</p><p>
+We will now estimate the probability of staying out of prison 
+for five years given average values of the predictors.
+In calculating the mean of each predictor we have to be careful 
+to include only one observation per person, so we restrict the 
+calculation to the first interval, which is "(0,12]". 
+To do this I extract the first row for each person and the
+columns corresponding to fixed predictors into a matrix 
+<code>X</code>. 
+The relevant coefficients are in slots 7 to 16.
+</p>
+<pre class='R'>
+> xvars = c("workprg","priors","tserved","felon","alcohol","drugs",
++   "black","married","educ","age")
+> X = recidx[recidx$interval=="(0,12]", xvars]
+> xbar = colMeans(X)
+> bx = b[7:16]
+> xb = sum(xbar * bx)
+> exp(-H[5] * exp(xb))
+interval(48,60] 
+      0.6570278 
+</pre>
+<p>
+Thus, the probability of staying out of prison for the average
+person is 65.7%. We can easily calculate this probability for
+felons and non-felons keeping all other variables at their
+means. Note that felon is the 4-th predictor in <code>X</code>
+</p>
+<pre class='R'>
+&gt; xb0 = sum(xbar[-4] * bx[-4])  
+&gt; exp(-H[5] * exp(xb0))
+interval(48,60] 
+      0.6317763 
+&gt; xb1 = xb0 + bx[4]
+&gt; exp(-H[5] * exp(xb1))
+interval(48,60] 
+      0.7077168 
+</pre>
+<p>
+The predicted probability is 70.8% for felons and 63.2% for 
+non-felons when all other characteristics are set to the mean,
+a difference of 7.6 percentage points.
+</p><p>
+An alternative calculation sets every person to be a felon
+or non-felon leaving all other characteristics as they are,
+and then averages the predicted probability of surviving
+five years without returning to prison.
+</p>
+<pre class='R'>
+&gt; felon = X[,"felon"]
+&gt; X[,"felon"]= 0
+&gt; xb = as.matrix(X) %*% bx
+&gt; mean(exp(-(H[5] * exp(xb))))
+[1] 0.6118797
+&gt; X[,"felon"]= 1
+&gt; xb = as.matrix(X) %*% bx
+&gt; mean(exp(-(H[5] * exp(xb))))
+[1] 0.6857928
+&gt; X[,"felon"] = felon
+</pre>
+<p>
+The average probability of staying out of prison for five years
+is 68.6% if a felon and 61.2% if not, a difference of 7.4 percentage
+points.
+</p>

@@ -1,0 +1,204 @@
+---
+layout: default
+section: glms
+tab: "R Logs"
+pager: true
+---
+
+
+
+<h3>8.3 Longitudinal Logits</h3>
+<p>This is a dataset on union membership used in the Stata manuals and in my own paper on intra-class correlation
+for binary data. This is a subsample of the National Longitudinal Survey of Youth (NLSY) and has union membership
+information from 1970-88 for 4,434 women aged 14-26 in 1968. The data are available in the Stata website and
+also in the datasets sectio here.</p>
+
+
+<pre class='r weave-r'>
+> library(foreign)
+
+> union <- read.dta("http://data.princeton.edu/wws509/datasets/union.dta")
+</pre>
+
+<h4>Logits</h4>
+<p>Here is a logit model</p>
+
+
+<pre class='r weave-r'>
+> logit <- glm(union ~ age + grade + not_smsa + south + southXt, data = union, family = binomial)
+
+> summary(logit)
+
+Call:
+glm(formula = union ~ age + grade + not_smsa + south + southXt, 
+    family = binomial, data = union)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-0.9475  -0.7753  -0.6224  -0.5006   2.2024  
+
+Coefficients:
+             Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -1.888256   0.113141 -16.689  < 2e-16 ***
+age          0.009993   0.002674   3.738 0.000186 ***
+grade        0.048349   0.006426   7.524 5.31e-14 ***
+not_smsa    -0.221491   0.035583  -6.225 4.83e-10 ***
+south       -0.714446   0.061215 -11.671  < 2e-16 ***
+southXt      0.006836   0.005226   1.308 0.190855    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 27728  on 26199  degrees of freedom
+Residual deviance: 27091  on 26194  degrees of freedom
+AIC: 27103
+
+Number of Fisher Scoring iterations: 4
+</pre>
+
+<h4>Fixed-Effects</h4>
+<p>Let us try a fixed-effects model. My preferred way to fit this model is using the <code>clogit</code>
+function in the <code>survival</code> package, which requires specifying the group as <code>strata()</code>.
+Alternatives are the packages <code>gplm</code> and <code>glmmML</code>. I was able to verify that I get
+exactly the same results with <code>glmmboot()</code> in the <code>glmmML</code> package.</p>
+
+
+<pre class='r weave-r'>
+> library(survival)
+
+> fe <- clogit(union ~ age + grade + not_smsa + south + southXt + strata(idcode), data = union)
+
+> summary(fe)
+Call:
+coxph(formula = Surv(rep(1, 26200L), union) ~ age + grade + not_smsa + 
+    south + southXt + strata(idcode), data = union, method = "exact")
+
+  n= 26200, number of events= 5811 
+
+              coef exp(coef)  se(coef)      z Pr(>|z|)    
+age       0.007971  1.008002  0.005028  1.585  0.11294    
+grade     0.081181  1.084567  0.041914  1.937  0.05276 .  
+not_smsa  0.021037  1.021260  0.113154  0.186  0.85251    
+south    -1.007318  0.365197  0.150050 -6.713  1.9e-11 ***
+southXt   0.026349  1.026700  0.008324  3.165  0.00155 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+         exp(coef) exp(-coef) lower .95 upper .95
+age         1.0080     0.9921    0.9981    1.0180
+grade       1.0846     0.9220    0.9990    1.1774
+not_smsa    1.0213     0.9792    0.8181    1.2748
+south       0.3652     2.7382    0.2721    0.4901
+southXt     1.0267     0.9740    1.0101    1.0436
+
+Rsquare= 0.003   (max possible= 0.293 )
+Likelihood ratio test= 78.16  on 5 df,   p=1.998e-15
+Wald test            = 75.22  on 5 df,   p=8.327e-15
+Score (logrank) test = 76.89  on 5 df,   p=3.775e-15
+
+
+> library(dplyr)
+
+> group_by(union, idcode) %>% summarize(v=var(union)) %>% filter(v > 0) %>% nrow
+[1] 1690
+</pre>
+
+<p>It is not immediately obvious from the R output that we lost 62% of our sample, as the
+estimate is based only on 1690 women who changed union status at some time, out of the
+original 4434 women. We will compare the estimates below.</p>
+<h3>Random-Effects</h3>
+<p>I tried to fit this model using  <code>glmer()</code> in the <code>lme4</code> package but it didn't converge,
+either with the default settings, which uses the Laplace approximation, nor when I
+specified 8-point adaptive quadrature. In all fairness this is a tough dataset,
+with very high intra-woman correlation.</p>
+<p>I then tried the <code>glmmML()</code> function in the package of the same name, for which the
+default family is binomial,  and it converged using the default Laplace approximation
+and also 8-point and 12-point Gauss-Hermite quadrature.
+(Adaptive Gauss Hermite is not available.)</p>
+
+
+<pre class='r weave-r'>
+> library(glmmML)
+
+> re1  <- glmmML(union ~ age + grade + not_smsa + south + southXt, cluster = idcode, 
++   data = union)
+
+> re8  <- glmmML(union ~ age + grade + not_smsa + south + southXt, cluster = idcode, 
++   data = union,  method = "ghq")
+
+> re12 <- glmmML(union ~ age + grade + not_smsa + south + southXt, cluster = idcode, 
++   data = union,  method = "ghq", n.points = 12) 
+
+> cbind(coef(re1), coef(re8), coef(re12))
+                    [,1]         [,2]         [,3]
+(Intercept) -3.504730283 -3.353263861 -3.360656203
+age          0.009720779  0.009386765  0.009384152
+grade        0.089066902  0.086738760  0.086993466
+not_smsa    -0.260623726 -0.252742200 -0.253221875
+south       -1.167166371 -1.165455222 -1.166850732
+southXt      0.022405999  0.023301055  0.023258717
+
+> re12
+
+Call:  glmmML(formula = union ~ age + grade + not_smsa + south + southXt,      
+    data = union, cluster = idcode, method = "ghq", n.points = 12) 
+
+
+                 coef se(coef)       z Pr(>|z|)
+(Intercept) -3.360656 0.260251 -12.913 0.00e+00
+age          0.009384 0.004461   2.103 3.54e-02
+grade        0.086993 0.017768   4.896 9.78e-07
+not_smsa    -0.253222 0.082801  -3.058 2.23e-03
+south       -1.166851 0.111847 -10.433 0.00e+00
+southXt      0.023259 0.007859   2.960 3.08e-03
+
+Scale parameter in mixing distribution:  2.395 gaussian 
+Std. Error:                              0.05606 
+
+        LR p-value for H_0: sigma = 0:  0 
+
+Residual deviance: 21080 on 26193 degrees of freedom 	AIC: 21100 
+</pre>
+
+<p>The results with 12 points are similar but not identical to those obtained with 8-point
+adaptive quadrature in Stata.</p>
+<h4>Comparisons</h4>
+<p>The table below compares the coefficients of the ordinary logit and the fixed and random
+effects estimates. (We skip the constant in the fixed-effects
+model because it is not estimated.)</p>
+
+
+<pre class='r weave-r'>
+> cbind(coef(logit), c(NA,coef(fe)), coef(re12))
+                    [,1]         [,2]         [,3]
+(Intercept) -1.888256415           NA -3.360656203
+age          0.009993106  0.007970579  0.009384152
+grade        0.048348651  0.081180769  0.086993466
+not_smsa    -0.221490805  0.021036769 -0.253221875
+south       -0.714446079 -1.007317831 -1.166850732
+southXt      0.006835600  0.026349483  0.023258717
+</pre>
+
+<p>The main change is in the coefficient of <code>not_smsa</code>. You might think this indicates something
+wrong with the logit and random-effects models, but note that only women who have moved between
+standard metropolitan statistical areas and other places contribute to the fixed-effects estimate.
+It seems reasonable to believe that these women may differ from the rest.</p>
+<p>The random-effect coefficients are larger in magnitude than the ordinary logit coefficients.
+This is almost always the case, as omission of the random effect biases the coefficients towards zero.</p>
+<h3>Intra-class correlation</h3>
+<p>The scale parameter of 2.395 in the output corresponds to an intra-class correlation of
+0.6478, as verified below:</p>
+
+
+<pre class='r weave-r'>
+>  re12$sigma^2/(re12$sigma^2 + pi^2/3)
+[1] 0.6355724
+</pre>
+
+<p>This result indicates a high correlation between a woman's propensity to be a union member in
+different years after controlling for her changing education and residence as well as any
+persistent characteristics.</p>
+<p>My paper with Elo in the Stata journal, 2003, shows how this can be interpreted in terms of
+an odds ratio and translated into measures of manifest correlation such as Pearson's r and Yule's Q.</p>
+

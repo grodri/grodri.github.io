@@ -1,0 +1,185 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h3>3.8 Regression Diagnostics for Binary Data</h3>
+<p>Model checking is just as important in logistic regression
+and probit analysis as it is in classical linear models.
+The raw materials are again the residuals, or differences
+between observed and fitted values.
+Unlike the case of linear models, however, we now have to
+make allowance for the fact that the observations have
+different variances. There are two types of residuals
+in common use.</p>
+
+<h4>3.8.1 Pearson Residuals</h4>
+<p>A very simple approach to the calculation of residuals is to 
+take the difference between observed and fitted values 
+and divide by an estimate of the standard deviation of the observed value. 
+The resulting residual has the form</p>
+
+\[\tag{3.15}p_i = \frac{ y_i - \hat{\mu}_i } 
+      { \sqrt{\hat{\mu}_i(n_i-\hat{\mu}_i)/n_i }},\]
+<p>where \( \hat{\mu}_i \) is the fitted value and
+the denominator follows from the fact that
+\( \mbox{var}(y_i) = n_i\pi_i(1-\pi_i) \).</p>
+
+<p>The result is called the Pearson residual because
+the square of \( p_i \) is the contribution of the \( i \)-th
+observation to Pearson&rsquo;s chi-squared statistic,
+which was introduced in Section 3.2.2, Equation <a href='#e_3_14'>3.14</a>.</p>
+
+<p>With grouped data the Pearson residuals are 
+approximately normally distributed, but this is
+not the case with individual data.
+In both cases, however, 
+observations with a Pearson residual exceeding two in
+absolute value may be worth a closer look.</p>
+
+<h4>3.8.2 Deviance Residuals</h4>
+<p>An alternative residual is based on the deviance or
+likelihood ratio chi-squared statistic. The deviance
+residual is defined as</p>
+
+\[\tag{3.16}d_i = \sqrt{2 [ y_i \log(\frac{y_i}{\hat{\mu}_i}) +
+ (n_i-y_i) \log(\frac{n_i-y_i}{n_i-\hat{\mu}_i}) ]},\]
+<p>with the same sign as the raw residual \( y_i-\hat{y}_i \).  
+Squaring these residuals and summing
+over all observations yields the deviance statistic.
+Observations with a deviance residual in excess of two
+may indicate lack of fit.</p>
+
+<h4>3.8.3 Studentized Residuals</h4>
+<p>The residuals defined so far are not fully standardized.
+They take into account the fact that different observations
+have different variances, but they make no allowance for
+additional variation arising from estimation of the
+parameters, in the way studentized residuals in classical
+linear models do.</p>
+
+<p>Pregibon&nbsp;(1981) has extended to logit models some of
+the standard regression diagnostics. A key in this
+development is the weighted <i>hat</i> matrix</p>
+
+\[ \boldsymbol{H} = \boldsymbol{W}^{1/2}\boldsymbol{X}(\boldsymbol{X}'\boldsymbol{W}\boldsymbol{X})^{-1}\boldsymbol{X}'\boldsymbol{W}^{1/2}, \]
+<p>where \( \boldsymbol{W} \) is the diagonal matrix of iteration weights
+from Section 3.2.1, with entries \( w_{ii}=\mu_i(n_i-\mu_i)/n_i \),
+evaluated at the m.l.e.&rsquo;s. 
+Using this expression it can be shown that the variance
+of the raw residual is, to a first-order approximation,</p>
+
+\[ \mbox{var}(y_i-\hat{\mu}_i) \approx (1-h_{ii}) \mbox{var}(y_i), \]
+<p>where \( h_ii \) is the leverage or diagonal element of the
+weighted hat matrix. Thus, an internally studentized
+residual can be obtained dividing the Pearson residual
+by the square root of \( 1-h_{ii} \), to obtain</p>
+
+\[ s_i = \frac{ p_i} {\sqrt{1-h{_{ii}} } } = 
+\frac{ y_i - \hat{\mu}_i } 
+{\sqrt{ (1-h_{ii}) \hat{\mu}_i (n_i-\hat{\mu}_i)/n_i}}. \]
+<p>A similar standardization can be applied to deviance
+residuals.  
+In both cases the standardized residuals have the same variance
+only approximately because the correction is first order,
+unlike the case of linear models where the correction was exact.</p>
+
+<p>Consider now calculating jack-knifed residuals by omitting 
+one observation. Since estimation relies on iterative procedures, 
+this calculation would be expensive. Suppose, however,
+that we start from the final estimates and do only one
+iteration of the IRLS procedure. Since this step is a
+standard weighted least squares calculation, we can apply
+the standard regression updating formulas to obtain the new coefficients
+and thus the predictive residuals. Thus, we can calculate
+a jack-knifed residual as a function of the standardized
+residual using the same formula as in linear models</p>
+
+\[ t_i = s_i \sqrt{ \frac{n-p-1} {n-p-s^2_i} } \]
+<p>and view the result as a one-step approximation to the
+true jack-knifed residual.</p>
+
+<h4>3.8.4 Leverage and Influence</h4>
+<p>The diagonal elements of the hat matrix can be interpreted as
+leverages just as in linear models.  To measure actual rather 
+than potential influence we could calculate Cook&rsquo;s distance,
+comparing \( \hat{\boldsymbol{\beta}} \) with \( \hat{\boldsymbol{\beta}}_{(i)} \), the m.l.e.&rsquo;s 
+of the coefficients  with and without the \( i \)-th observation.
+Calculation of the later would be expensive if we iterated to
+convergence.
+Pregibon&nbsp;(1981), however, has shown
+that we can use the standard linear models formula</p>
+
+\[ D_i = s_i^2 \frac{h_{ii} } { (1-h_{ii})p }, \]
+<p>and view the result as a one-step approximation to Cook&rsquo;s
+distance, based on doing one iteration of the IRLS algorithm
+towards \( \hat{\boldsymbol{\beta}}_{(i)} \) starting from the complete data
+estimate \( \hat{\boldsymbol{\beta}} \).</p>
+
+<h4>3.8.5 Testing Goodness of Fit</h4>
+<p>With grouped data we can assess goodness of fit by looking
+directly at the deviance, which has approximately a chi-squared
+distribution for large \( n_i \).  A common rule of thumb is to
+require all expected frequencies (both expected successes 
+\( \hat{\mu}_i \) and failures \( n_i-\hat{\mu}_i \)) to exceed one,
+and 80% of them to exceed five.</p>
+
+<p>With individual data this test is not available, but one
+can always group the data according to their covariate
+patterns.  If the number of possible combinations of values
+of the covariates is not too large relative to the total
+sample size, it may be possible to group the data and
+conduct a formal goodness of fit test.  Even when the number
+of covariate patterns is large, it is possible that a few
+patterns will account for most of the observations. In this
+case one could compare observed and fitted counts at least for 
+these common patterns, using either the deviance or Pearson&rsquo;s
+chi-squared statistic.</p>
+
+<p>Hosmer and Lemeshow&nbsp;(1980, 1989) have proposed an alternative
+procedure that can be used with individual data even if 
+there are no common covariate patterns.  The basic idea is
+to use predicted probabilities to create groups.  These authors
+recommend forming ten groups, with predicted
+probabilities of 0&ndash;0.1, 0.1&ndash;0.2,
+and so on, with the last group being 0.9&ndash;1. 
+One can then compute expected counts of successes (and failures) 
+for each group by summing the predicted values (and their complements), 
+and compare these with observed 
+values using Pearson&rsquo;s chi-squared statistic. 
+Simulation studies show that the resulting statistic
+has approximately in large samples the usual chi-squared
+distribution, with degrees of freedom equal to \( g-2 \),
+where \( g \) is the number of groups, usually ten.
+It seems reasonable to assume that this result would 
+also apply if one used the deviance rather than
+Pearson&rsquo;s chi-squared.</p>
+
+<p>Another measure that has been proposed in the literature
+is a pseudo-\( R^2 \), based on the proportion of deviance
+explained by a model.  This is a direct extension of
+the calculations based on \( \mbox{RSS} \)&rsquo;s for linear models.
+These measures compare a given model with the
+null model, and as such do not necessarily measure
+goodness of fit. A more direct measure of goodness of
+fit would compare a given model with the saturated
+model, which brings us back again to the deviance.</p>
+
+<p>Yet another approach to assessing goodness of fit is based
+on prediction errors.  Suppose we were to use the fitted
+model to predict &lsquo;success&rsquo; if the fitted probability 
+exceeds 0.5 and &lsquo;failure&rsquo; otherwise. We could then
+crosstabulate the observed and predicted responses,
+and calculate the proportion of cases predicted
+correctly.  While intuitively appealing, one problem
+with this approach is that a model that fits the data may not
+necessarily predict well, since this depends on how
+predictable the outcome is. If prediction was the main
+objective of the analysis, however, the proportion 
+classified correctly would be an ideal criterion for
+model comparison.</p>
+

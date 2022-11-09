@@ -1,0 +1,86 @@
+---
+layout: default
+section: glms
+tabs: "Problem Sets"
+---
+
+<h2 class="first">Problem Set 6: Methadone Treatment of Heroin Addicts
+ <br/><small>Due  Wednesday, December 14,  2016</small></h2>
+<P>
+The survival time we will work with is the time that heroin addicts stay in a clinic
+for methadone maintenance treatment. The data were first analyzed by Caplehorn and
+Bell (1991) and appeared in a handbook of small datasets by Hand et al (1994).
+They have also been analyzed by Rabe-Hesketh and Everitt (2006) in various editions
+of their Handbook of Statistical Analyses using Stata. The data are available
+in the datasets section in a Stata file called <code>heroin.dta</code>.
+<p>
+The data come from two clinics coded 1 and 2; status is 1 if the event occurred
+(the person left the clinic) and 0 otherwise, and time is in days. The other two
+variables are an indicator of whether the person had a prison record, and the
+dose of methadone in mg. 
+</p>
+<h4>[1] Models with No Covariates</h4>
+<p>
+(a) Verify that we have 150 failures in a total of 95,812 days of exposure.
+It will be convenient to recon time in months, treating a month as 30 days.
+Assume the hazard is constant over time.
+What's the event rate per month? What's the probability that someone would
+still be in treatment after one, two and three years?
+</p><p>
+(b) Split the dataset so that we have separate observations for 
+0-3, 3-6, 6-12, 12-18, 18-24 and 24-36 months. 
+ (In other words split the first year into two quarters and a semester, and 
+the second year  into two semesters.)  There are no exits after 3 years. 
+Fit a piece-wise exponential model and describe the shape of the hazard. 
+Test the hypothesis that the hazard is constant. 
+Estimate the probability that someone would be in treatment after one, two 
+and three years.
+</p>
+<h4>[2] Clinic Effects</h4>
+<p>
+(a) Introduce a dummy variable to identify clinic 1 and add it to the
+model. Interpret the exponentiated coefficient and test its significance.
+(Note that clinic is coded 1 and 2, we want to treat clinic 2 as the reference.
+You may want to save this model for part c.)
+</p><p>
+(b) Let us add an interaction between clinic and duration.
+To save d.f. we will group time in years for purposes of the interaction.
+For full credit present your parameter estimates in terms of the 
+effect of clinic 1 compared to 2 in the first, second and third year of treatment.
+Comment on the point estimates.
+</p><p>
+(c) Test the hypothesis that the clinic effect does indeed vary by year
+using a likelihood ratio test and a Wald test.
+</p>
+<h4>[3] Prison and Methadone </h4>
+<p>
+(a) Starting from the model of part 2.b where the effect of clinic varies by year,
+add a dummy variable for prison history and interpret the resulting estimate. 
+</p><p>
+(b) Add a linear effect of dose and interpret the estimate.
+The effect of 1 mg of methadone may not be of interest because doses
+vary by several mg. In fact the standard deviation is 14.45. What's
+the effect on the hazard of increasing the dose by one standard deviation?
+</p><p>
+(c) The original paper by Caplehorn and Bell treated dose as a categorical
+variable with three levels: &lt; 60, 60-79, and 80+. Compare this 
+specification with the linear term in part b in terms of parsimony and
+goodness of fit. 
+</p>
+<h4>[4] Survival Probabilities </h4>
+<p>
+(a) Use the piece-wise exponential model of part 3.b with effects of 
+clinic, dose, and prison history, to predict the probability of remaining
+in treatment after one, two and three years for someone with no prison 
+record receiving the average dose of 60.4 mg of methadone in clinic 1.
+</p><p>
+(b) Repeat the calculations 
+for someone <i>with</i> a prison record who receives 60.4 mg in clinic 1. 
+</p><p>
+(c) Finally, repeat the calculations 
+for someone without a prison record who receives the average
+dose of 60.4 mg, but in clinic <i>2</i>.
+</p><p>
+Please present the results for parts a-c in a single table.
+</p>
+	

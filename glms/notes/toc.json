@@ -1,0 +1,47 @@
+[{"url":"c2s1", "title":"2. Linear Models for Continuous Data", "sections":[ 
+{"url":"c2s1","title":"2.1. Introduction to Linear Models"}, 
+{"url":"c2s2","title":"2.2. Estimation of the Parameters"}, 
+{"url":"c2s3","title":"2.3. Tests of Hypotheses"}, 
+{"url":"c2s4","title":"2.4. Simple Linear Regression"}, 
+{"url":"c2s5","title":"2.5. Multiple Linear Regression"}, 
+{"url":"c2s6","title":"2.6. One-Way Analysis of Variance"}, 
+{"url":"c2s7","title":"2.7. Two-Way Analysis of Variance"}, 
+{"url":"c2s8","title":"2.8. Analysis of Covariance Models"}, 
+{"url":"c2s9","title":"2.9. Regression Diagnostics"}, 
+{"url":"c2s10","title":"2.10. Transforming the Data"}]},
+{"url":"c3s1","title":"3. Logit Models for Binary Data", "sections":[ 
+{"url":"c3s1","title":"3.1. Introduction to Logistic Regression"}, 
+{"url":"c3s2","title":"3.2. Estimation and Hypothesis Testing"}, 
+{"url":"c3s3","title":"3.3. The Comparison of Two Groups"}, 
+{"url":"c3s4","title":"3.4. The Comparison of Several Groups"}, 
+{"url":"c3s5","title":"3.5. Models With Two Predictors"}, 
+{"url":"c3s6","title":"3.6. Multi-factor Models: Model Selection"}, 
+{"url":"c3s7","title":"3.7. Other Choices of Link"}, 
+{"url":"c3s8","title":"3.8. Regression Diagnostics for Binary Data"}]},
+{"url":"c4s1","title":"4. Poisson Models for Count Data", "sections":[
+{"url":"c4s1","title":"4.1. Introduction to Poisson Regression"}, 
+{"url":"c4s2","title":"4.2. Estimation and Testing"}, 
+{"url":"c4s3","title":"4.3. A Model for Heteroscedastic Counts"}, 
+{"url":"overdispersion","title":"4.A. Models for Over-Dispersed Count Data"}]},
+{"url":"c6s1","title":"6. Multinomial Response Models", "sections":[ 
+{"url":"c6s1","title":"6.1. The Nature of Multinomial Data"}, 
+{"url":"c6s2","title":"6.2. The Multinomial Logit Model"}, 
+{"url":"c6s3","title":"6.3. The Conditional Logit Model"}, 
+{"url":"c6s4","title":"6.4. The Hierarchical Logit Model"}, 
+{"url":"c6s5","title":"6.5. Models for Ordinal Response Data"}]},
+{"url":"c7s1","title":"7. Survival Models", "sections":[
+{"url":"c7s1","title":"7.1. The Hazard and Survival Functions"}, 
+{"url":"c7s2","title":"7.2. Censoring and The Likelihood Function"}, 
+{"url":"c7s3","title":"7.3. Approaches to Survival Modeling"}, 
+{"url":"c7s4","title":"7.4. The Piece-Wise Exponential Model"}, 
+{"url":"c7s5","title":"7.5. Infant and Child Mortality in Colombia"}, 
+{"url":"c7s6","title":"7.6. Discrete Time Models"}]},
+{"url":"a1s1","title":"A. Review of Likelihood Theory", "sections":[
+{"url":"a1s1","title":"A.1. Maximum Likelihood Estimation"}, 
+{"url":"a1s2","title":"A.2. Tests of Hypotheses"}]},
+{"url":"a2s1","title":"B. Generalized Linear Model Theory", "sections":[
+{"url":"a2s1","title":"B.1. The Model"}, 
+{"url":"a2s2","title":"B.2. Maximum Likelihood Estimation"}, 
+{"url":"a2s3","title":"B.3. Tests of Hypotheses"}, 
+{"url":"a2s4","title":"B.4. Binomial Errors and Link Logit"}, 
+{"url":"a2s5","title":"B.5. Poisson Errors and Link Log"}]}]

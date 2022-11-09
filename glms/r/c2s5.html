@@ -1,0 +1,101 @@
+---
+layout: default
+section: glms
+tab: "R Logs"
+pager: true
+---
+
+
+<h3>2.5 Multiple Regression</h3>
+<p>
+Let us try a multiple regression model with linear and additive effects 
+of social setting and program effort, using a plus sign to add terms to
+a model formula:
+</p>
+<pre class='r'>
+> m2 <- lm(change ~ setting + effort)
+> summary(m2)
+Call:
+lm(formula = change ~ setting + effort)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-10.3475  -3.6426   0.6384   3.2250  15.8530 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept) -14.4511     7.0938  -2.037 0.057516 .  
+setting       0.2706     0.1079   2.507 0.022629 *  
+effort        0.9677     0.2250   4.301 0.000484 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 6.389 on 17 degrees of freedom
+Multiple R-squared:  0.7381,	Adjusted R-squared:  0.7073 
+F-statistic: 23.96 on 2 and 17 DF,  p-value: 1.132e-05
+</pre>
+<p>
+This time we went directly to the summary function to obtain estimates
+and standard errors. Compare the results with Table 2.5. 
+</p>
+<p>
+The estimates suggest that fertility decline increases with social setting, 
+about a quarter of a percentage point per point of setting, when we compare 
+countries with the same effort. Similarly, fertility declines about one 
+percentage point more per point of program effort, when we compare countries 
+with the same social setting.
+</p>
+<p>
+It is important to keep in mind that both conclusions are based on the model, 
+which assumes linearity and additivity. In fact we can't really compare 
+countries which differ exactly by one point in effort and have the same setting, 
+so goodness of fit will be a central concern. You may also note that I try to 
+avoid using causal language when describing observational data.
+</p>
+<p>
+We can also obtain the hierarchical anova in Table 2.8:
+</p>
+<pre class='r'>
+> anova(m2)
+Analysis of Variance Table
+
+Response: change
+          Df  Sum Sq Mean Sq F value    Pr(>F)    
+setting    1 1201.08 1201.08  29.421 4.557e-05 ***
+effort     1  755.12  755.12  18.497 0.0004841 ***
+Residuals 17  694.01   40.82                      
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+</pre>
+<p>
+The F-test for a linear effect of setting after taking into account setting
+is 18.5 on 1 and 17 d.f., and is the same as the square of the t-statistic
+of 4.3 on 17 d.f.
+</p>
+<h4>Partial Correlations</h4>
+<p>
+Let us check the partial correlation listed on page 27.
+Here's the coefficient for change and effort controlling for setting,
+calculated in terms of the proportion of variance explained by effort
+out of what setting had left unexplained. The calculation uses our own
+<code>rss()</code> function defined earlier:
+</p>
+<pre class='r'>
+> sqrt(1 - rss(m2)/rss(m1))
+[1] 0.7218626
+</pre>
+<p>
+Another way to calculate this coefficient is in terms of the correlation
+between the residuals in models of change on setting and effort on setting:
+</p>
+<pre class='r'>
+> cor(resid(lm(change~setting)),
++     resid(lm(effort~setting)))
+[1] 0.7218626
+</pre>
+<p>
+Squaring this coefficient we find that program effort is associated with 
+about half the variation left in fertility decline in countries with the 
+same social setting. (It is common to say "after controlling for social setting", 
+but of course we are not able to manipulate any of these variables.) 
+</p>

@@ -1,0 +1,74 @@
+---
+layout: default
+section: glms
+tab: "Problem Sets"
+---
+
+<h2 class="first">Problem Set 2: Determinants of Hourly Wages<br/>
+<small>Due Wednesday, October 12, 2016</small> </h2> 
+ <p>
+     We will analyze an extract of 534 observations from the 1985 Current Population Survey (CPS)
+     to explore, among other things, how hourly wages differ among men and women with similar
+     observed characteristics.
+        </p><p>
+    The dataset is available here as a Stata file <code>https://grodri.github.io/datasets/wages.dta</code>,
+    and includes information for each worker on years of education, 
+    an indicator for southern states, indicator for females, years of work experience, 
+    indicator of  union membership, the hourly wage in dollars, age, 
+    ethnicity (coded 1=other, 2=hispanic, 3=white),
+    occupation (coded 1=management, 2=sales, 3=clerical, 4=service, 5=professional, 6=other),
+    sector (coded 0=other, 1=manufacturing, 2=construction), 
+    and an indicator for married respondents.</p>
+
+    <h2> [1] Working with Wages</h2>
+        <p>
+    (a) Fit a linear model to explore how hourly wages depend on education, work experience,
+    union membership, region, occupation and sex. (For simplicity we leave out the other
+    predictors throughout this problem set.)
+        </p><p>
+    (b) Describe the net effects of education, work experience, and union membership on wages.
+        </p><p>
+    (c) Describe the gender gap after adjusting for the effects of the other variables in the model,
+    and test its significance.
+        </p><p>
+    (d) Calculate and plot the jack-knifed residuals versus the fitted values. What does the
+    plot indicate? Any outliers?
+        </p><p>
+    (e) Compute robust standard errors and comment on whether the gender gap is still significant.
+    (R users should make sure to use the "HC1" method.)
+        </p>
+    <h2> [2]Working with Log-Wages</h2>
+        <p>
+    (a) Fit the model of part 1.a working with the natural logarithm of hourly wages.
+     </p><p>
+    (b) Describe the coefficients of education, work experience and union membership 
+    in terms of the effects of these variables on wages (not on log wages).
+     </p><p>
+    (c) Describe the gender gap as estimated in this model and test its significance.
+     </p><p>
+    (d) Check whether the returns to work experience are the same for males and females.
+     </p><p>
+    (e) How does the result of part (d) affect the conclusions of part (c)? Do we still 
+     have a gender gap?
+         </p>
+    <h2>[3] Regression Diagnostics</h2>
+        <p>
+    (a) Calculate and plot the jack-knifed residuals versus fitted values for the final
+    model using log wages.  What does the plot tell us? Any outliers?
+     </p><p>
+    (b) Run a quick Q-Q plot to check the normality of the residuals. How does the graph
+    look? (No formal test required.)
+     </p><p>
+    (c) Calculate the leverages.  Do we have any observation with high leverage? Identify
+    the observation with the highest leverage.  Can you tell why it has potential influence?
+     </p><p>
+    (d) Calculate the Cook's distances.  Do we have any observations that stand out? What
+    do you think would happen to the gender gap if we refit the model omitting the 
+    observation with the highest actual influence? (No need to do the fit.)
+    </p><p>
+    (e) Did we need to transform the data? Was the natural logarithm a good transformation?
+    Explore these questions in a Box-Cox framework by plotting the profile log-likelihood 
+    for parameters in the range (-2,2) and formally testing for the identity and log
+    transformations.
+     </p>
+    <p class="small">Posted Monday, October 3, 2016</p>

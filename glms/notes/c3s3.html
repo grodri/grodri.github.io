@@ -1,0 +1,182 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h3>3.3 The Comparison of Two Groups</h3>
+<p>We start our applications of logit regression with the simplest
+possible example: a two by two table.
+We study a binary outcome in two groups, and introduce
+the odds ratio and the logit analogue of the two-sample \( t \) test.</p>
+
+<h4>3.3.1 A 2-by-2 Table</h4>
+<p>We will use the contraceptive use data classified by
+desire for more children, as summarized in Table <a href='#t_3_2'>3.2</a></p>
+
+<a name='t_3_2'></a><p class='text-center'>Table 3.2. Contraceptive Use by Desire for More Children</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al'>Desires</td><td class='ar'>Using</td><td class='ar'>Not Using</td><td class='ar'>All</td></tr>
+<tr class='bb'><td class='al'>\(i\)</td><td class='ar'>\(y_i\)</td><td class='ar'>\(n_i-y_i\)</td><td class='ar'>\(n_i\)</td></tr>
+<tr class='bt'><td class='al'>Yes</td><td class='ar'>219</td><td class='ar'>753</td><td class='ar'>972</td></tr>
+<tr class='bb'><td class='al'>No</td><td class='ar'>288</td><td class='ar'>347</td><td class='ar'>635</td></tr>
+<tr class='bt bb'><td class='al'>All</td><td class='ar'>507</td><td class='ar'>1100</td><td class='ar'>1607</td></tr>
+</table>
+
+<p>We treat the counts of users \( y_i \) as realizations of independent
+random variables \( Y_i \) having binomial distributions \( B(n_i,\pi_i) \)
+for \( i=1,2 \), and consider models for the logits of the probabilities.</p>
+
+<h4>3.3.2 Testing Homogeneity</h4>
+<p>There are only two possible models we can entertain for these
+data. The first one is the <i>null</i> model. This model
+assumes homogeneity, so the two groups have the same probability
+and therefore the same logit</p>
+
+\[ \mbox{logit}(\pi_i) = \eta. \]
+<p>The m.l.e.&nbsp;of the common logit is \( -0.775 \), which happens to be
+the logit of the sample proportion \( 507/1607=0.316 \).
+The standard error of the estimate is 0.054. This value
+can be used to obtain an approximate 95% confidence
+limit for the logit with boundaries \( (-0.880,-0.669) \).
+Calculating the antilogit of these values, we obtain
+a 95% confidence interval for the overall probability of
+using contraception of \( (0.293,0.339) \).</p>
+
+<p>The deviance for the null model happens to be  91.7 on one
+d.f.&nbsp;(two groups minus one parameter). This value is
+highly significant, indicating that this model does
+not fit the data, i.e.&nbsp;the two groups classified by desire
+for more children do not have the same probability of
+using contraception.</p>
+
+<p>The value of the deviance is easily verified by hand. The
+estimated probability of 0.316, applied to the sample sizes in
+Table <a href='#t_3_2'>3.2</a>, leads us to expect 306.7 and 200.3 users of
+contraception in the two groups, and therefore 665.3 and 434.7
+non-users . Comparing the observed and expected numbers of users
+and non-users in the two groups using Equation <a href='#e_3_13'>3.13</a> gives
+91.7.</p>
+
+<p>You can also compare the observed and expected frequencies
+using Pearson&rsquo;s chi-squared statistic from Equation <a href='#e_3_14'>3.14</a>.
+The result is 92.6 on one d.f., and provides an alternative
+test of the goodness of fit of the null model.</p>
+
+<h4>3.3.3 The Odds Ratio</h4>
+<p>The other model that we can entertain for the two-by-two
+table is the <i>one-factor</i> model, where we write</p>
+
+\[ \mbox{logit}(\pi_i) = \eta + \alpha_i, \]
+<p>where \( \eta \) is an overall logit and \( \alpha_i \) is the effect
+of group \( i \) on the logit.
+Just as in the one-way anova model,
+we need to introduce a restriction to identify this model.
+We use the reference cell method, and set \( \alpha_1=0 \).
+The model can then be written</p>
+
+\[ \mbox{logit}(\pi_i) = \left\{ \begin{array}{ll}\eta&i=1\\    \eta+\alpha_2&i=2 \end{array} \right. \]
+<p>so that \( \eta \) becomes the logit of the reference cell, and
+\( \alpha_2 \) is the effect of level two of the factor compared
+to level one, or more simply the difference in logits between
+level two and the reference cell.
+Table <a href='#t_3_3'>3.3</a> shows parameter estimates and
+standard errors for this model.</p>
+
+<a name='t_3_3'></a><p class='text-center'>Table 3.3. Parameter Estimates for Logit Model of<br/>Contraceptive Use by Desire for More Children</p>
+<table class='tex-table'>
+<tr class='bt bb'><td class='al'>Parameter</td><td class='ar'>Symbol</td><td class='ar'>Estimate</td><td class='ar'>Std.&nbsp;Error</td><td class='ar'>\(z\)-ratio</td></tr>
+<tr class='bt'><td class='al'>Constant</td><td class='ar'>\(\eta\)</td><td class='ar'>\(-\)1.235</td><td class='ar'>0.077</td><td class='ar'>\(-\)16.09</td></tr>
+<tr class='bb'><td class='al'>Desire</td><td class='ar'>\(\alpha_2\)</td><td class='ar'>1.049</td><td class='ar'>0.111</td><td class='ar'>9.48</td></tr>
+</table>
+
+<p>The estimate of \( \eta \) is, as you might expect, the logit
+of the observed proportion using contraception among women
+who desire more children, \( \mbox{logit}(219/972)= -1.235 \).
+The estimate of \( \alpha_2 \) is the difference between the
+logits of the two groups, \( \mbox{logit}(288/635)-\mbox{logit}(219/972)=1.049 \).</p>
+
+<p>Exponentiating the additive logit model we obtain a
+multiplicative model for the odds:</p>
+
+\[ \frac{\pi_i}{1-\pi_i} = \left\{ \begin{array}{ll}
+    e^\eta& i=1\\    e^\eta e^{\alpha_2}& i=2 \end{array} \right. \]
+<p>so that \( e^\eta \) becomes the odds for the reference cell and
+\( e^{\alpha_2} \) is the ratio of the odds for level 2 of the factor to
+the odds for the reference cell. Not surprisingly, \( e^{\alpha_2} \) is
+called the <i>odds ratio</i>.</p>
+
+<p>In our example, the effect of 1.049 in the logit scale
+translates into an odds ratio of 2.85. Thus, the odds
+of using contraception among women who want no more
+children are nearly three times as high as the odds
+for women who desire more children.</p>
+
+<p>From the estimated logit effect of 1.049 and its standard
+error we can calculate a 95% confidence interval with
+boundaries \( (0.831, 1.267) \). Exponentiating these
+boundaries we obtain a 95% confidence interval for
+the odds ratio of \( (2.30, 3.55) \). Thus, we conclude
+with 95% confidence that the odds of using contraception
+among women who want no more children are between two and
+three-and-a-half times the corresponding odds for women
+who want more children.</p>
+
+<p>The estimate of the odds ratio can be calculated directly as the
+cross-product of the frequencies in the two-by-two table. If we let
+\( f_{ij} \) denote the frequency in cell \( i,j \) then the estimated odds
+ratio is</p>
+
+\[ \frac{ f_{11} f_{22} } { f_{12} f_{21} }. \]
+<p>The deviance of this model is zero, because the model is
+saturated: it has two parameters to represent two groups,
+so it has to do a perfect job. The reduction in deviance
+of 91.7 from the null model down to zero can be interpreted as a
+test of</p>
+
+\[ H_0: \alpha_2=0, \]
+<p>the significance of the effect of desire for more children.</p>
+
+<p>An alternative test of this effect is obtained from the
+m.l.e&nbsp;of 1.049 and its standard error of 0.111, and gives
+a \( z \)-ratio of 9.47. Squaring this value we obtain a
+chi-squared of 89.8 on one d.f. Note that the Wald test
+is similar, but not identical, to the likelihood ratio test.
+Recall that in linear models the two tests were identical.
+In logit models they are only asymptotically equivalent.</p>
+
+<p>The logit of the observed proportion \( p_i=y_i/n_i \) has
+large-sample variance</p>
+
+\[ \mbox{var}(\mbox{logit}(p_i)) = \frac{1}{\mu_i} + \frac{1}{n_i-\mu_i}, \]
+<p>which can be estimated using \( y_i \) to estimate \( \mu_i \) for
+\( i=1,2 \). Since the two groups are independent samples,
+the variance of the difference in logits is the sum
+of the individual variances.  You may use these results
+to verify the Wald test given above.</p>
+
+<h4>3.3.4 The Conventional Analysis</h4>
+<p>It might be instructive to compare the results obtained here
+with the conventional analysis of this type of data, which
+focuses on the sample proportions and their difference.
+In our example, the proportions using contraception are
+0.225 among women who want another child and 0.453 among
+those who do not. The difference of 0.228 has a standard
+error of 0.024 (calculated using the pooled
+estimate of the proportion). The corresponding \( z \)-ratio is
+9.62 and is equivalent to a chi-squared of 92.6 on one d.f.</p>
+
+<p>Note that the result coincides with the Pearson chi-squared
+statistic testing the goodness of fit of the null model.
+In fact, Pearson&rsquo;s chi-squared and the conventional
+test for equality of two proportions are one and the same.</p>
+
+<p>In the case of two samples it is debatable whether the
+group effect is best measured in terms of a difference
+in probabilities, the odds-ratio, or even some other
+measures such as the relative difference proposed by Sheps&nbsp;(1961).
+For arguments on all sides of this issue see Fleiss&nbsp;(1973).</p>
+

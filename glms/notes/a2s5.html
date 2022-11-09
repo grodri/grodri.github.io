@@ -1,0 +1,118 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<a name='s_B_5'></a><h3>B.5 Poisson Errors and Link Log</h3>
+<p>Let us now apply the general theory to the Poisson case, with
+emphasis on the log link function.</p>
+
+<h4>B.5.1 The Poisson Distribution</h4>
+<p>A Poisson random variable has probability distribution function</p>
+
+\[\tag{B.20}f_i(y_i) = \frac{ e^{-\mu_i} \mu_i^{y_i}} {y_i!}\]
+<p>for \( y_i = 0, 1, 2, \ldots \). The moments are</p>
+
+\[ E(Y_i) = \mbox{var}(Y_i) = \mu_i. \]
+<p>Let us verify that this distribution belongs to the exponential
+family as defined by Nelder and Wedderburn&nbsp;(1972).
+Taking logs we find</p>
+
+\[ \log f_i(y_i) = y_i \log(\mu_i) - \mu_i - \log(y_i!). \]
+<p>Looking at the coefficient of \( y_i \) we see immediately that the
+canonical parameter is</p>
+
+\[\tag{B.21}\theta_i = \log(\mu_i),\]
+<p>and therefore that the canonical link is the log. Solving for
+\( \mu_i \) we obtain the inverse link</p>
+
+\[ \mu_i = e^{\theta_i}, \]
+<p>and we see that we can write the second term in the p.d.f.&nbsp;as</p>
+
+\[ b(\theta_i) = e^{\theta_i}. \]
+<p>The last remaining term is a function of \( y_i \) only, so
+we identify</p>
+
+\[ c(y_i,\phi) = -\log(y_i!). \]
+<p>Finally, note that we can take \( a_i(\phi) = \phi \) and \( \phi=1 \),
+just as we did in the binomial case.</p>
+
+<p>Let us verify the mean and variance. Differentiating the
+cumulant function \( b(\theta_i) \) we have</p>
+
+\[ \mu_i = b'(\theta_i) = e^{\theta_i} =  \mu_i, \]
+<p>and differentiating again we have</p>
+
+\[ v_i = a_i(\phi) b''(\theta_i) = e^{\theta_i} = \mu_i. \]
+<p>Note that the mean equals the variance.</p>
+
+<h4>B.5.2 Fisher Scoring in Log-linear Models</h4>
+<p>We now consider the Fisher scoring algorithm for Poisson regression
+models with canonical link, where we model</p>
+
+\[\tag{B.22}\eta_i = \log(\mu_i).\]
+<p>The derivative of the link is easily seen to be</p>
+
+\[ \frac{d\eta_i}{d\mu_i} = \frac{1}{\mu_i}. \]
+<p>Thus, the working dependent variable has the form</p>
+
+\[\tag{B.23}z_i = \eta_i + \frac{y_i - \mu_i} {\mu_i}.\]
+<p>The iterative weight is</p>
+
+\[\tag{B.24}w_i = 1 / \left[ b''(\theta_i) (\frac{d\eta_i}{d\mu_i})^2 \right] \]
+\[ w_i  =  1 / \left[ \mu_i \frac{1}{\mu_i^2} \right] \]
+<p>and simplifies to</p>
+
+\[\tag{B.25}w_i = \mu_i.\]
+<p>Note again that the weight is inversely proportional to the variance
+of the working dependent variable.</p>
+
+<h4>B.5.3 The Poisson Deviance</h4>
+<p>Let \( \hat{\mu_i} \) denote the m.l.e.&nbsp;of \( \mu_i \) under the model of interest
+and let \( \tilde{\mu_i} = y_i \) denote the m.l.e.&nbsp;under the saturated model.
+From first principles, the deviance is</p>
+
+\[\tag{B.26}D  =  2 \sum  [ y_i \log(y_i) - y_i - \log(y_i!) \]
+\[  - y_i \log(\hat{\mu_i}) + \hat{\mu_i} + \log(y_i!)] \]
+
+<p>Note that the terms on \( y_i! \) cancel out.
+Collecting terms on \( y_i \) we have</p>
+
+\[\tag{B.27}D = 2 \sum [ y_i \log(\frac{y_i}{\hat{\mu_i}}) - (y_i - \hat{\mu_i})].\]
+<p>The similarity of the Poisson and Binomial deviances should not go unnoticed.
+Note that the first term in the Poisson deviance has the form</p>
+
+\[ D = 2 \sum o_i \log(\frac{o_i}{e_i}), \]
+<p>which is identical to the Binomial deviance. The second term is usually
+zero. To see this point, note that for a canonical link the score is</p>
+
+\[ \frac{\partial \log L}{\partial \boldsymbol{\beta}} = \boldsymbol{X}'(\boldsymbol{y}-\boldsymbol{\mu}), \]
+<p>and setting this to zero leads to the estimating equations</p>
+
+\[ \boldsymbol{X}'\boldsymbol{y} = \boldsymbol{X}'\hat{\boldsymbol{\mu}}. \]
+<p>In words, maximum likelihood estimation for Poisson log-linear
+models&mdash;and more generally for any generalized linear model
+with canonical link&mdash;requires equating
+certain functions of the m.l.e.&rsquo;s (namely \( \boldsymbol{X}'\hat{\boldsymbol{\mu}}) \)
+to the same functions of the data (namely \( \boldsymbol{X}'\boldsymbol{y} \)).
+If the model has a constant, one column of \( \boldsymbol{X} \) will
+consist of ones and therefore one of the estimating equations will be</p>
+
+\[ \sum y_i = \sum \hat{\mu_i} \quad\mbox{or}\quad
+\sum (y_i-\hat{\mu_i})=0, \]
+<p>so the last term in the Poisson deviance is zero.
+This result is the basis of an alternative algorithm for computing
+the m.l.e.&rsquo;s known as &ldquo;iterative proportional fitting&rdquo;,
+see Bishop <i>et al.</i>&nbsp;(1975) for a description.</p>
+
+<p>The Poisson deviance has an asymptotic chi-squared distribution
+as \( n \rightarrow \infty \) with the number of parameters \( p \) remaining
+fixed, and can be used as a goodness of fit test. Differences
+between Poisson deviances for nested models (i.e. the log of the
+likelihood ratio test criterion) have asymptotic chi-squared
+distributions under the usual regularity conditions.</p>
+

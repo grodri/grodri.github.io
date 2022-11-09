@@ -1,0 +1,922 @@
+---
+layout: default
+section: glms
+tab: "Datasets"
+---
+
+
+<h2 class="first">Datasets</h2> 
+
+<p style="clear:both">This is a collection of small datasets used in the course,
+classified by the  type of statistical technique that may be used to analyze them.
+A couple of datasets appear in more than one category.
+The datasets are now available in Stata format as well as
+two plain text formats, as explained <a href='#formats'>below</a>.
+They can all be read from the datasets section of this website, as illustrated
+in the Stata and R logs.
+</p>
+
+<a id="list" name="list"></a>
+<div class="row">
+<div class="col-sm-5">
+<div class="list-group list-group-sx">
+
+<h5>Linear Regression</h5>
+
+<a class='list-group-item dataset' href="#effort">The Program Effort Data</a>
+<a class='list-group-item dataset' href="#salary">Discrimination in Salaries</a>
+
+<h5>Logistic Regression</h5>
+<a class='list-group-item dataset' href="#cuse">The Contraceptive Use Data</a>
+<a class='list-group-item dataset' href="#housing">The Wilner Housing Data</a>
+<a class='list-group-item dataset' href="#copen">Housing Conditions in Copenhagen</a>
+
+<h5>Poisson Regression</h5>
+
+<a class='list-group-item dataset' href="#ceb">The Children Ever Born Data</a>
+<a class='list-group-item dataset' href="#smoking">Smoking and Lung Cancer</a>
+<a class='list-group-item dataset' href="#ship">The Ship Damage Data</a>
+<a class='list-group-item dataset' href="#cancer">The Cancer Data</a>
+
+<h5>Multinomial Responses</h5>
+
+<a class='list-group-item dataset' href="#housing">The Wilner Housing Data</a>
+<a class='list-group-item dataset' href="#copen">Housing Conditions in Copenhagen</a></li>
+<a class='list-group-item dataset' href="#brazil">The Method Choice Data</a></li>
+<a class='list-group-item dataset' href="#healthCare">Health Care Utilization in Guatemala</a></li>
+<a class='list-group-item dataset' href="#mobility">Social Mobility</a></li>
+
+<h5>Survival Data</h5>
+
+<a class='list-group-item dataset' href="#phd">Time to Ph.D.</a>
+<a class='list-group-item dataset' href="#gehan">The Gehan Survival Data</a>
+<a class='list-group-item dataset' href="#somoza">The Somoza Dataset</a>
+<a class='list-group-item dataset' href="#divorce">Marriage Dissolution in the U.S.</a>
+</div>
+</div><div class="col-sm-7">
+<div id="viewer"></div>
+<a class="visible-xs btn btn-default btn-sm pull-right" href="Javascript:void scrollTo('#list')">Back to list</a>
+</div>
+</div><!--/row-->
+
+<h3><a name='formats'></a>Data Formats</h3> 
+<p> 
+<img src="/images/notepad.png" class="icon" align="left"/>&nbsp;All datasets are available as 
+<span class='em'>plain-text</span> ASCII files, usually in two formats:</p> 
+<ul> 
+<p><li>The copy with extension <code>.dat</code> has a header line 
+with the variable names, and codes categorical variables using character strings.
+This version is best for users of S-Plus or R  and can be read using <code>read.table()</code>. 
+Some files do not have column names; in these cases use <code>header=FALSE</code>.
+</li></p> 
+ 
+<p><li>The copy with extension <code>.raw</code> 
+omits the header line and codes all variable using 
+numeric codes. This version is better for users of
+Stata or other packages that prefer numerical codes.
+(However, Stata <i>can</i> read the character version if you
+specify the string width using <code>str</code>.)
+</li></p> 
+</ul> 
+<p>
+To download any of these files using your browser I
+recommend that you right-click and choose 'save as...'.
+If you left-click what happens next depends on how your
+browser is configured to handle these file types,
+and will often require an extra step.
+</p><p> 
+<img src="/images/stata12s.png" class="icon" align="left" /> 
+&nbsp;The datasets are also available as 
+<span class='em'>Stata system files</span> 
+with extension <code>.dta</code>, and can be read
+directly from net-aware Stata versions 10 or higher
+via the <code>use</code> command.
+This is the easiest method for Stata users.
+You can also right click on the links to save a local copy.
+R users can read the Stata files using the 
+<code>read_dta()</code> function in the <code>haven</code> package.
+ </p>
+</div>
+<div id="datasets"> 
+ 
+<!------------------------------------------------------------> 
+ 
+<div id="effort">
+<h3>The Program Effort Data</h3> 
+<p> 
+Here are the famous program effort data from Mauldin and Berelson. 
+This extract consist of observations on 
+an index of social setting,
+an index of family planning effort, and 
+the percent decline in the crude birth rate (CBR) between 1965 and 1975,
+for 20 countries in Latin America.</p> 
+<pre>
+                 setting  effort   change
+   Bolivia            46       0        1
+   Brazil             74       0       10
+   Chile              89      16       29
+   Colombia           77      16       25
+   CostaRica          84      21       29
+   Cuba               89      15       40
+   DominicanRep       68      14       21
+   Ecuador            70       6        0
+   ElSalvador         60      13       13
+   Guatemala          55       9        4
+   Haiti              35       3        0
+   Honduras           51       7        7
+   Jamaica            87      23       21
+   Mexico             83       4        9
+   Nicaragua          68       0        7
+   Panama             84      19       22
+   Paraguay           74       3        6
+   Peru               73       0        2
+   TrinidadTobago     84      15       29
+   Venezuela          91       7       11
+</pre> 
+<p> 
+ The data are available as plain text files
+<a href="/datasets/effort.dat">effort.dat</a>,
+which has a header line with the variable names, and 
+<a href="/datasets/effort.raw">effort.raw</a>, which omits it;
+otherwise both files look like the listing above.
+The data are also available in Stata format as <a href="/datasets/effort.dta">effort.dta</a>.
+</p> 
+<p> 
+Reference: P.W. Mauldin and B. Berelson (1978). Conditions of
+fertility decline in developing countries, 1965-75.
+<i>Studies in Family Planning</i>,<b>9</b>:89-147.
+JSTOR: <a href='http://www.jstor.org/stable/1965523'>http://www.jstor.org/stable/1965523</a>.</p> 
+</div> 
+ 
+<!------------------------------------------------------------> 
+ 
+<div id="salary">
+<h3>Discrimination in Salaries</h3> 
+<p> 
+These are the salary data used in Weisberg's book, consisting 
+of observations on six variables for 52 tenure-track
+professors in a small college. The variables are:</p> 
+<ul> 
+	<li>sx = Sex, coded 1 for female and 0 for male
+ 	<li>rk = Rank, coded  
+	<ul> 
+		<li>1 for assistant professor,
+		<li>2 for associate professor, and
+		<li>3 for full professor
+	</ul> 
+	<li>yr = Number of years in current rank
+	<li>dg = Highest degree, coded 1 if doctorate, 0 if masters
+	<li>yd = Number of years since highest degree was earned
+	<li>sl = Academic year salary, in dollars.
+</ul> 
+<p> 
+The file is available in the usual plain text formats as
+<a href="/datasets/salary.dat">salary.dat</a> using character codes 
+and
+<a href="/datasets/salary.raw">salary.raw</a> using numeric codes, 
+and in Stata format
+as <a href="/datasets/salary.dta" class="stata" >salary.dta</a>. 
+Here's an excerpt of the "dat" file:</p>
+<pre>
+    sx        rk yr        dg yd    sl
+   male      full 25 doctorate 35 36350
+   male      full 13 doctorate 22 35350
+   male      full 10 doctorate 23 28200
+ female      full  7 doctorate 27 26775
+   male      full 19   masters 30 33696
+   male      full 16 doctorate 21 28516
+  ...
+ female assistant  1 doctorate  1 16686
+ female assistant  1 doctorate  1 15000
+ female assistant  0 doctorate  2 20300
+</pre>
+
+<p> 
+Reference: S. Weisberg (1985). <em>Applied Linear Regression</em>, 
+Second Edition. New York: John Wiley and Sons. Page 194.</p> 
+</div> 
+ 
+<!------------------------------------------------------------> 
+ 
+<div id="births"><h3>Births in Philadelphia</h3> 
+<p> 
+These are data based on a 5% sample of all births occurring in 
+Philadelphia in 1990. The sample has 1115 observations (after deleting
+32 cases with incomplete information) on five variables:</p> 
+<ul> 
+<li>black = Mother is black (1=yes, 0=no),
+<li>educ  = Mother's years of education (0,17),
+<li>smoke = Whether mother smoked during pregnancy (1=yes, 0=no),
+<li>gestate = Gestational age in weeks, and
+<li>grams = Birth weight in grams.
+</ul> 
+<p>
+The data are available in plain text format in the files 
+<a href="/datasets/phbirths.raw">phbirths.raw</a>  and 
+<a href="/datasets/phbirths.dat">phbirths.dat</a>, and in Stata format as
+<a href="/datasets/phbirths.dta">phbirts.dta</a>.</p> 
+<p> 
+The 'dat' file codes black and smoke using TRUE or FALSE,
+whereas the 'raw' file uses 1 and 0.
+<p> 
+Reference: I. T. Elo, G. Rodr&iacute;guez and H. Lee (2001).
+Racial and Neighborhood Disparities in Birthweight in Philadelphia. 
+Paper presented at the Annual Meeting of the Population Association of
+America, Washington, DC 2001.</p> 
+</div> 
+ 
+<!------------------------------------------------------------> 
+ 
+<div id="cuse">
+<h3>The Contraceptive Use Data (W)</h3> 
+<p> 
+Here are the  contraceptive use data from page 46 of the
+lecture notes (and from the Stata handout), showing the
+distribution of 1607 currently married and fecund women
+interviewed in the Fiji Fertility Survey, according
+to age, education, desire for more children and
+current use of contraception.</p> 
+<pre>
+    age education wantsMore notUsing using 
+    <25       low       yes       53     6
+    <25       low        no       10     4
+    <25      high       yes      212    52
+    <25      high        no       50    10
+  25-29       low       yes       60    14
+  25-29       low        no       19    10
+  25-29      high       yes      155    54
+  25-29      high        no       65    27
+  30-39       low       yes      112    33
+  30-39       low        no       77    80
+  30-39      high       yes      118    46
+  30-39      high        no       68    78
+  40-49       low       yes       35     6
+  40-49       low        no       46    48
+  40-49      high       yes        8     8
+  40-49      high        no       12    31
+</pre> 
+<p> 
+The data are available in the format shown above as
+<a href="/datasets/cuse.dat">cuse.dat</a>, and also  as a
+Stata system file <a href="/datasets/cusew.dta">cusew.dta</a>
+using numeric codes and labels for all variables.
+These files represent binomial data with 16 groups.
+</p><p> 
+The dataset is also available in a 
+<a href='Javascript:showDataset("#cuse2")'>long format</a> 
+simulating individual data and using weights to represent
+the frequencies.
+<p> 
+Reference: Little, R. J. A. (1978). 
+Generalized Linear Models for Cross-Classified Data from the WFS.
+<i>World Fertility Survey Technical Bulletins</i>, Number 5.
+</p> 
+</div> 
+<!------------------------------------------------------------> 
+
+<div id="cuse2">
+<h3>The Contraceptive Use Data (L)</h3> 
+<p> 
+This is the alternative version of the contraceptive use data,
+showing the distribution of 1607 currently married and fecund women
+interviewed in the Fiji Fertility Survey, according
+to age, education, desire for more children and
+current use of contraception.</p> 
+<p>
+ This version has 32 rows corresponding to
+all possible covariate and response patterns,
+and includes a weight indicating the frequency of each combination.
+The file has 5 columns with numeric codes: </p> 
+<ul> 
+<li>age (four groups, 1=&lt;25, 2=25-29, 3=30-39 and 4=40-49), 
+<li>education (0=none, 1=some), 
+<li>desire for more children (0=more, 1=no more),
+<li>contraceptive use (0=no, 1=yes), and
+<li>frequency (number of cases in this category).
+</ul> 
+<p>The data in this alternative format are available in
+plain text as <a href="/datasets/cuse.raw">cuse.raw</a> 
+and in Stata format as <a href="/datasets/cuse.dta">cuse.dta</a>.
+An excerpt of the "raw" file is shown below:
+</p>  
+<pre>
+     1         0         0         0        53
+     1         0         0         1         6
+     1         0         1         0        10
+     1         0         1         1         4
+     1         1         0         0       212
+     1         1         0         1        52
+    ...
+     4         1         0         1         8
+     4         1         1         0        12
+     4         1         1         1        31
+</pre>
+<p>
+Reference: Little, R. J. A. (1978). 
+Generalized Linear Models for Cross-Classified Data from the WFS.
+<i>World Fertility Survey Technical Bulletins</i>, Number 5.
+</p> 
+</div>
+
+<!------------------------------------------------------------> 
+ 
+<div id="ceb"><h3>The Children Ever Born Data</h3> 
+<p> 
+These are the data from Fiji on children ever born, from
+page 84 of the lecture notes (and the Stata handout).</p> 
+<p> 
+The dataset has 70 rows representing grouped individual data.
+Each row has entries for:</p> 
+<ul> 
+<li> The cell number (1 to 71, cell 68 has no observations),
+<li> marriage duration (1=0-4, 2=5-9, 3=10-14, 4=15-19,
+	5=20-24, 6=25-29),
+<li> residence (1=Suva, 2=Urban, 3=Rural),
+<li> education (1=none, 2=lower primary, 3=upper primary, 4=secondary+),
+<li> mean number of children ever born (e.g. 0.50),
+<li> variance of children ever born (e.g. 1.14), and
+<li> number of women in the cell (e.g. 8).
+</ul> 
+<p>This file is available in the usual two formats: 
+<a href="/datasets/ceb.dat">ceb.dat</a> 
+has a header and uses character labels for the factors, and 
+<a href="/datasets/ceb.raw">ceb.raw</a> 
+uses numeric codes, as described above. Here's an
+excerpt of the dat file:</p> 
+<pre>
+    dur   res  educ mean   var   n       y 
+ 1   0-4  Suva  none 0.50  1.14   8    4.00
+ 2   0-4  Suva lower 1.14  0.73  21   23.94
+ 3   0-4  Suva upper 0.90  0.67  42   37.80
+ 4   0-4  Suva  sec+ 0.73  0.48  51   37.23
+ 5   0-4 urban  none 1.17  1.06  12   14.04
+ 6   0-4 urban lower 0.85  1.59  27   22.95
+    ...
+69 25-29 rural  none 7.48 11.34 195 1458.60
+70 25-29 rural lower 7.81  7.57  59  460.79
+71 25-29 rural upper 5.80  7.07  10   58.00
+</pre>
+<p> 
+Reference: Little, R. J. A. (1978). 
+Generalized Linear Models for Cross-Classified Data from the WFS.
+<i>World Fertility Survey Technical Bulletins</i>, Number 5.
+</p> 
+</div> 
+ 
+<!------------------------------------------------------------> 
+ 
+<div id="smoking"><h3>Smoking and Lung Cancer</h3> 
+<p> 
+This dataset has information from a Canadian study of mortality by age and 
+smoking status.</p> 
+ 
+<p>The file in "raw" format, <a href="/datasets/smoking.raw">smoking.raw</a>,  
+has four columns:</p> 
+<ul> 
+<li> age at the start of follow-up: in five-year age groups coded 1 to 9 for
+40-44, 45-49, 50-54, 55-59, 60-64, 65-69, 70-74, 75-79, 80+.
+<li> smoking status: coded 
+1 = never smoked, 
+2 = smoked cigars or pipe only, 
+3 = smoked cigarettes and cigar or pipe, and
+4 = smoked cigarettes only,
+<li> population: number of male pensioners followed, and
+<li> deaths: number of deaths in a six-year period.
+</ul> 
+<p> 
+The file is also available in "dat" format as
+<a href="/datasets/smoking.dat">smoking.dat</a>, 
+with variable names, row names and string labels for age and 
+smoking status. An excerpt appears below:</p>
+<pre>
+     age         smoke   pop dead
+1  40-44            no   656   18
+2  45-59            no   359   22
+3  50-54            no   249   19
+4  55-59            no   632   55
+5  60-64            no  1067  117
+6  65-69            no   897  170
+....
+32 60-64 cigarretteOnly 3791  778
+33 65-69 cigarretteOnly 2421  689
+34 70-74 cigarretteOnly 1195  432
+35 75-79 cigarretteOnly  436  214
+36   80+ cigarretteOnly  113   63
+</pre>
+<p>The dataset comes from Best, E.W.R. and Walker, C.B. (1964). A Canadian study of smoking and health. <i>Canadian Journal of Public Health</i>, 58,1. Also given in Mosteller, F. and Tukey, J.W. (1977) <i>Data analysis and regression</i>, Reading, MA:Addison-Wesley, Exhibit 1, 559. Thanks to Moritz Marback for providing the reference, and to Ingeborg Gullikstad Hem for pointing out that the number of deaths is over 6 years. The population counts and age are at the start of the follow-up period.
+</p>
+</div> 
+ 
+<!------------------------------------------------------------> 
+ 
+<div id="ship">
+<h3>The Ship Damage Data</h3> 
+<p> 
+These are the data from McCullagh and Nelder.
+The file has 34 rows corresponding to the observed combinations of 
+type of ship, year of construction and period of operation.
+Each row has information on five variables as follows:</p> 
+<ul> 
+<li> ship type, coded 1-5 for A, B, C, D and E,
+<li> year of construction (1=1960-64, 2=1965-70, 3=1970-74, 4=1975-79),
+<li> period of operation (1=1960-74, 2=1975-79)
+<li> months of service, ranging from 63 to 20,370, and
+<li> damage incidents, ranging from 0 to 53.
+</ul> 
+<p> 
+Note that there no ships of type E built in 1960-64, and that
+ships built in 1970-74 could not have operated in 1960-74. 
+These combinations are omitted from the data file.</p> 
+<p> 
+You can get the data in the usual versions:
+<a href="/datasets/ships.dat">ships.dat</a> 
+has a header and codes the factors using strings, and
+<a href="/datasets/ships.raw">ship.raw</a> 
+uses the numeric codes shown above.  
+Here's an exceprt of the dat file:
+</p> 
+<pre>
+   type construction operation months damage
+1     A      1960-64   1960-74    127      0
+2     A      1960-64   1975-79     63      0
+3     A      1965-69   1960-74   1095      3
+4     A      1965-69   1975-79   1095      4
+5     A      1970-74   1960-74   1512      6
+6     A      1970-74   1975-79   3353     18
+    ...
+32    E      1970-74   1960-74   1157      5
+33    E      1970-74   1975-79   2161     12
+34    E      1975-79   1975-79    542      1
+</pre>
+<p>Reference: McCullagh, P. and Nelder, J. (1989)
+<i>Generalized Linear Models</i>, 2nd Edition.
+Chapman and Hall, London. Page 204.</p> 
+</div> 
+ 
+<!------------------------------------------------------------> 
+ 
+<div id="housing">
+<h3>The Housing Data</h3> 
+<p> 
+These are the data from Wilner, Walkley and Cook on the
+effect of racial attitudes on segregation and integration of public
+housing. The data can be viewed as a 2x2x2x2 contingency table:</p> 
+<pre>
+                                     Sentiment
+Proximity  Contact     Norms         fav unfav
+close      frequent    favorable     77    32
+                       unfavorable   30    36
+           infrequent  favorable     14    19
+                       unfavorable   15    27
+distant    frequent    favorable     43    20
+                       unfavorable   36    37
+           infrequent  favorable     27    36
+                       unfavorable   41   118
+</pre> 
+<p> 
+You can get a file in the usual character and numeric formats from
+<a href="/datasets/housing.dat">housing.dat</a> 
+or 
+<a href="/datasets/housing.raw">housing.raw</a>,
+respectively, and in Stata format from
+<a class='stata' href="housing.dta">housing.dta</a>.
+<p> 
+The "raw' data file codes the factor levels in order of
+appearance as follows:</p> 
+<ul> 
+<li>Proximity: 1 = close, 2=distant</li> 
+<li>Contact: 1 = frequent, 2=infrequent</li> 
+<li>Norms: 1=favorable, 2=unfavorable</li> 
+</ul> 
+<p>For regression analysis it would have been better to code these variables 
+using 1 and 0 instead of 1 and 2, and rename them to something like proximClose, 
+contactFreq, and normsFav. I haven't done this because it might break existing
+code, but the new variables can easily be added.
+ 
+</p> 
+<p>Reference: Wilner, D., Walkley, R.R. and Cook, S.W. (1955). 
+<i>Human relations in interracial housing: A study of the contact hypothesis</i>. 
+University of Minnesota Press</p> 
+</div> 
+ 
+<!------------------------------------------------------------> 
+ 
+<div id="copen"><h3>Housing Conditions in Copenhagen</h3> 
+<p> 
+These are the Madsen data used in the revised lecture notes.
+This is a four-way table classifying 1681 residents of twelve areas
+in Copenhagen in terms of: </p> 
+<ul> 
+<li> the type of housing they had (1=tower
+blocks, 2=apartments, 3=atrium houses and 4=terraced houses),
+<li>their feeling of influence on apartment management (1=low, 2=medium,3=high),
+<li>their degree of contact with neighbors (1=low, 2=high), and 
+<li> their satisfaction with housing conditions (1=low, 2=medium, 3=high). 
+</ul> 
+<p>The data file contains 72 rows, one for each combination of values of the four 
+variables, and has <i>six</i> columns, a row number, the four variables, and the
+number of cases in the category. 
+The file is available in the usual character and numeric formats:
+<a href="/datasets/copen.dat">copen.dat</a> 
+or
+<a href="/datasets/copen.raw">copen.raw</a>,
+respectively,
+and in Stata format as <a href="/datasets/copen.dta">copen.dta</a>
+Here's an exceprt of the "dat" file:</p> 
+<pre>
+    housing influence contact satisfaction  n 
+ 1    tower       low     low          low 21
+ 2    tower       low     low       medium 21
+ 3    tower       low     low         high 28
+ 4    tower       low    high          low 14
+ 5    tower       low    high       medium 19
+ 6    tower       low    high         high 37
+    ...
+70 terraced      high    high          low  5
+71 terraced      high    high       medium  6
+72 terraced      high    high         high 13
+</pre>
+<p> 
+Reference: Madsen, M. (1976). Statistical Analysis of
+Multiple Contingency Tables. Two Examples.
+<i>Scand. J. Statist.</i><b>3</b>:97-106.
+JSTOR: <a href='http://www.jstor.org/stable/4615621'>
+http://www.jstor.org/stable/4615621</a></p> 
+</div> 
+ 
+<!------------------------------------------------------------> 
+ 
+<div id="cancer"><h3>The Cancer Data</h3> 
+<p> 
+These are the data from Bishop, Fienberg and Holland on
+the three-year survival status of breast-cancer patients by age
+and malignancy of tumor:</p> 
+<pre>
+                    survive?
+      age malignant yes no 
+1 under50        no  77 10
+2 under50       yes  51 13
+3   50-69        no  51 11
+4   50-69       yes  38 20
+5     70+        no   7  3
+6     70+       yes   6  3
+</pre> 
+<p> 
+You can get a file in the usual character and numeric formats from
+<a href="/datasets/cancer.dat">cancer.dat</a> 
+or 
+<a href="/datasets/cancer.raw">cancer.raw</a>,
+and in Stata format from
+<a href="/datasets/cancer.dta" class="stata">cancer.dta</a>.</p> 
+ 
+<p> 
+Reference:  Bishop, Y. M. M. ; Fienberg, S. E.  and Holland, P. W.  (1975)
+<i>Discrete Multivariate Analysis: Theory and Practice</i>.
+MIT Press, Cambridge.
+.</p> 
+</div> 
+ 
+<!------------------------------------------------------------> 
+ 
+<div id="brazil"><h3>The Method Choice Data</h3> 
+<p> 
+The method choice data from Brazil 
+are available in a file containing three columns:</p> 
+<ul> 
+<li> Age group:  15-19, 20-24, 25-29, 30-34, 35-39 or 40-44
+<li> Method: sterilization, efficient, inefficient, or not_using
+<li> Frequency: the number of women in each age/method combination.
+</ul> 
+<p>As usual, the file is available in two formats:
+<a href="/datasets/brazil.dat">brazil.dat</a> 
+codes the factors using character labels, and
+<a href="/datasets/brazil.raw">brazil.raw</a> 
+uses numeric codes (the age groups are coded 1-6 and the methods
+are coded 1=not_using, 2=inefficient, 3=efficient, 4=sterilization).
+Here's an excerpt of the dat file:</p>
+<pre>
+15-19 sterilization     2
+15-19     efficient    75
+15-19   inefficient     6
+15-19     not_using    90
+20-24 sterilization    32
+20-24     efficient   223
+    ...
+40-44     efficient    71
+40-44   inefficient    69
+40-44     not_using   17
+</pre>
+<p> 
+<p>You can read the file with character labels (brazil.dat) 
+into Stata using the command</p> 
+<pre>
+infile str6 age str14 method freq ///
+  using brazil.dat
+</pre> 
+but of course we now provide a Stata file as <a href="/datasets/brazil.dta">brazil.dta</a>.
+</p> 
+<!--
+<p>Reference: 
+-->
+</div> 
+ 
+<!------------------------------------------------------------> 
+ 
+<div id="healthCare"><h3>Health Care Utilization in Guatemala</h3> 
+<p> 
+This dataset comes from the Guatemalan Survey of Family Health, a survey of rural
+women that contains detailed data on care received during pregnancy and delivery 
+along with extensive background information.</p> 
+<p> We have tabulated data on 3334
+pregnancies. The outcome is the type of provider seen during pregnancy and
+there are three predictors. The raw data file has five columns, as follows:
+</p> 
+
+<ul> 
+<li>eth = Ethnicity/Language, coded 1=Indigenous, non-spanish speaker,
+2=Indigenous, spanish speaker, and 3= ladino.
+<li>migr = Migration, whether the community has frequent migration abroad,
+coded 1=yes, 0=no.
+<li>avail = Availability of modern health services within one hour of the community,
+coded 1=yes, 0=no.
+<li>type = Provider type, coded 1=none, 2=midwife, 3=health post and 4=doctor.
+<small>For simplicity, women seeing multiple provider types during their
+pregnancy were coded using the most modern type; for example women
+seeing both a midwife and a doctor were coded under doctor.</small>
+<li>n = Count of the number of women in each category defined by
+the previous four columns.
+</ul> 
+<p> 
+The data are available using numeric codes as <a href="/datasets/healthCare.raw">healthCare.raw</a> 
+and using string codes as well as row and column labels as <a href="/datasets/healthCare.dat">healthCare.dat</a>. Here's are a few lines from the latter:</p>
+<pre>
+          eth  migr avail    provider    n 
+ 1   indNoSpa    no    no        none    7  
+ 2   indNoSpa    no    no     midwife   93  
+ 3   indNoSpa    no    no  healthPost    6  
+    ...
+34     ladino   yes   yes      doctor   83
+</pre>
+<p> 
+Reference: Glei, D. A. and Goldman, N. (2000),
+Understanding Ethnic Variation in Pregnancy-related Care in Rural Guatemala,
+<i>Ethnicity and Health</i>, 5:5-22.
+</p> 
+</div> 
+ 
+<!------------------------------------------------------------> 
+ 
+<div id="mobility"><h3>The Social Mobility Data</h3> 
+<p> 
+The Social Mobility Data are available in a file containing five columns:</p> 
+<ul> 
+<li> father's occupation: 1=farm, 2=unskilled, 3=skilled, 4=professional.
+<li> sons's occupation: same categories as the father.
+<li> race: coded 1 for blacks, 0 for others.
+<li> disruption: coded 1 for non-intact family background, 0 otherwise.
+<li> number of cases
+</ul> 
+<p> 
+The file is available as <a href="/datasets/mobility.dat">mobility.dat</a>,
+and also in Stata format. Here's an exceprt of the dat file:</p> 
+<pre>
+     fatherOccup     sonOccup black nonintact   n
+  1         farm         farm    no        no  592  
+  2         farm         farm    no       yes   55  
+  3         farm         farm   yes        no   41  
+  4         farm         farm   yes       yes   15  
+  5         farm    unskilled    no        no 1005  
+  6         farm    unskilled    no       yes  134
+    ...
+ 61 professional professional    no       yes  317  
+ 62 professional professional   yes        no   52  
+ 63 professional professional   yes       yes   19
+</pre>
+<p> 
+This is a simplified version of a dataset from StatLib which may be found at
+<a href="http://lib.stat.cmu.edu/datasets/socmob">http://lib.stat.cmu.edu/datasets/socmob</a>.
+I rounded the counts for son's current occupation to the nearest integer, and
+grouped both father's and son's occupation into just four categories, treating
+1-2 as farm, 3-6 as unskilled, 7-11 as skilled and 12-17 as professional/managerial.
+</p><p>
+If you use the data in a publication please acknowledge Statlib and the original
+authors, David L. Featherman and Robert M. Hauser (1978). 
+<i>Opportunity and Change</i>. New York: Academic Press.
+The data were also analyzed by Timothy J. Biblarz and Adrian E. Raftery (1993).
+"The Effects of Family Disruption on Social Mobility", <i>American Sociological Review</i>, 
+58(1):97-109.
+</p> 
+</div> 
+ 
+<!------------------------------------------------------------> 
+ 
+<div id="phd"><h3>Time to Ph.D.</h3> 
+<p> 
+The Time to Ph.D. data are available in a file containing five columns:</p> 
+<ul> 
+<li>year: coded 1 to 14, representing years of graduate school.
+<li>university: coded 1 for Berkeley, 2 for Columbia, 3 for Princeton.
+<li>residence: coded 1 for permanent residents, 2 for temporary residents.
+<li>events: number of students graduating in this category.
+<li>exposure: number of person-years of exposure to graduation in this category.
+</ul> 
+<p> 
+The file has 73 rows and is called <a href="/datasets/phd.dat">phd.dat</a>.
+A brief excerpt is shown below:</p> 
+<pre>
+  1    1   1     31  7422
+  2    1   1    177  7166
+  3    1   1    393  6759
+  4    1   1    484  6138
+  5    1   1    500  5506
+  6    1   1    399  4824
+    ...
+  6    3   2      8    85
+  7    3   2      2    72
+ 12    3   2      2    37
+</pre>
+<p>Reference: Espenshade, T.J. and Rodr&iacute;guez, G. (1997).
+Completing the Ph.D.: Comparative Performances of U.S. and Foreign Students.
+<i>Social Science Quarterly</i>, <b>78</b>:593-605.</p>
+</div> 
+ 
+<!------------------------------------------------------------> 
+ 
+<div id="gehan"><h3>The Gehan-Freirich Survival Data </h3> 
+<p> 
+The data show the length of remission in weeks for two
+groups of leukemia patients, treated and control, and were 
+analyzed by Cox in his original proportional hazards paper.
+The data are available in a file containing three columns:</p> 
+<ul> 
+<li> Treatment: coded Treated (drug) or Control (placebo),
+<li> Time: weeks of remission,
+<li> Failure: coded 1 if a failure (relapse), 0 if censored
+</ul> 
+<p>Thus, the third and fourth observations, 6 and 6+,
+corresponding to a death and a censored observation at six weeks, 
+are coded 6, 1 and 6, 0, respectively.</p> 
+<p> 
+The data are available in the usual two plain-text formats in
+<a href="/datasets/gehan.dat">gehan.dat</a> 
+and
+<a href="/datasets/gehan.raw">gehan.raw</a> 
+(group codes are  1=control, 2=treated),
+and as a Stata file in
+<a href="/datasets/gehan.dta">gehan.dta</a>. 
+Here's an excerpt of the dat file:</p> 
+<pre>
+   treatment time failure
+1    treated    6    TRUE
+2    treated    6    TRUE
+3    treated    6    TRUE
+4    treated    6   FALSE
+5    treated    7    TRUE
+6    treated    9   FALSE
+    ...
+40   control   17    TRUE
+41   control   22    TRUE
+42   control   23    TRUE
+</pre>
+<p> 
+These data actually come from a matched-pairs design,
+where patients were paired according to remission status 
+(partial or complete) and then randomly assigned to the treated 
+or control group, but most analyses have ignored this fact.
+See Andersen et al (1993), pages 22-23, which has references
+to several papers using this dataset. 
+<p> 
+Reference: Andersen, P. K.; Borgan, O.; Gill, R. D. and
+Keiding, N. (1993). <i>Statistical Models Based on Counting Processes</i>,
+Springer-Verlag, New York.
+</div> 
+ 
+<!------------------------------------------------------------> 
+ 
+<div id="somoza"><h3>The Somoza Dataset </h3> 
+<p> 
+These are Somoza's data on infant and child survival in
+Colombia, used in the notes (Table 3). The dataset comes from the Word 
+Fertility Survey, which was fielded in Colombia in 1976.
+Women in the reproductive ages were asked about their children
+and these were tabulated by sex, year of birth (cohort), 
+survival status and age at death or at interview.</p> 
+<p> 
+The file has 48 lines, corresponding to the 48 combinations of
+sex, cohort and age, and six columns:</p> 
+<ul> 
+<li> sex: 1=Male or 2=Female,
+<li> cohort: 1=1941-59, 2=1960-67 or 3=1968-76,
+<li> age: 0-1/12, 1/12-3/12, 3/12-6/12, 1/2-1, 1-2, 2-5, 5-10 or 10+,
+coded 1 to 8 in this order
+<li> dead: number dead in this category
+<li> alive: number alive at interview 
+</ul> 
+<p>The data are available in plain text format as
+<a href="/datasets/somoza.dat">somoza.dat</a>,
+which uses character labels for sex, cohort and age,
+and <a href="/datasets/somoza.raw">somoza.raw</a>,
+which uses numeric codes for all variables,
+and in Stata format as <a href="/datasets/somoza.dta">somoza.dta</a>
+A brief excerpt of the dat file is shown below.</p>
+<pre>
+    sex cohort        age   dead  alive
+   Male 1941-59    0-1/12     99      0
+   Male 1941-59 1/12-3/12     35      0  
+    ...
+ Female 1968-76       10+      0      0
+</pre>
+<p> 
+In order to analyze these data using piece-wise exponential models
+you first have to calculate events and exposure by sex, cohort and age.
+The details of this calculation are shown in our Stata logs.
+The final step of that process, a file with events and exposure by 
+cohort and age (collapsing over sex) is available in Stata format as
+<a href="somoza2.dta">somoza2.dta</a>.</p> 
+<p> 
+Reference: Somoza, J. (1980). 
+Illustrative Analysis: Infant and Child Mortality in Colombia. 
+<i>World Fertility Survey Scientific Reports</i>, Number 10.
+</div> 
+ 
+<!------------------------------------------------------------> 
+ 
+<div id="divorce"><h3>Marriage Dissolution in the U.S.</h3> 
+<p> 
+This dataset, adapted from an example in the software package aML,
+is based on a longitudinal survey conducted in the U.S.</p> 
+<p> 
+The unit of observation is the couple and the event of interest is
+divorce, with interview and widowhood treated as censoring events.
+We have three fixed covariates: education of the husband and
+two indicators of the couple's ethnicity: whether the husband is
+black and whether the couple is mixed. The variables are: </p> 
+<ul> 
+<li>id: a couple number.
+<li>heduc: education of the husband, coded 
+<ul><li>0 = less than 12 years,
+<li>	1 = 12 to 15 years, and
+<li>	2 = 16 or more years.</ul> 
+<li>heblack: coded 1 if the husband is black and 0 otherwise
+<li>mixed: coded 1 if the husband and wife have different
+ethnicity (defined as black or other), 0 otherwise. 
+<li>years: duration of marriage, from the date of wedding to
+divorce or censoring (due to widowhood or interview).
+<li>div: the failure indicator, coded 1 for divorce and 0 for censoring.
+</ul> 
+<p> 
+The dataset has 3771 couples and is available in "raw" format
+as <a href="/datasets/divorce.raw">divorce.raw</a> and in  "dat" format
+as <a href="/datasets/divorce.dat">divorce.dat</a>, see excerpt below. 
+The file is also available in Stata format as 
+<a href="/datasets/divorce.dta">divorce.dta</a>.</p> 
+<pre>
+     id       heduc  heblack  mixed    years  div
+     9  12-15 years       No     No   10.546   No
+    11   < 12 years       No     No   34.943   No
+    13   < 12 years       No     No    2.834  Yes
+    15   < 12 years       No     No   17.532  Yes
+    33  12-15 years       No     No    1.418   No
+    36   < 12 years       No     No   48.033   No
+	...
+ 17294  12-15 years      Yes     No    7.269   No
+ 17302  12-15 years       No    Yes    18.73   No
+</pre>
+<p> 
+Reference: Lillard and Panis (2000), 
+<i>aML Multilevel Multiprocess Statistical Software, Release 1.0</i>, 
+EconWare, LA, California. </p> 
+</div>
+
+<script> 
+// check if # is one of the datasets?
+$(function() {
+    $("#datasets").hide();
+    // show # or list
+    var current = window.location.hash;
+    if(current == "") $("#viewer").html($("#effort").html());
+    else showDataset(current);
+    // hook event handlers
+    $(".dataset").click(selectionChanged);
+    $(window).on("hashchange", hashChanged);
+});
+function selectionChanged(event) {
+    event.preventDefault();
+    var hash = $(event.target).attr("href");
+    showDataset(hash);
+}
+function hashChanged(event) {
+    var hash= window.location.hash;
+    showDataset(hash);
+}
+function showDataset(hash) {
+    window.location = "/glms/datasets/" + hash;
+    $("#viewer").html($(hash).html());
+    if($(window).width() < 768) {
+        scrollTo("#viewer");
+    }
+}
+function scrollTo(hash) {
+        $("body").animate({scrollTop:$(hash).offset().top}, "medium");
+}
+</script>

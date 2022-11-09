@@ -1,0 +1,198 @@
+---
+layout: default
+section: glms
+tab: "Stata Logs"
+pager: true
+---
+
+
+<h2 class='first'>8. Models for Clustered and Panel Data</h2> 
+<P> 
+We will illustrate the analysis of clustered or panel data using three examples,
+two dealing with linear models and with with logits models.
+The linear model examples use clustered school data on IQ and language ability, 
+and longitudinal state-level data on Aid to Families with Dependent Children (AFDC).
+
+<h3>8.1 Clustered Linear Model</h3>
+
+<P> 
+Snijders and Boskers (1999), <i>Multilevel Analysis</i>,
+have data for 2287 8-th grade children in 131 schools in
+The Netherlands.
+The data are available from 
+<a href='http://stat.gamma.rug.nl/snijders'>http://stat.gamma.rug.nl/snijders</a>,
+follow the link to the ML book. The data are in the file MLBOOK1.DAT,
+which includes variable names as well as the data. I split that into
+two separate files and made all variable names lowercase.
+<P> 
+<pre class='stata'>
+. infile schoolnr  pupilnr iq_verb  iq_perf sex  minority  repeatgr ///
+&gt;  aritpret  classnr aritpost langpret langpost ses denomina schoolses ///
+&gt;  satiprin natitest meetings currmeet mixedgra percmino aritdiff ///
+&gt;  homework classsiz groupsiz using snijders.dat
+(2287 observations read)
+</pre> 
+<P> 
+<h4>OLS</h4>
+<p>
+We are interested in the relationship between verbal IQ and
+the score in a language test.   OLS gives a highly significant
+coefficient of 2.65 with a standard error of 0.072:
+<P> 
+<pre class='stata'>
+. reg langpost iq_verb
+ 
+      Source |       SS       df       MS              Number of obs =    2287
+-------------+------------------------------           F(  1,  2285) = 1352.84
+       Model |  68915.7639     1  68915.7639           Prob &gt; F      =  0.0000
+    Residual |  116401.529  2285   50.941588           R-squared     =  0.3719
+-------------+------------------------------           Adj R-squared =  0.3716
+       Total |  185317.293  2286  81.0661822           Root MSE      =  7.1373
+ 
+------------------------------------------------------------------------------
+    langpost |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     iq_verb |   2.653896   .0721541    36.78   0.000     2.512401     2.79539
+       _cons |   9.528484   .8668206    10.99   0.000     7.828646    11.22832
+------------------------------------------------------------------------------
+</pre> 
+<P> 
+<P> 
+<h4>Random Effects</h4>
+<p>
+We consider the fact that the observations are probably correlated
+within each school because of unobserved school characteristics
+that affect language scores (such as a good language teacher).
+<P> 
+<pre class='stata'>
+. xtreg langpost iq_verb, i(schoolnr) mle
+ 
+Fitting constant-only model:
+Iteration 0:   log likelihood = -8259.3698
+Iteration 1:   log likelihood = -8143.3601
+Iteration 2:   log likelihood = -8127.2437
+Iteration 3:   log likelihood = -8126.6128
+Iteration 4:   log likelihood = -8126.6092
+ 
+Fitting full model:
+Iteration 0:   log likelihood = -7629.2356
+Iteration 1:   log likelihood = -7625.8966
+Iteration 2:   log likelihood = -7625.8865
+Iteration 3:   log likelihood = -7625.8865
+ 
+Random-effects ML regression                    Number of obs      =      2287
+Group variable (i): schoolnr                    Number of groups   =       131
+ 
+Random effects u_i ~ Gaussian                   Obs per group: min =         4
+                                                               avg =      17.5
+                                                               max =        35
+ 
+                                                LR chi2(1)         =   1001.45
+Log likelihood  = -7625.8865                    Prob &gt; chi2        =    0.0000
+ 
+------------------------------------------------------------------------------
+    langpost |      Coef.   Std. Err.      z    P&gt;|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     iq_verb |   2.488094   .0705261    35.28   0.000     2.349865    2.626323
+       _cons |   11.16511   .8822371    12.66   0.000     9.435956    12.89426
+-------------+----------------------------------------------------------------
+    /sigma_u |   3.081719   .2552303    12.07   0.000     2.581476    3.581961
+    /sigma_e |   6.498244   .0991428    65.54   0.000     6.303928     6.69256
+-------------+----------------------------------------------------------------
+         rho |   .1836084   .0255577                       .137803     .237875
+------------------------------------------------------------------------------
+Likelihood-ratio test of sigma_u=0: chibar2(01)=  225.92 Prob&gt;=chibar2 = 0.000
+</pre> 
+<P> 
+The coefficient of verbal IQ is 2.49 with a standard error of
+0.071 and is still highly significant. We have also learned that
+the language scores <i>are</i> correlated within schools, in fact
+18.3% of the variation in language scores net of verbal IQ can be
+attributed to the       schools (the rest is due to the pupils). The
+intra-class correlation is highly significant, as shown by a
+test statistic of 225.9 (conservatively a chi-squared with 1 d.f.)
+<P> 
+<h4>Fixed-Effects (Within)</h4>
+<p>
+We now consider a fixed-effects model that allows for the possibility
+of a correlation between unobserved school characteristics and
+verbal IQ (the school with the good teacher attracts brighter students):
+<P> 
+<pre class='stata'>
+. xtreg langpost iq_verb, i(schoolnr) fe
+ 
+Fixed-effects (within) regression               Number of obs      =      2287
+Group variable (i): schoolnr                    Number of groups   =       131
+ 
+R-sq:  within  = 0.3452                         Obs per group: min =         4
+       between = 0.5985                                        avg =      17.5
+       overall = 0.3719                                        max =        35
+ 
+                                                F(1,2155)          =   1135.95
+corr(u_i, Xb)  = 0.1463                         Prob &gt; F           =    0.0000
+ 
+------------------------------------------------------------------------------
+    langpost |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     iq_verb |   2.414772   .0716466    33.70   0.000     2.274269    2.555276
+       _cons |   12.35828    .858667    14.39   0.000     10.67438    14.04219
+-------------+----------------------------------------------------------------
+     sigma_u |  3.7161754
+     sigma_e |  6.4913354
+         rho |   .2468383   (fraction of variance due to u_i)
+------------------------------------------------------------------------------
+F test that all u_i=0:     F(130, 2155) =     4.67           Prob &gt; F = 0.0000
+</pre> 
+<P> 
+Our results are very robust, the coefficient of verbal IQ is 2.41
+with a standard error of 0.071. We feel pretty confident on our
+conclusions. Note that we get an F-test for school effects, which
+are highly significant.
+<P> 
+<h4>Group Means (Between)</h4>
+<p>
+If you are not deterred by the ecological fallacy you could have
+analyzed group means. Stata makes this easy with the <code>be</code> 
+option. We also use <code>wls</code> to weight schools in proportion
+to the number of students (not that it makes a huge difference):
+<P> 
+<pre class='stata'>
+. xtreg langpost iq_verb, i(schoolnr) be wls
+ 
+Between regression (regression on group means)  Number of obs      =      2287
+Group variable (i): schoolnr                    Number of groups   =       131
+ 
+R-sq:  within  = 0.3452                         Obs per group: min =         4
+       between = 0.5137                                        avg =      17.5
+       overall = 0.3719                                        max =        35
+ 
+                                                F(1,129)           =    136.29
+sd(u_i + avg(e_i.))=  3.173519                  Prob &gt; F           =    0.0000
+ 
+------------------------------------------------------------------------------
+    langpost |      Coef.   Std. Err.      t    P&gt;|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     iq_verb |   3.899369   .3340076    11.67   0.000     3.238527    4.560211
+       _cons |  -5.210525   3.962379    -1.31   0.191    -13.05019     2.62914
+------------------------------------------------------------------------------
+</pre> 
+<P> 
+This gives a much larger coefficient of 3.90, albeit with a larger
+standard error of 0.334. Clearly working with aggregate data would
+overestimate the relationship between verbal IQ and language scores.
+Note that the random-effects estimate is between the within and
+between estimates (it always is).
+<P> 
+The following figure (which I did in R because I couldn't figure out how to do
+it in Stata without a lot of work) shows the data, separate regression
+fits for each of the 131 schools, and the between, within, and
+random-effects estimates.
+<P> 
+<img src="snijders.png" class="img-responsive center-block"/> 
+<p>
+The red line is the between-groups estimate, which overstates the relationship
+between IQ and language scores. The blue line is the within-groups of fixed-effects
+estimator. The green line is the random-effects estimator, which is always an
+average of the within and between, and in this case comes very close to the
+within-groups regressions.
+</p>

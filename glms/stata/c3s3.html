@@ -1,0 +1,230 @@
+---
+layout: default
+section: glms
+tab: "Stata Logs"
+pager: true
+---
+
+
+<h2 class="first">3 Logit Models in Stata</h2>
+<P>
+Stata has several commands that can be used to fit logistic regression
+models by maximum likelihood. The basic commands are 
+<code>logit</code> for individual data and
+<code>blogit</code> for grouped data.
+There is also a <code>logistic</code> command that presents the results
+in terms of odd-ratios instead of log-odds and can produce a variety of
+summary and diagnostic statistics.
+Finally, one can fit a logistic regression model as a special case
+of a generalized linear model with Bernoulli or binomial errors and
+link logit, using the <code>glm</code> command.
+We will have occassion to use all of these commands, 
+but we will emphasize the  first two.
+<P>
+<h3>3.3 The Comparison of Two Groups</h3> 
+<P>
+Following the lecture notes we will consider comparing two groups
+and then move on to more than two.
+<P>
+<h4>A 2-by-2 Table</h4> 
+<P>
+Consider the data on contraceptive use by desire for more children
+on Table 3.2 (page 14 of the notes).
+We can read these data into Stata as 2 binomial observations. 
+To make life easier I will enter desire for more children as a dummy 
+variable that takes the value 1 for women who want no more children
+and 0 otherwise
+<pre class='stata'>
+. input nomore users n
+
+        nomore      users          n
+  1.         0   219   972
+  2.         1   288   635
+  3. end</pre>
+<P>
+<h4>Testing Homegeneity</h4> 
+<P>
+let us start by fitting the null model. 
+With <code>blogit</code> you specify the outcome in terms of
+the number of 'successes' and the binomial denominator,
+here <code>users</code> and <code>n</code>:
+<pre class='stata'>
+. blogit users n
+
+Logistic regression for grouped data              Number of obs   =       1607
+                                                  LR chi2(0)      =       0.00
+                                                  Prob > chi2     =          .
+Log likelihood = -1001.8468                       Pseudo R2       =     0.0000
+
+<table class='stata'>
+<tr class='bb bt'><td class='br'>    _outcome </td><td class='bl'>      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]</td></tr>
+<tr class='bb bt'><td class='br'>       _cons </td><td class='bl'>  -.7745545   .0536794   -14.43   0.000    -.8797641   -.6693448</td></tr>
+</table></pre>
+<P>
+The estimate of the constant is simply the logit of the overall proportion
+using contraception, say <i>p=y/n</i>, and
+the standard error is the square root of <i>1/y + 1/(n-y)</i>.
+You may want to check these results by hand.
+<P>
+Stata's <code>blogit</code> <i>does not</i> calculate the model deviance,
+but we can obtain it 'by hand' using <code>predict</code> to obtain
+fitted counts:
+<pre class='stata'>
+. predict pusers
+(option n assumed; E(cases))
+
+. gen di = 2*( users*log(users/pusers) + (n-users)*log((n-users)/(n-pusers)) )
+
+. gen DI = sum(di)
+
+. display "Deviance = " DI[_N]
+Deviance = 91.674393</pre>
+<P>
+So the deviance is 91.67 on one d.f., providing ample evidence that
+the null model does not fit the data. Thus, we reject the hypothesis
+that the probability of using contraception is the same in the two groups.
+<P>
+Try a similar method to calculate Pearson's chi-squared,
+you should get 92.64. 
+Alternatively, you can fit the model using <code>glm</code>, which
+reports both the deviance and Pearson's chi-squared by default. 
+I'll do this quietly and just report the corresponding stored results,
+<code>e(deviance)</code> for the deviance and 
+<code>e(deviance_p)</code> for Pearson's statistic.
+<pre class='stata'>
+. quietly glm users, family(binomial n)
+
+. display e(deviance), e(deviance_p) 
+91.674397 92.644243</pre>
+<P>
+<h4>The Odds Ratio</h4> 
+<P>
+Let us now fit the model with 'want no more' children as the predictor.
+This model is saturated for this dataset, using two parameters to model 
+two probabilities:
+<pre class='stata'>
+. blogit users n nomore
+
+Logistic regression for grouped data              Number of obs   =       1607
+                                                  LR chi2(1)      =      91.67
+                                                  Prob > chi2     =     0.0000
+Log likelihood = -956.00957                       Pseudo R2       =     0.0458
+
+<table class='stata'>
+<tr class='bb bt'><td class='br'>    _outcome </td><td class='bl'>      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]</td></tr>
+<tr class='bt'><td class='br'>      nomore </td><td class='bl'>   1.048629    .110672     9.48   0.000     .8317159    1.265542</td></tr>
+<tr class='bb'><td class='br'>       _cons </td><td class='bl'>  -1.234993   .0767739   -16.09   0.000    -1.385468   -1.084519</td></tr>
+</table>
+
+. di exp(_b[nomore])
+2.8537363</pre>
+<P>
+The constant corresponds to the log-odds of using contraception among
+whomen who <i>do</i> want more children, and the coefficient of
+<code>nomore</code> is the difference in log-odds between the two
+groups. 
+<P>
+Exponentiating this coefficient we get an odds ratio of about three.
+Contrary to popular belief, this does not mean that "women who want no
+more children are three times more likely to use contraception".  
+There are two errors in this interpretation. 
+<P>
+First, and more importantly, it is the <i>odds</i> of using contraception
+among women who want no more children that are three times those of women
+who want more, not the probability, which is what's usually understood
+by "likelihood". 
+The interpretation would be approximately correct if
+the event under study was rare, because if <i>p</i> is small then
+<i>1-p</i> is close to one and the odds ratio is approximately the
+same as the relative risk.
+Here the observed proportions are 0.454 and 0.225, and the ratio is 2.01, 
+so women who want no more children are twice as likely to use
+contraception as those who want more. 
+<P>
+Second, even if the probability was tripled, that would make the women
+three times <i>as</i> likely, or two times <i>more</i> likely, to use
+contraception, not three times more likely. 
+In this case the probability is doubled, and that makes women
+twice <i>as</i> likely, not two times <i>more</i> likely.
+<P>
+<h4>Testing Significance</h4>
+<P>
+The z-statistic is as reported on page 16 of the notes.
+Let us square it:
+<pre class='stata'>
+. di (_b[nomore]/_se[nomore])^2
+89.777623</pre>
+<P>
+This is Wald's chi-squared statistic for the hypothesis that the
+coefficient of <code>nomore</code> is zero, or equivalently that the 
+odds-ratio is one, and can be calculated more simply using Stata's 
+<code>test</code> command:
+<pre class='stata'>
+. test nomore
+
+ ( 1)  [_outcome]nomore = 0
+
+           chi2(  1) =   89.78
+         Prob > chi2 =    0.0000</pre>
+<P>
+The <code>chi2</code> statistic reported by Stata in the second line
+of output is the likelihood ratio chi-squared comparing the current
+model with the null model. Can you explain why we get 91.67, which
+is the deviance of the null model? 
+<i>Hint:</i> What's the deviance of this model?
+<P>
+A third test of the effect of want no more is given by Pearson's
+chi-squared statistic, which we calculated earlier as 92.64. 
+This is equivalent to the standard z-test for comparing two proportions 
+if you use the pooled proportion to estimate the standard error.
+<P>
+All three statistics are different, but they are asymptotically
+equivalent. In our example they are also close in value and lead
+to the same overwhelming rejection of the hypothesis that the probability
+of using contraception is the same in the two groups.
+<P>
+<h4>Confidence Intervals</h4>
+<P>
+Stata is kind enough to give us a 95% confidence interval for
+the logit coefficients. We can convert the interval for the
+coefficient of <code>nomore</code> into a 95% CI for the odds ratio 
+by exponentiating the confidence bounds:
+<pre class='stata'>
+. di exp(0.831716) "-" exp(1.265542)
+2.2972575-3.5450136</pre>
+<P>
+An even easier way is to type <code>blogit, or</code>.
+The <code>blogit</code> command without any variables, like all estimation
+commands, simply retrieves the results of the last fit.
+The option <code>or</code> is short for <u>o</u>dds-<u>r</u>atio and
+causes Stata to report exponentiated coefficients. (Versions 12 and earlier
+omit the constant but Stata 13 exponentiates that as well.)
+<pre class='stata'>
+. blogit, or 
+
+Logistic regression for grouped data              Number of obs   =       1607
+                                                  LR chi2(1)      =      91.67
+                                                  Prob > chi2     =     0.0000
+Log likelihood = -956.00957                       Pseudo R2       =     0.0458
+
+<table class='stata'>
+<tr class='bb bt'><td class='br'>    _outcome </td><td class='bl'> Odds Ratio   Std. Err.      z    P>|z|     [95% Conf. Interval]</td></tr>
+<tr class='bt'><td class='br'>      nomore </td><td class='bl'>   2.853736   .3158288     9.48   0.000     2.297257    3.545015</td></tr>
+<tr class='bb'><td class='br'>       _cons </td><td class='bl'>   .2908367   .0223287   -16.09   0.000     .2502068    .3380642</td></tr>
+</table></pre>
+<P>
+So the odds of using contraception among women who want more kids are
+0.291 to one, and for those who don't want more kids they are 2.85 times
+as high, or 0.830 to one.
+<P>
+The standard error of the odds ratio is calculated by the delta method,
+but the confidence bounds are calculated by exponentiating the bounds
+in the logit scale, <u>not</u> by addding  and subtracting twice the 
+standard error to the odds ratio. This is done because the normal 
+approximation is more accurate (and makes more sense) in the logit scale,
+which has no range restrictions.
+<P>
+<i>Exercise</i>. Calculate the conventional z-test for comparing the
+proportions using contraception in the two groups and verify that the
+square coincides with Pearson's chi-squared statistic.
+</p>

@@ -1,0 +1,249 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h3>7.5 Discrete Time Models</h3>
+<p>We discuss briefly two extensions of the proportional hazards model
+to discrete time, starting with a definition of the hazard and
+survival functions in discrete time and then proceeding to models
+based on the logit and the complementary log-log transformations.</p>
+
+<h4>7.5.1 Discrete Hazard and Survival</h4>
+<p>Let \( T \) be a discrete random variable that takes the values 
+\( t_1 < t_2 < \ldots \) with probabilities</p>
+
+\[ f(t_j) = f_j = \mbox{Pr}\{T = t_j\}. \]
+<p>We define the survivor function at time \( t_j \) as 
+the probability that the survival time \( T \) is at least \( t_j \)</p>
+
+\[ S(t_j) = S_j = \mbox{Pr}\{T \ge t_j\} = \sum_{k=j}^\infty f_j. \]
+<p>Next, we define the hazard at time \( t_j \) as 
+the conditional probability of dying at that time given
+that one has survived to that point, so that</p>
+
+<a name='e_7_17'></a>\[\tag{7.17}\lambda(t_j) = \lambda_j = \mbox{Pr}\{T = t_j | T \ge t_j\} = \frac{f_j}{S_j}.\]
+<p>Note that in discrete time the hazard is a conditional probability 
+rather than a rate. However, the general result expressing the
+hazard as a ratio of the density to the survival function is
+still valid.</p>
+
+<p>A further result of interest in discrete time
+is that the survival function at time \( t_j \) can be written in terms of
+the hazard at all prior times \( t_1,\ldots,t_{j-1} \), as</p>
+
+<a name='e_7_18'></a>\[\tag{7.18}S_j = (1-\lambda_1) (1-\lambda_2) \ldots (1-\lambda_{j-1}).\]
+<p>In words, this result states that in order to survive to
+time \( t_j \) one must first survive \( t_1 \), then one must survive
+\( t_2 \) given that one survived \( t_1 \), and so on, finally
+surviving \( t_{j-1} \) given survival up to that point.
+This result is analogous to the result linking the survival
+function in continuous time to the integrated or cumulative
+hazard at all previous times.</p>
+
+<p>An example of a survival process that takes place in discrete time
+is time to conception measured in menstrual cycles. In this case 
+the possible values of \( T \) are the positive integers, \( f_j \) is
+the probability of conceiving in the \( j \)-th cycle, \( S_j \) is the
+probability of conceiving in the \( j \)-th cycle or later, and \( \lambda_j \)
+is the conditional probability of conceiving in the \( j \)-th cycle
+given that conception had not occurred earlier.
+The result relating the survival function to the hazard states
+that in order to get to the \( j \)-th cycle without conceiving, one has
+to fail in the first cycle, then fail in the second given that
+one didn&rsquo;t succeed in the first, and so on, finally failing in the
+\( (j-1) \)-st cycle given that one hadn&rsquo;t succeeded yet.</p>
+
+<h4>7.5.2 Discrete Survival and Logistic Regression</h4>
+<p>Cox&nbsp;(1972) proposed an extension of the proportional hazards model
+to discrete time by working with the conditional odds of dying at each
+time \( t_j \) given survival up to that point. Specifically, he
+proposed the model</p>
+
+\[ \frac{\lambda(t_j|\boldsymbol{x}_i)}{1-\lambda(t_j|\boldsymbol{x}_i)} =
+\frac{\lambda_0(t_j)}{1-\lambda_0(t_j)} \exp\{\boldsymbol{x}b\}, \]
+<p>here \( \lambda(t_j|\boldsymbol{x}_i) \) is the hazard at time \( t_j \) for an
+individual with covariate values \( \boldsymbol{x}_i \), \( \lambda_0(t_j) \) is
+the baseline hazard at time \( t_j \), and \( \exp\{\boldsymbol{x}_i'\boldsymbol{\beta}\} \)
+is the relative risk associated with covariate values \( \boldsymbol{x}_i \).</p>
+
+<p>Taking logs, we obtain a model on the <i>logit</i> of the
+hazard or conditional probability of dying at \( t_j \) given survival
+up to that time,</p>
+
+<a name='e_7_19'></a>\[\tag{7.19}\mbox{logit} \lambda(t_j|\boldsymbol{x}_i) = \alpha_j + \boldsymbol{x}b,\]
+<p>where \( \alpha_j=\mbox{logit}\lambda_0(t_j) \) is the logit of the
+baseline hazard and \( \boldsymbol{x}_i'\boldsymbol{\beta} \) is the effect of the covariates on
+the logit of the hazard. 
+Note that the model essentially treats time as a discrete
+factor by introducing one parameter \( \alpha_j \) for each
+possible time of death \( t_j \).
+Interpretation of the parameters \( \boldsymbol{\beta} \) associated with
+the other covariates follows along the same 
+lines as in logistic regression.</p>
+
+<p>In fact, the analogy with logistic regression goes further:
+we can fit the discrete-time proportional-hazards model 
+by running a logistic regression on a set of pseudo observations
+generated as follows.
+Suppose individual \( i \) dies or is censored at time point \( t_{j(i)} \). 
+We generate death indicators \( d_{ij} \)
+that take the value one if individual \( i \) died at time \( j \) and
+zero otherwise, generating one for each discrete time from 
+\( t_1 \) to \( t_{j(i)} \).
+To each of these indicators we associate a copy of the covariate
+vector \( \boldsymbol{x}_i \) and a label \( j \) identifying the time point.
+The proportional hazards model <a href='#e_7_19'>7.19</a> can then be fit 
+by treating the \( d_{ij} \) as independent Bernoulli observations
+with probability given by the hazard \( \lambda_{ij} \) for
+individual \( i \) at time point \( t_j \).</p>
+
+<p>More generally, we can group pseudo-observations with identical
+covariate values.
+Let \( d_{ij} \) denote the number of deaths and \( n_{ij} \) the total
+number of individuals with covariate values \( \boldsymbol{x}_i \) observed at 
+time point \( t_j \). Then we can treat \( d_{ij} \) as binomial with 
+parameters \( n_{ij} \) and \( \lambda_{ij} \), where the latter
+satisfies the proportional hazards model.</p>
+
+<p>The proof of this result runs along the same lines as the
+proof of the equivalence of the Poisson likelihood and the
+likelihood for piece-wise exponential survival data under
+non-informative censoring in Section <a href='#s_7_4_3'>7.4.3</a>,
+and relies on Equation <a href='#e_7_18'>7.18</a>, which writes the probability 
+of surviving to time \( t_j \) as a product of the conditional
+hazards at all previous times.
+It is important to note that we do not assume that the
+pseudo-observations are independent and have a Bernoulli or binomial
+distribution.  Rather, we note that the likelihood function for the
+discrete-time survival model under non-informative censoring
+coincides with the binomial likelihood that would be obtained
+by treating the death indicators as independent Bernoulli or
+binomial.</p>
+
+<p>Time-varying covariates and time-dependent effects can be
+introduced in this model along the same lines as before.
+In the case of time-varying covariates, note that only the values 
+of the covariates at the discrete times \( t_1 < t_2 < \ldots \) are relevant. 
+Time-dependent effects are introduced as interactions between
+the covariates and the discrete factor (or set of dummy variables)
+representing time.</p>
+
+<h4>7.5.3 Discrete Survival and the C-Log-Log Link</h4>
+<p>An alternative extension of the proportional hazards model
+to discrete time starts from the survival function, which in
+a proportional hazards framework can be written as</p>
+
+\[ S(t_j|\boldsymbol{x}_i) = S_0(t_j)^{\exp\{\boldsymbol{x}b\}}, \]
+<p>where \( S(t_j|\boldsymbol{x}_i) \) is the probability that an individual with
+covariate values \( \boldsymbol{x}_i \) will survive up  to time point \( t_j \), 
+and \( S_0(t_j) \) is the baseline survival function. 
+Recalling Equation <a href='#e_7_18'>7.18</a> for the discrete survival
+function, we obtain a similar relationship for the
+complement of the hazard function, namely</p>
+
+\[ 1-\lambda(t_j|\boldsymbol{x}_i)  = [1-\lambda_0(t_j)]^{ \exp\{\boldsymbol{x}b\}}, \]
+<p>so that solving for the hazard for individual \( i \) at time point \( t_j \)
+we obtain the model</p>
+
+\[ \lambda(t_j|\boldsymbol{x}_i)  = 1 - [1-\lambda_0(t_j)]^{ \exp\{\boldsymbol{x}b\}}. \]
+<p>The transformation that makes the right hand side a linear
+function of the parameters is the complementary log-log.
+Applying this transformation we obtain the model</p>
+
+<a name='e_7_20'></a>\[\tag{7.20}\log(-\log(1-\lambda(t_j|\boldsymbol{x}_i))) = \alpha_j + \boldsymbol{x}b,\]
+<p>where \( \alpha_j = \log(-\log(1-\lambda_0(t_j))) \) is the complementary
+log-log transformation of the baseline hazard.</p>
+
+<p>This model can be fitted to discrete 
+survival data by generating pseudo-observations as before and
+fitting a generalized linear model with binomial error structure and 
+complementary log-log link.
+In other words, the equivalence between the binomial likelihood and the
+discrete-time survival likelihood under non-informative censoring 
+holds both for the logit and complementary log-log links.</p>
+
+<p>It is interesting to note that this model can be obtained by
+grouping time in the continuous-time proportional-hazards model.
+To see this point let us assume that time is continuous and we are 
+really interested in the standard proportional hazards model</p>
+
+\[ \lambda(t|\boldsymbol{x}) = \lambda_0(t) \exp\{\boldsymbol{x}b\}. \]
+<p>Suppose, however, that time is grouped into intervals with boundaries
+\( 0=\tau_0 < \tau_1 < \ldots < \tau_J=\infty \), and that
+all we observe is whether an individual survives
+or dies in an interval. Note that this construction imposes
+some constraints on censoring. If an individual is censored
+at some point inside an interval, we do not know whether it would
+have survived the interval or not. Therefore we must censor
+it at the end of the previous interval, which is the last point
+for which we have complete information. Unlike the piece-wise
+exponential set-up, here we can not use information about
+exposure to part of an interval.  On the other hand, it turns out that 
+we do not need to assume that the hazard is constant in each interval.</p>
+
+<p>Let \( \lambda_{ij} \) denote the discrete hazard or conditional probability that 
+individual \( i \) will die in interval \( j \) given that it was alive at the start
+of the interval. This probability is the same as the complement of the conditional
+probability of surviving the interval given that one was alive at the
+start, and can be written as</p>
+
+\[
+\tag{7.21}\begin{eqnarray*}
+\lambda_{ij} &= &1- \mbox{Pr}\{T_i>\tau_j|T_i>\tau_{j-1}\} \cr
+    &= & 1-\exp\{ - \int_{\tau_{j-1}}^{\tau_j} \lambda(t|\boldsymbol{x}_i) dt\} \cr
+    &= & 1-\exp\{-\int_{\tau_{j-1}}^{\tau_j} \lambda_0(t)dt\}^{\exp\{\boldsymbol{x}b\}} \cr
+    &= & 1- (1-\lambda_j)^{\exp\{\boldsymbol{x}b\}},\end{eqnarray*}
+\]
+<p>where 
+\( \lambda_j \) is the baseline probability of dying in interval \( j \) given survival
+to the start of the interval.
+The second line follows from 
+Equation <a href='#e_7_4'>7.4</a> relating the survival function to the integrated hazard, 
+the third line follows from the proportional hazards assumption,
+and the last line defines \( \lambda_j \).</p>
+
+<p>As noted by Kalbfleish and Prentice&nbsp;(1980, p. 37), &ldquo;this discrete
+model is then the uniquely appropriate one for grouped data
+from the continuous proportional hazards model&rdquo;. 
+In practice, however, the model with a logit link is used much
+more often than the model with a c-log-log link, probably because 
+logistic regression is better known that generalized linear models
+with c-log-log links, and because software for the former is more
+widely available than for the latter. 
+In fact, the logit model is often used in cases where the
+piece-wise exponential model would be more appropriate, probably because 
+logistic regression is better known than Poisson regression.</p>
+
+<p>In closing, it may be useful to provide some suggestions regarding
+the choice of approach to survival analysis using generalized
+linear models:</p>
+
+<ul><li><p>
+If time is truly discrete, then one should probably use the 
+discrete model with a logit link, which has a direct interpretation 
+in terms of conditional odds, and is easily implemented using
+standard software for logistic regression.
+</p></li><li><p>
+If time is continuous but one only observes it in grouped form, 
+then the complementary log-log link would seem more appropriate.
+In particular, results based on the c-log-log link should be more
+robust to the choice of categories than results based on the
+logit link. However, one cannot take into account partial
+exposure in a discrete time context, no matter which link is used.
+</p></li><li><p>
+If time is continuous and one is willing to assume that the hazard
+is constant in each interval, then the piecewise exponential approach
+based on the Poisson likelihood is preferable. This approach is 
+reasonably robust to the choice of categories and is unique in
+allowing the use of information from cases that have partial exposure.
+</p></li></ul>
+<p>Finally, if time is truly continuous and one wishes to estimate the
+effects of the covariates without making any assumptions about
+the baseline hazard, then Cox&rsquo;s&nbsp;(1972) partial likelihood is
+a very attractive approach.</p>
+

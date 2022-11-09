@@ -1,0 +1,97 @@
+---
+layout: default
+section: glms
+tab: "Stata Logs"
+pager: true
+---
+
+
+<h2 class="first">2. Linear Models in Stata</h2> 
+<P>
+We start with the linear models in Chapter 2 of the lecture notes, 
+showing how to use the <code>regress</code> command in Stata to fit regression, 
+analysis of variance, and analysis of covariance models.
+<P>
+<h3>2.1 The Program Effort Data</h3> 
+<P>
+For a brief description of the program effort data see the lecture
+notes or point your browser to the 
+<a href='../datasets/default.html#effort'>datasets</a> page.  
+All datasets used in the course are now available as Stata files
+and can be read directly from the web:
+<pre class='stata'>
+. use http://data.princeton.edu/wws509/datasets/effort
+(Family Planning Effort Data)</pre>
+<P>
+The datasets remain available as plain text files that can be read 
+using almost any software. Please refer to the datasets page for 
+more information. The steps I followed to create this particular
+dataset are documented in my 
+<a href="/stata/dataManagement.html#s22">Stata Tutorial</a>.
+<P>
+Let us list the data to check that we got them OK:
+<pre class='stata'>
+. list country setting effort change, clean
+
+              country   setting   effort   change  
+  1.          Bolivia        46        0        1  
+  2.           Brazil        74        0       10  
+  3.            Chile        89       16       29  
+  4.         Colombia        77       16       25  
+  5.        CostaRica        84       21       29  
+  6.             Cuba        89       15       40  
+  7.     DominicanRep        68       14       21  
+  8.          Ecuador        70        6        0  
+  9.       ElSalvador        60       13       13  
+ 10.        Guatemala        55        9        4  
+ 11.            Haiti        35        3        0  
+ 12.         Honduras        51        7        7  
+ 13.          Jamaica        87       23       21  
+ 14.           Mexico        83        4        9  
+ 15.        Nicaragua        68        0        7  
+ 16.           Panama        84       19       22  
+ 17.         Paraguay        74        3        6  
+ 18.             Peru        73        0        2  
+ 19.   TrinidadTobago        84       15       29  
+ 20.        Venezuela        91        7       11</pre>
+<P>
+The next thing we want to do is plot the data for a closer look.
+The importance of becoming familiar with your data before
+undertaking sophisticated analyses cannot be over-emphasized.
+The following command creates scatterplots of all pairs of
+variables, reproducing Figure 2.1 in the notes.
+<pre class='stata'>
+. graph matrix change setting effort, ///
+>         title("Figure 2.1: Scatterplot Matrix")
+
+. graph export fig21.png, width(600) replace
+(file fig21.png written in PNG format)</pre>
+<P>
+<img src="fig21.png" class="img-responsive center-block"/>
+<P>
+After generating the graph you can print it using the command 
+<code>graph print</code>, 
+save it in Stata's own format using <code>graph save</code>,
+or export it into other formats using <code>grap export</code>.
+I exported the graph to <u>p</u>ortable <u>n</u>etwork 
+<u>g</u>raphics (PNG) format for inclusion on this web page. 
+<P>
+If you want to import the graph into a word processing program
+such as Word you are better off exporting to <u>w</u>indows
+<u>m</u>etafile <u>f</u>ormat (WMF) or the enhanced variant (EMF).
+The advantage of the metafile formats is that they are vector
+graphics that can be resized after inclusion in the document.
+<P>
+Windows interactive users can also print the graph by choosing 
+File|Print Graph on Stata's menu, 
+or save it in a variety of formats by choosing File|Save Graph.
+Alternatively, you can choose Edit|Copy to copy the graph to the 
+clipboard and then Edit|Paste to insert it into your favorite
+word processor.
+<P>
+Also, your graph may look slightly different than mine, depending
+on the <i>scheme</i> you use. The Stata default is called 
+<code>s2color</code>, but I tweaked it a bit to use a white
+background and match the color of the headings on this page.
+Type <code>help scheme</code> if you are interested in this subject.
+<P>

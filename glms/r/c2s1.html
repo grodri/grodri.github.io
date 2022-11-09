@@ -1,0 +1,116 @@
+---
+layout: default
+section: glms
+tab: "R Logs"
+pager: true
+---
+
+
+ <h2>2. Linear Models in R </h2>
+<p>
+We start with the linear models in Chapter 2 of the lecture notes, 
+showing how to use the <code>lm()</code> function in R to fit regression, 
+analysis of variance, and analysis of covariance models.
+</p>
+<h3>2.1 The Program Effort Data</h3>
+<p>
+For a brief description of the program effort data see the lecture notes 
+or point your browser to the <a href='../datasets'>datasets</a> page.
+The data are available on a text file with a header line containing
+variable names, and can be read directly from the web using the
+<code>read.table()</code> function:
+</p>
+<pre class='r'>
+> fpe <- read.table("http://data.princeton.edu/wws509/datasets/effort.dat")
+</pre>
+<p>
+The function produces a data frame which we assign to <code>fpe</code>.
+To make sure everything is alright we list the data by simply typing
+<code>fpe</code>, which invokes its print method. We have 20 observations
+on 3 variables, and the country names serve as row names.
+</p>
+<pre class='r'>
+> fpe
+               setting effort change
+Bolivia             46      0      1
+Brazil              74      0     10
+Chile               89     16     29
+Colombia            77     16     25
+CostaRica           84     21     29
+Cuba                89     15     40
+DominicanRep        68     14     21
+Ecuador             70      6      0
+ElSalvador          60     13     13
+Guatemala           55      9      4
+Haiti               35      3      0
+Honduras            51      7      7
+Jamaica             87     23     21
+Mexico              83      4      9
+Nicaragua           68      0      7
+Panama              84     19     22
+Paraguay            74      3      6
+Peru                73      0      2
+TrinidadTobago      84     15     29
+Venezuela           91      7     11
+</pre>
+<p>
+The course datasets are also available as Stata system files, and can
+ be read from R using the <code>read.dta()</code> function in the
+<code>foreign</code> package. Datasets for the course problem sets are 
+often made available in this format, so I suggest you install that package
+and try the function. All you have to do is change the file extension
+from ".dat" to ".dta".
+</p>
+<p>
+<i>Note:</i> 
+If you try the <code>read.dta()</code> function you will see that it stores 
+the country names as a separate variable, whereas <code>read.table()</code>
+treats them as row names, which can be used as subscripts in R. That's
+easily fixed by typing  <code>row.names(fpe) <- fpe$country</code> to 
+use the countries as row names, and <code>fpe$country <- NULL</code> to 
+delete the now redundant column. 
+</p>
+<p>
+The next thing we want to do is plot the data for a closer look. 
+The importance of becoming familiar with your data before undertaking 
+sophisticated analyses cannot be over-emphasized. 
+</p>
+<p>
+The <code>pairs()</code> function created scatterplots of all pairs of 
+variables, reproducing  Figure 2.1 in the notes. Obviously only numeric 
+variables should be included, but that's not a problem here, and we
+could just say <code>pairs(fpe)</code>.  I think, however, that the
+plot is easier to read if we use the same order as in the notes,
+which we can easily do using the variable names as column subscripts:
+</p>
+<pre class='r'>
+> pairs(fpe[,c("change","setting","effort")])
+> dev.print(png,"fig21.png",width=500,height=400)
+RStudioGD 
+        2 
+</pre>
+<img src="fig21.png" class="img-responsive center-block" />
+<p class="em text-center">Figure 2.1: Scatterplot Matrix</p>
+<p>
+R graphs are displayed on the active graphics device, typically a
+graphics window in R or R Studio. To save the graph to a file we can use
+the <code>dev.print()</code> function, which takes as first argument 
+a  device. In this case I typed <code>png</code> to obtain 
+<u>p</u>ortable <u>n</u>etwork <u>g</u>raphics, which are suitable
+for display on a web page. The next argument is a file name. I also
+specified the width and height of the graph in pixels. 
+</p>
+<p>
+An alternative way to do this is to open a graphics device using the 
+<code>png()</code> function, plot to that, and then close the device, 
+which effectively saves the file, as shown below. You can verify that 
+the two methods give the same result, except that the second method 
+does not display the graph.
+</p>
+<pre class='r'>
+> png("pairs2.png",width=500,height=400)
+> pairs(fpe[,-1])
+> dev.off()
+RStudioGD 
+        2 
+</pre>

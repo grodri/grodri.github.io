@@ -1,0 +1,222 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h3>3.2 Estimation and Hypothesis Testing</h3>
+<p>The logistic regression model just developed is a
+generalized linear model with binomial errors and link logit.
+We can therefore rely on the general theory developed in
+Appendix B to obtain estimates of the parameters and to test
+hypotheses. In this section we summarize the most important
+results needed in the applications.</p>
+
+<h4>3.2.1 Maximum Likelihood Estimation</h4>
+<p>Although you will probably use a statistical package to compute
+the estimates, here is a brief description of the underlying
+procedure.
+The likelihood function for \( n \) independent binomial observations
+is a product of densities given by Equation <a href='#e_3_3'>3.3</a>.
+Taking logs we find that, except for a constant involving
+the combinatorial terms, the log-likelihood function is</p>
+
+\[ \log L(\boldsymbol{\beta}) = \sum \{ y_i \log(\pi_i) + (n_i-y_i)\log(1-\pi_i)\}, \]
+<p>where \( \pi_i \) depends on the covariates \( \boldsymbol{x}_i \) and
+a vector of \( p \) parameters \( \boldsymbol{\beta} \) through the logit transformation of
+Equation <a href='#e_3_9'>3.9</a>.</p>
+
+<p>At this point we could take first and expected second derivatives
+to obtain the score and information matrix and develop a
+Fisher scoring procedure for maximizing the log-likelihood.
+As shown in Appendix B, the procedure is equivalent to
+iteratively re-weighted least squares (IRLS).
+Given a current estimate \( \hat{\boldsymbol{\beta}} \) of the parameters,
+we calculate the linear predictor \( \hat{\boldsymbol{\eta}}=\boldsymbol{x}_i'\hat{\boldsymbol{\beta}} \)
+and the fitted values \( \hat{\boldsymbol{\mu}}=\mbox{logit}^{-1}(\boldsymbol{\eta}) \).
+With these values we calculate the working dependent variable
+\( \boldsymbol{z} \), which has elements</p>
+
+\[ z_i = \hat{\eta}_i +
+\frac{ y_i-\hat{\mu}_i }
+    {\hat{\mu}_i (n_i-\hat{\mu}_i)} n_i, \]
+<p>where \( n_i \) are the binomial denominators.
+We then regress
+\( \boldsymbol{z} \) on the covariates calculating the weighted least squares
+estimate</p>
+
+\[ \hat{\boldsymbol{\beta}} = (\boldsymbol{X}'\boldsymbol{W}\boldsymbol{X})^{-1}\boldsymbol{X}'\boldsymbol{W}\boldsymbol{z}, \]
+<p>where \( \boldsymbol{W} \) is a diagonal matrix of weights with entries</p>
+
+\[ w_{ii}  = \hat{\mu}_i(n_i-\hat{\mu}_i)/n_i. \]
+<p>(You may be interested to know that the weight is inversely proportional
+to the estimated variance of the working dependent variable.)
+The resulting estimate of \( \boldsymbol{\beta} \) is used to obtain
+improved fitted values and the procedure is iterated to convergence.</p>
+
+<p>Suitable initial values can be obtained by applying the link
+to the data. To avoid problems with counts of 0 or \( n_i \) (which
+is always the case with individual zero-one data), we calculate
+empirical logits adding \( 1/2 \) to both the numerator and
+denominator, i.e.&nbsp;we calculate</p>
+
+\[ z_i = \log\frac{ y_i+1/2} {n_i-y_i+1/2}, \]
+<p>and then regress this quantity on \( \boldsymbol{x}_i \) to obtain an initial
+estimate of \( \boldsymbol{\beta} \).</p>
+
+<p>The resulting estimate is consistent and its large-sample
+variance is given by</p>
+
+<a name='e_3_12'></a>\[\tag{3.12}\mbox{var}(\hat{\boldsymbol{\beta}}) = (\boldsymbol{X}'\boldsymbol{W}\boldsymbol{X})^{-1}\]
+<p>where \( \boldsymbol{W} \) is the matrix of weights evaluated in the last iteration.</p>
+
+<p>Alternatives to maximum likelihood estimation include
+weighted least squares, which can be used with grouped data,
+and a method that minimizes Pearson&rsquo;s chi-squared statistic,
+which can be used with both grouped and individual data.
+We will not consider these alternatives further.</p>
+
+<h4>3.2.2 Goodness of Fit Statistics</h4>
+<p>Suppose we have just fitted a model and want to assess how well
+it fits the data.
+A measure of discrepancy between observed and fitted values
+is the <i>deviance</i> statistic, which is given by</p>
+
+<a name='e_3_13'></a>\[\tag{3.13}D = 2 \sum \{  y_i \log(\frac{y_i}{\hat{\mu_i}}) +
+    (n_i-y_i)\log( \frac{n_i-y_i}{n_i-\hat{\mu_i}} ) \},\]
+<p>where \( y_i \) is the observed and \( \hat{\mu_i} \) is the fitted
+value for the \( i \)-th observation. Note that this statistic
+is twice a sum of &lsquo;observed times log of observed over expected&rsquo;,
+where the sum is over both successes and failures (i.e.&nbsp;we
+compare both \( y_i \) and \( n_i-y_i \) with their expected values).
+In a perfect fit the ratio observed over expected is one and its
+logarithm is zero, so the deviance is zero.</p>
+
+<p>In Appendix B we show that this statistic may be constructed
+as a likelihood ratio test that compares the model of interest
+with a saturated model that has one parameter for each
+observation.</p>
+
+<p>With grouped data, the distribution of the deviance statistic
+as the group sizes \( n_i \rightarrow \infty \) for all \( i \),
+ converges to a chi-squared distribution with \( n-p \) d.f.,
+where \( n \) is the number of <i>groups</i> and \( p \) is the number
+of parameters in the model, including the constant.
+Thus, for reasonably large groups, the deviance provides a
+goodness of fit test for the model.
+With individual data the distribution of the deviance does
+not converge to a chi-squared (or any other known) distribution,
+and cannot be used as a goodness of fit test. We will, however,
+consider other diagnostic tools that can be used with individual
+data.</p>
+
+<p>An alternative measure of goodness of fit is
+<i>Pearson's chi-squared statistic</i>, which for binomial
+data can be written as</p>
+
+<a name='e_3_14'></a>\[\tag{3.14}\chi^2_P =
+\sum_i \frac{ n_i (y_i-\hat{\mu}_i)^2 }
+     { \hat{\mu}_i ( n_i-\hat{\mu}_i ) }.\]
+<p>Note that each term in the sum is the squared difference
+between observed and fitted values \( y_i \) and \( \hat{\mu}_i \),
+divided by the variance of \( y_i \), which is
+\( \mu_i(n_i-\mu_i)/n_i \), estimated using \( \hat{\mu}_i \) for
+\( \mu_i \).
+This statistic can also be derived as a sum of &lsquo;observed
+minus expected squared over expected&rsquo;, where the sum
+is over both successes and failures.</p>
+
+<p>With grouped data Pearson&rsquo;s statistic has approximately in
+large samples a chi-squared distribution with \( n-p \) d.f.,
+and is asymptotically equivalent to the deviance or likelihood-ratio
+chi-squared statistic. The statistic can not be used as a goodness
+of fit test with individual data, but provides a basis for
+calculating residuals, as we shall see when we discuss
+logistic regression diagnostics.</p>
+
+<h4>3.2.3 Tests of Hypotheses</h4>
+<p>Let us consider the problem of testing hypotheses in logit
+models.
+As usual, we can calculate Wald tests based on the large-sample
+distribution of the m.l.e., which is approximately normal with
+mean \( \boldsymbol{\beta} \) and variance-covariance matrix as given in
+Equation <a href='#e_3_12'>3.12</a>.</p>
+
+<p>In particular, we can test the hypothesis</p>
+
+\[ H_0:\beta_j=0 \]
+<p>concerning the significance of a single coefficient by
+calculating the ratio of the estimate to its standard error</p>
+
+\[ z = \frac{\hat{\beta}_j } { \sqrt{\hat{\mbox{var}}(\hat{\beta}_j)} }. \]
+<p>This statistic has approximately a standard normal distribution
+in large samples.
+Alternatively, we can treat the square of this statistic
+as approximately a chi-squared with one d.f.</p>
+
+<p>The Wald test can be use to calculate a confidence interval
+for \( \beta_j \). We can assert with \( 100(1-\alpha) \)% confidence
+that the true parameter lies in the interval with boundaries</p>
+
+\[ \hat{\beta}_j \pm z_{1-\alpha/2} \sqrt{\hat{\mbox{var}}(\hat{\beta}_j)}, \]
+<p>where \( z_{1-\alpha/2} \) is the normal critical value for a two-sided
+test of size \( \alpha \). Confidence intervals for effects in the
+logit scale can be translated into confidence intervals for
+odds ratios by exponentiating the boundaries.</p>
+
+<p>The Wald test can be applied to tests hypotheses concerning
+several coefficients by calculating the usual quadratic form.
+This test can also be inverted to obtain confidence regions for
+vector-value parameters, but we will not consider this extension.</p>
+
+<p>For more general problems we consider the likelihood ratio
+test. A key to construct these tests is the deviance statistic
+introduced in the previous subsection. In a nutshell, the
+likelihood ratio test to compare two nested models is based
+on the <i>difference</i> between their deviances.</p>
+
+<p>To fix ideas, consider partitioning the model matrix
+and the vector of coefficients into two components</p>
+
+\[ \boldsymbol{X} = (\boldsymbol{X}_1,\boldsymbol{X}_2) \quad\mbox{and}\quad
+\boldsymbol{\beta} = \left( \begin{array}{l} \boldsymbol{\beta}_1 \\ \boldsymbol{\beta}_2 \end{array} \right) \]
+<p>with \( p_1 \) and \( p_2 \) elements, respectively. Consider
+testing the hypothesis</p>
+
+\[ H_0: \boldsymbol{\beta}_2 = \boldsymbol{0}, \]
+<p>that the variables in \( \boldsymbol{X}_2 \) have no effect on the response,
+i.e.&nbsp;the joint significance of the coefficients in \( \boldsymbol{\beta}_2 \).</p>
+
+<p>Let \( D(\boldsymbol{X}_1) \) denote the deviance of a model that includes
+only the variables in \( \boldsymbol{X}_1 \) and let \( D(\boldsymbol{X}_1+\boldsymbol{X}_2) \) denote
+the deviance of a model that includes all variables in \( \boldsymbol{X} \).
+Then the difference</p>
+
+\[ \chi^2 = D(\boldsymbol{X}_1) - D(\boldsymbol{X}_1+\boldsymbol{X}_2) \]
+<p>has approximately in large samples a chi-squared distribution
+with \( p_2 \) d.f. Note that \( p_2 \) is the difference in the number
+of parameters between the two models being compared.</p>
+
+<p>The deviance plays a role similar to the residual sum of squares.
+In fact, in Appendix B we show that in models for normally
+distributed data the deviance <i>is</i> the residual sum of squares.
+Likelihood ratio tests in generalized linear models are based on
+scaled deviances, obtained by dividing the deviance by a scale factor.
+In linear models the scale factor was \( \sigma^2 \), and
+we had to divide the \( \mbox{RSS} \)&rsquo;s (or their difference) by an estimate
+of \( \sigma^2 \) in order to calculate the test criterion.
+With binomial data the scale factor is one, and there is no need
+to scale the deviances.</p>
+
+<p>The Pearson chi-squared statistic in the previous subsection, while
+providing an alternative goodness of fit test for grouped data, cannot
+be used in general to compare nested models. In particular, differences
+in deviances have chi-squared distributions but differences in Pearson
+chi-squared statistics do not. This is the main reason why in
+statistical modelling we use the deviance or likelihood ratio
+chi-squared statistic rather than the more traditional Pearson
+chi-squared of elementary statistics.</p>
+

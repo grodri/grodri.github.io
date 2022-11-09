@@ -1,0 +1,116 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h2>6. Multinomial Response Models</h2>
+<p>We now turn our attention to regression models for the analysis of categorical dependent variables
+with more than two response categories.  Several of the models that we will study may be considered
+generalizations of logistic regression analysis to polychotomous data.  We first consider models
+that may be used with purely qualitative or <i>nominal</i> data, and then move on to models for 
+<i>ordinal</i> data, where the response categories are ordered.</p>
+
+<h3>6.1 The Nature of Multinomial Data</h3>
+<p>Let me start by introducing a simple dataset that will be used
+to illustrate the multinomial distribution and
+multinomial response models.</p>
+
+<h4>6.1.1 The Contraceptive Use Data</h4>
+<p>Table <a href='#t_6_1'>6.1</a> was reconstructed from weighted percents found in
+Table 4.7 of the final report of
+the Demographic and Health Survey conducted in
+El Salvador in 1985 (FESAL-1985). The table shows 3165
+currently married women classified by age, grouped in
+five-year intervals, and current use of contraception,
+classified as sterilization, other methods, and no method.</p>
+
+<a name='t_6_1'></a><p class='text-center'>Table 6.1. Current Use of Contraception By Age<br/>Currently Married Women. El Salvador, 1985</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al'>Age</td><td colspan='3' align='center'>Contraceptive Method</td><td class='ar'>All</td></tr>
+<tr class='bb'><td class='al'></td><td class='ar'>Ster.</td><td class='ar'>Other</td><td class='ar'>None</td><td></td></tr>
+<tr class='bt'><td class='al'>15&ndash;19</td><td class='ar'>3</td><td class='ar'>61</td><td class='ar'>232</td><td class='ar'>296</td></tr>
+<tr><td class='al'>20&ndash;24</td><td class='ar'>80</td><td class='ar'>137</td><td class='ar'>400</td><td class='ar'>617</td></tr>
+<tr><td class='al'>25&ndash;29</td><td class='ar'>216</td><td class='ar'>131</td><td class='ar'>301</td><td class='ar'>648</td></tr>
+<tr><td class='al'>30&ndash;34</td><td class='ar'>268</td><td class='ar'>76</td><td class='ar'>203</td><td class='ar'>547</td></tr>
+<tr><td class='al'>35&ndash;39</td><td class='ar'>197</td><td class='ar'>50</td><td class='ar'>188</td><td class='ar'>435</td></tr>
+<tr><td class='al'>40&ndash;44</td><td class='ar'>150</td><td class='ar'>24</td><td class='ar'>164</td><td class='ar'>338</td></tr>
+<tr class='bb'><td class='al'>45&ndash;49</td><td class='ar'>91</td><td class='ar'>10</td><td class='ar'>183</td><td class='ar'>284</td></tr>
+<tr class='bt bb'><td class='al'>All</td><td class='ar'>1005</td><td class='ar'>489</td><td class='ar'>1671</td><td class='ar'>3165</td></tr>
+</table>
+
+<p>A fairly standard approach to the analysis of data of this type
+could treat the two variables as responses and proceed to
+investigate the question of independence. For these
+data the hypothesis of independence is soundly rejected, with
+a likelihood ratio \( \chi^2 \) of 521.1 on 12 d.f.</p>
+
+<p>In this chapter we will view contraceptive use as the
+response and age as a predictor.
+Instead of looking at the joint distribution of the two variables,
+we will look at the conditional distribution of the
+response, contraceptive use, given the predictor, age.
+As it turns out, the two approaches are intimately related.</p>
+
+<h4>6.1.2 The Multinomial Distribution</h4>
+<p>Let us review briefly the multinomial distribution that we
+first encountered in Chapter 5.
+Consider a random variable \( Y_i \) that may take one of several
+discrete values, which we index \( 1, 2, \ldots, J \). In the
+example the response is contraceptive use and it takes the
+values &lsquo;sterilization&rsquo;, &lsquo;other method&rsquo; and &lsquo;no method&rsquo;, which
+we index 1, 2 and 3. Let</p>
+
+\[\tag{6.1}\pi_{ij} = \mbox{Pr}\{ Y_i = j \}\]
+<p>denote the probability that the \( i \)-th response falls in the
+\( j \)-th category. In the example \( \pi_{i1} \) is the probability
+that the \( i \)-th respondent is &lsquo;sterilized&rsquo;.</p>
+
+<p>Assuming that the response categories are mutually exclusive
+and exhaustive, we have \( \sum_{j=1}^J \pi_{ij} = 1 \) for each \( i \),
+i.e.&nbsp;the probabilities add up to one for each individual,
+and we have only \( J-1 \) parameters. In the example, once we
+know the probability of &lsquo;sterilized&rsquo; and of &lsquo;other method&rsquo;
+we automatically know by subtraction the probability of
+&lsquo;no method&rsquo;.</p>
+
+<p>For <i>grouped data</i> it will be convenient to introduce auxiliary
+random variables representing counts of responses in the various categories.
+Let \( n_i \) denote the number of cases in the \( i \)-th group
+and let \( Y_{ij} \) denote the number of responses
+from the \( i \)-th group that fall in the \( j \)-th category,
+with observed value \( y_{ij} \).</p>
+
+<p>In our example \( i \) represents
+age groups, \( n_i \) is the number of women in the \( i \)-th age group,
+and \( y_{i1}, y_{i2}, \) and \( y_{i3} \) are the numbers of women
+sterilized, using another method, and using no method, respectively,
+in the \( i \)-th age group.
+Note that \( \sum_j y_{ij} = n_i \), i.e.&nbsp;the counts in the
+various response categories add up to the number of cases in each age group.</p>
+
+<p>For <i>individual data</i> \( n_i=1 \) and \( Y_{ij} \) becomes an indicator
+(or dummy) variable that takes the value
+\( 1 \) if the \( i \)-th response falls in the \( j \)-th category
+and \( 0 \) otherwise, and \( \sum_j y_{ij} = 1 \), since one
+and only one of the indicators \( y_{ij} \) can be &lsquo;on&rsquo; for each case.
+In our example we could work with the 3165 records in the individual
+data file and let \( y_{i1} \) be one if the \( i \)-th woman is sterilized
+and 0 otherwise.</p>
+
+<p>The probability distribution of the counts
+\( Y_{ij} \) given the total \( n_i \) is given by the
+<i>multinomial</i> distribution</p>
+
+<a name='e_6_2'></a>\[\tag{6.2}\mbox{Pr}\{Y_{i1}=y_{i1}, \ldots, Y_{iJ}=y_{iJ} \} =
+ {n_i \choose y_{i1}, \ldots, y_{iJ} }
+\pi_{i1}^{y_{i1}} \ldots \pi_{iJ}^{y_{iJ}}\]
+<p>The special
+case where \( J=2 \) and we have only two response categories
+is the binomial distribution of Chapter 3. To verify this
+fact equate \( y_{i1}=y_i \), \( y_{i2}=n_i-y_i \), \( \pi_{i1}=\pi_i \),
+and \( \pi_{i2} = 1-\pi_i \).</p>
+

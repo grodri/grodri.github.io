@@ -1,0 +1,214 @@
+---
+layout: default
+section: glms
+tab: "R Logs"
+pager: true
+---
+
+
+<h3>2.4 Simple Linear Regression</h3>
+<p>
+Let us start with the simplest possible model, the <i>null</i> model, 
+which fits just a constant
+</p>
+<pre class='r'>
+> m0 <- lm(change~1, data=fpe)
+> m0
+Call:
+lm(formula = change ~ 1, data = fpe)
+
+Coefficients:
+(Intercept)  
+       14.3  
+</pre>
+<p>
+The first argument to the <code>lm()</code> function is a <i>model
+formula</i>, which defines the response, followed by a tilde and a list 
+of terms. In this case the only term is <code>1</code>,  representing the
+constant. The <code>data</code> argument specifies the data frame to
+be used. This can be omitted if the data are attached.
+</p>
+<p>
+The function returns an "lm" (or linear model) object. As you can see,
+its print method simply lists the formula and the estimated coefficients.
+Here we see that the average fertility decline in these countries between
+1965 and 1975 was 14.3%.  To obtain more information we need to use the
+<code>summary()</code> function
+</p>
+<pre class='r'>
+> summary(m0)
+Call:
+lm(formula = change ~ 1, data = fpe)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-14.30  -8.80  -3.80   8.45  25.70 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   14.300      2.641   5.415 3.17e-05 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 11.81 on 19 degrees of freedom
+</pre>
+<p>
+We now get standard errors and a t-test of significance. If you want
+a confidence interval as well you need to call the function
+<code>confint()</code>.
+</p>
+<p>
+If you are wondering what these statistics mean when the 20 countries at 
+hand are not really a random sample of the countries of the world, see the 
+discussion of model-based inference in the notes. Briefly, we view the data 
+as a sample from the universe of all the outcomes we could have observed 
+in these countries in the period 1965-1970.
+</p>
+<h4>Fitting a Linear Term</h4>
+<p>
+The next step is to try a linear regression of change on setting:
+</p>
+<pre class='r'>
+> attach(fpe)
+> m1 <- lm(change ~ setting)
+</pre>
+<p>
+The first line attaches the data frame, so we don't need to specify it
+every time. The model formula on the next line specifies a linear
+regression on setting. We don't need to specify an intercept because
+this is always included by default, unless removed using <code>-1</code>
+We were explicit last time because the constant was the only term.
+The term on setting is linear because R recognizes it as a continuous
+variable. (We will learn about categorical variables in 2.6.)
+To obtain more detailed results we use again the <code>summary()</code>
+function
+</p>
+<pre class='r'>
+> summary(m1)
+Call:
+lm(formula = change ~ setting)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-13.239  -6.260   0.787   6.678  17.162 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)   
+(Intercept) -22.1254     9.6416  -2.295  0.03398 * 
+setting       0.5052     0.1308   3.863  0.00114 **
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 8.973 on 18 degrees of freedom
+Multiple R-squared:  0.4532,	Adjusted R-squared:  0.4228 
+F-statistic: 14.92 on 1 and 18 DF,  p-value: 0.001141
+</pre>
+<p>
+Each point in the social setting scale is associated with a fertility decline
+of half a percent. Compare the parameter estimates with Table 2.3 in the notes.
+We can also obtain the analysis of variance in Table 2.4 using the 
+<code>anova()</code> function
+</p>
+<pre class='r'>
+> anova(m1)
+Analysis of Variance Table
+
+Response: change
+          Df Sum Sq Mean Sq F value   Pr(>F)   
+setting    1 1201.1 1201.08  14.919 0.001141 **
+Residuals 18 1449.1   80.51                    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+</pre>
+<p>
+The total sum of squares of 2650.2 has been decomposed into 1201.1
+that can be attributed to social setting and 1449.1 that remains unexplained.
+</p>
+<h4>Computing R-Squared</h4>
+<p>
+Let us calculate R-squared "by hand" as the proportion of variance explained
+as we introduce setting. There are a number of functions that can be used to
+access elements of a linear model, for example <code>coef()</code> returns
+the coefficients, <code>fitted()</code> returns the fitted values, and
+<code>resid()</code> returns the residuals, or differences between observed
+and fitted values. We will add our own function to compute the
+<u>r</u>esidual <u>s</u>um of <u>s</u>quares:
+</p>
+<pre class='r'>
+> rss <- function(lmfit) {
++   sum(resid(lmfit)^2)
++ }
+</pre>
+<p>
+We can now use this function to compute R-squared as follows:
+</p>
+<pre class='r'>
+> 1 - rss(m1)/rss(m0)
+[1] 0.4532026
+</pre>
+<p>
+Almost half the variation in fertility decline can be expressed as a linear
+effect of social setting.
+</p>
+<h4>Plotting Observed and Fitted Values</h4>
+<p>
+Let us try to reproduce Figure 2.3. We want to plot fertility change versus 
+setting labelling the points with the country names and superimposing the 
+regression line. We use R's <code>plot()</code> function to draw a
+scatterplot of change by setting. (Note that the first argument is the
+x-axis and the second the y-axis.) To superimpose
+a regression line we  use the function <code>abline()</code>, which
+takes as argument an intercept and a slope, which is exactly what 
+<code>coef()</code> returns in this case. 
+</p>
+<p>
+We can add the country names using the <code>text()</code> function,
+but here things get interesting because we get some overprinting. 
+To solve this problem we specify the position of the labels using the
+values 1 to 4 for below, left, above and right. We'll put everyone on 
+the right, but move Costa Rica and Trinidad Tobago to the left. In
+addition, we'll use a small adjustment to move the labels a bit up for 
+Costa Rica and down for Trinidad Tobago. We also set <code>cex=0.75</code> 
+to reduce the size of the labels by 25%. The final touch is to provide a 
+bit  more room for the text labels on the plot, using <code>xlim</code>
+to specify the range of the x-axis as 35 to 100.
+</p>
+<pre class='r'>
+> plot(setting,change,xlim=c(35,100))
+> abline(coef(m1))
+> adj <- data.frame( pos=rep(4,nrow(fpe)), jit=0, row.names=row.names(fpe))
+> adj[c("CostaRica","TrinidadTobago"),"pos"] <- 2
+> adj[c("CostaRica","TrinidadTobago"),"jit"] <- c(1,-1)
+> text(setting, change+adj$jit, row.names(fpe), pos=adj$pos, cex=0.75)
+> dev.print(png,"fig23.png",width=600,height=480)
+RStudioGD 
+        2 
+</pre>
+<img src="fig23.png" class="img-responsive center-block"/>
+<p class="em text-center">Figure 2.3. Fertility Change by Social Setting</span></p>
+<p>
+This example also illustrates the use of character subscripts in R.
+We already used variable names as column subscripts, and not
+surprinsigly, we can also use row names as row subscripts.
+This let us write code such as  <code>fpe["CostaRica",]</code>,
+which is clearer than <code>fpe[5,]</code>,
+and will still work if the data frame has been reordered. 
+That's why I put the adjustments in a data frame and gave it the 
+same row names as  <code>fpe</code>.  
+</p>
+<p>
+<i>Note:</i> The <code>plot()</code> method for linear
+model fits produces four plots: residuals versus fitted values,
+a Q-Q plot for normality, a scale-location plot, and a plot
+of residuals versus leverages. We will learn about these 
+statistics in section 2.9. If you are curious try typing
+<code>par(mfrow=c(2,2))</code> and <code>plot(m1)</code>.
+The first function changes the graphics device layout to
+show four plots in two rows and two columns. If you try this
+you may want to restore the original layout using 
+<code>par(mfrow=c(1,1))</code>.
+</p>
+<p>
+<i>Exercise:</i> Run the simple linear regression model for 
+fertility change as a function of program effort and plot the results.
+</p>

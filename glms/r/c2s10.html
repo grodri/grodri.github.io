@@ -1,0 +1,93 @@
+---
+layout: default
+section: glms
+tab: "R Logs"
+pager: true
+---
+
+
+<h3>2.10 Transforming the Data</h3> 
+<p>
+The final section in this chapter deals with Box-Cox transformations.
+To avoid problems with negative values of the response variable,
+we add 1/2 to all observations:
+</p>
+<pre class='r'>
+> y <- change + 0.5
+</pre>
+<h4>The Box-Cox Transformation</h4> 
+<p>
+Venables and Ripley's MASS library has a handy <code>boxcox</code>
+function that computes and plots the profile log-likelihood for a
+range of possible transformations going from -2 to 2. The main
+argument to the function is a linear model fit. We'll try it with
+the analysis of covariance model that treats setting linearly and
+effort as a factor:
+</p>
+<pre class='r'>
+> require(MASS)
+> bcm <- lm(y ~ setting + effort.g)
+> bc <- boxcox(bcm)
+> dev.print(png,file="fig28.png",width=500,height=400)
+RStudioGD 
+        2 
+</pre>
+<img src="fig28.png" class="img-responsive center-block" />
+<p class="em text-center">Figure 2.8. Box-Cox Profile Log-likelihood</p> 
+<p>
+As you can see from the graph, the optimal transformation has a 
+parameter somewhat below 1, suggesting something like a square 
+root transformation, but the profile log-likelihood is
+rather flat, and leaving the data untransformed does not lower
+the log-likelihood significantly.  
+</p>
+<p>
+The <code>boxcox</code> function returns a list with x as the 
+parameter and y as the corresponding log-likelihood.
+We can find the approximate mle as the x-value that yields
+the maximum: 0.67.
+</p>
+<pre class='r'>
+> bc$x[bc$y==max(bc$y)]
+[1] 0.6666667
+</pre>
+<p>
+A large sample test for no transformation 
+compares the log-likelihoods at one and at the maximum.
+Unfortunately 1 is not one of the generated x-values,
+but we can call the function with a single parameter value
+to just evaluate the log-likelihood:
+</p>
+<pre class='r'>
+> bc0 <- boxcox(mbc, lambda=1, plotit=F)
+</pre>
+<p>
+The chi-squared value of 3.65 is below the five-percent critical
+value, showing that we have no evidence against leaving the
+data in the original scale. To test for a log-transformation
+you could use the same technique with <code>lambda=0</code>,
+but it is clear from the plot that using logs would produce 
+a substantially lower log-likelihood. 
+</p>
+<h4>Atkinson's Score Test</h4> 
+<p>
+Our final calculation involves Atkinson's score test, which requires
+fitting the auxiliary variable given in Equation 2.31 in the notes.
+We compute the geometric mean, which we call <code>gmean</code>,
+use this to compute the auxiliary variable <code>atkinson</code>, 
+and then fit the extended model:
+</p>
+<p>
+The coefficient of the auxiliary variable is 0.59, so the optimal
+power is approximately 1-0.59 = 0.41, suggesting again that 
+something like a square root transformation might be indicated.
+The associated <i>t</i>-statistic is significant at the two percent level,
+but the more accurate likelihood ratio test statistic calculated earlier
+was only borderline.  Thus, we do not have strong evidence against 
+keeping the response in the original scale.
+</p>
+<p>
+<i>Exercise:</i> Try the Box-Tidwell procedure described in Section 
+2.10.4 of the notes to see if a transformation of social setting would 
+be indicated.
+</p>

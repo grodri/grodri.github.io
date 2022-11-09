@@ -1,0 +1,365 @@
+---
+layout: default
+section: glms
+tab: "R Logs"
+pager: true
+---
+
+
+<h3>3.6 Multi-factor Models: Model Selection</h3>
+<p>
+We are now ready to consider a full analysis of the data on contraceptive use
+by age, desire for more children, and education.  We can read the data directly
+from the course website. For consistency with the previous analysis I will
+create a dummy variable for those who want no more children, as well as the
+usual response matrix
+</p>
+<pre class='r'>
+> cuse <- read.table("http://data.princeton.edu/wws509/datasets/cuse.dat", header=TRUE)
+
+> cuse$nomore <- as.numeric(cuse$wantsMore == "no")
+
+> cuse$education <- ordered(cuse$education, levels=c("low","high"))
+
+> cuse$n = cuse$using + cuse$notUsing
+
+> cuse$Y <- cbind(cuse$using, cuse$notUsing)
+
+> cuse
+     age education wantsMore notUsing using nomore   n Y.1 Y.2
+1    <25       low       yes       53     6      0  59   6  53
+2    <25       low        no       10     4      1  14   4  10
+3    <25      high       yes      212    52      0 264  52 212
+4    <25      high        no       50    10      1  60  10  50
+5  25-29       low       yes       60    14      0  74  14  60
+6  25-29       low        no       19    10      1  29  10  19
+7  25-29      high       yes      155    54      0 209  54 155
+8  25-29      high        no       65    27      1  92  27  65
+9  30-39       low       yes      112    33      0 145  33 112
+10 30-39       low        no       77    80      1 157  80  77
+11 30-39      high       yes      118    46      0 164  46 118
+12 30-39      high        no       68    78      1 146  78  68
+13 40-49       low       yes       35     6      0  41   6  35
+14 40-49       low        no       46    48      1  94  48  46
+15 40-49      high       yes        8     8      0  16   8   8
+16 40-49      high        no       12    31      1  43  31  12
+</pre>
+<p>
+There are 19 basic models for these data. Not all of them would be of interest
+in any given analysis, but for completeness we will fit them all, effectively
+reproducing Table 3.13 in the notes. 
+</p>
+<p>
+To simplify some of the repetitive tasks required to fit so many models,
+I'll create a vector with the right-hand-side formulas,
+and write a function to fit each model, pasting the response and adding
+the family and the data frame before calling <code>glm</code>
+</p>
+<pre class='r'>
+> rhs <- c("1","age", "education", "nomore",
++   "age + education", "age + nomore", "education + nomore", 
++   "age * education", "age * nomore", "education * nomore", 
++   "age + education + nomore",
++   "age * education + nomore", "age * nomore + education", 
++   "age + education * nomore", "age * (education + nomore)", 
++   "education * (age + nomore)", "(age + education) * nomore", 
++   "age*education*nomore - age:education:nomore")
+
+> fit <- function(lp) glm(paste("Y",lp,sep="~"),family=binomial,data=cuse)
+</pre>
+<p>
+Now we simply loop, storing the results in a list
+</p>
+<pre class='r'>
+> models <- vector("list",length(rhs))
+
+> for(i in 1:length(rhs)){
++   models[[i]] <- fit(rhs[i])
++ }
+</pre>
+<p>
+Finally I use <code>lapply</code> to extract the  deviances and df,
+just as before, adding the right-hand-sides to identify the models.
+The result is Table 3.13:
+</p>
+<pre class='r'>
+> data.frame(
++   model = rhs,  #unlist(lapply(lapply(models,formula),deparse)),
++   deviance = round(unlist(lapply(models,deviance)),2),
++   df = unlist(lapply(models,df.residual))
++ )
+                                         model deviance df
+1                                            1   165.77 15
+2                                          age    86.58 12
+3                                    education   165.07 14
+4                                       nomore    74.10 14
+5                              age + education    80.42 11
+6                                 age + nomore    36.89 11
+7                           education + nomore    73.87 13
+8                              age * education    73.03  8
+9                                 age * nomore    20.10  8
+10                          education * nomore    67.64 12
+11                    age + education + nomore    29.92 10
+12                    age * education + nomore    23.15  7
+13                    age * nomore + education    12.63  7
+14                    age + education * nomore    23.02  9
+15                  age * (education + nomore)     5.80  4
+16                  education * (age + nomore)    13.76  6
+17                  (age + education) * nomore    10.82  6
+18 age*education*nomore - age:education:nomore     2.44  3
+</pre>
+<h4>The Three-Factor Additive Model</h4>
+<p>
+The first model of interest here is the three-factor additive model,
+showing the effect of each factor net of the other two:
+</p>
+<pre class='r'>
+> summary(models[[11]])
+
+Call:
+glm(formula = paste("Y", lp, sep = "~"), family = binomial, data = cuse)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-2.5148  -0.9376   0.2408   0.9822   1.7333  
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -1.80367    0.14240 -12.666  < 2e-16 ***
+age25-29     0.38938    0.17585   2.214  0.02681 *  
+age30-39     0.90861    0.16462   5.519 3.40e-08 ***
+age40-49     1.18924    0.21443   5.546 2.92e-08 ***
+education.L  0.22981    0.08771   2.620  0.00879 ** 
+nomore       0.83295    0.11747   7.091 1.33e-12 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 165.772  on 15  degrees of freedom
+Residual deviance:  29.917  on 10  degrees of freedom
+AIC: 113.43
+
+Number of Fisher Scoring iterations: 4
+</pre>
+<p>
+Contraceptive use differs by each of these factors, even when we compare women 
+who fall in the same categories of the other two. For example the odds of using
+contraception are 38% higher among women with some education than among women with 
+no education in the same age group and category of desire for more children.
+</p>
+<p>
+The deviance of 29.92 on 10 d.f. tells us that this model does not fit the data, 
+so the assumption that logit differences by one variable are the same across 
+categories of the other two is suspect. 
+</p>
+<h4>The Model with One Interaction Effect</h4>
+<p>
+Of the three models with one interaction term, the one that achieves the largest
+improvement in fit compared to the additive model is the model with an age by 
+nomore interaction, where the difference in logits between women who want and 
+do not want more children varies by age.
+</p>
+<p>
+Estimates using the standard reference-cell parametrization are shown below
+</p>
+<pre class='r'>
+> summary(models[[13]])
+
+Call:
+glm(formula = paste("Y", lp, sep = "~"), family = binomial, data = cuse)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-1.30027  -0.66163  -0.03286   0.81945   1.73851  
+
+Coefficients:
+                Estimate Std. Error z value Pr(>|z|)    
+(Intercept)     -1.63285    0.15162 -10.769  < 2e-16 ***
+age25-29         0.39460    0.20145   1.959  0.05013 .  
+age30-39         0.54666    0.19842   2.755  0.00587 ** 
+age40-49         0.57952    0.34742   1.668  0.09530 .  
+nomore           0.06622    0.33071   0.200  0.84130    
+education.L      0.24087    0.08893   2.709  0.00676 ** 
+age25-29:nomore  0.25918    0.40975   0.633  0.52704    
+age30-39:nomore  1.11266    0.37404   2.975  0.00293 ** 
+age40-49:nomore  1.36167    0.48433   2.811  0.00493 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 165.77  on 15  degrees of freedom
+Residual deviance:  12.63  on  7  degrees of freedom
+AIC: 102.14
+
+Number of Fisher Scoring iterations: 4
+
+> b <- coef(models[[13]])
+
+> exp(b[grep("nomore",names(b))])
+         nomore age25-29:nomore age30-39:nomore age40-49:nomore 
+       1.068461        1.295867        3.042447        3.902721 
+</pre>
+<p>
+Make sure you know how to interpret all of these coefficients. For example the 
+ratio of the odds of using contraception among women who want no more children
+relative to those who want more in the same category of education is 1.07 among 
+women under age 25, but 3.9 times more (giving an odds ratio of 4.2) among women 
+in their forties. 
+</p>
+<p>
+As noted in the previous section, I highly recommend combining the main effects 
+and interactions to show the effect of wanting no more children in each age group.
+This is easily done from the coefficients themselves:
+</p>
+<pre class='r'>
+> exp( b["nomore"] + c(0,b[grep(":nomore",names(b))]) )
+                age25-29:nomore age30-39:nomore age40-49:nomore 
+       1.068461        1.384584        3.250737        4.169907 
+</pre>
+<p>
+Here and above I used <code>grep</code> to select the coefficients whose names
+include "nomore" (the main effects and interactions) or ":nomore" (just the
+interactions). This is safer than using numeric indices. 
+</p>
+<p>
+To aid in interpretation and model criticism we can plot the observed and fitted
+logits, effectively reproducing Figure 3.4. Because we will need more than one plot, 
+I will encapsulate the calculations in a function that takes a model fit as
+argument, and plots the observed and fitted logits 
+</p>
+<pre class='r'>
+plotmod <- function(model,...) {
+  wants <- c("more","nomore")
+  obs <- qlogis(cuse$using/cuse$n) # observed logits
+  agem <- c(20, 27.5, 35, 45)[as.numeric(cuse$age)] 
+  col <- c("green","red")[cuse$nomore+1]
+  pch <- 14 + as.numeric(cuse$education) # square and circle
+  plot(agem, obs, col=col, pch=pch, xlab="Age", ylab="Logit", xlim=c(20,50), ...)
+  fv = predict(model)
+  for(nomore in 0:1) {
+    for(education in c("low","high")) {
+      lty <- ifelse(education == "low", "dashed", "solid")
+      select <- which(cuse$nomore == nomore & cuse$education == education)
+      lines(agem[select], fv[select],lty=lty)
+      j <- select[length(select)]
+      label <- paste(wants[nomore+1],education,sep=":")
+      text(46, fv[j], labels=label, pos=4, cex=0.8)
+
+    }
+  }
+  invisible(NULL)
+}
+</pre>
+<p>
+So here's the plot for the model in Figure 3.4
+</p>
+<pre class='r'>
+> model <- models[[ match("age * nomore + education",rhs) ]]
+
+> plotmod( model, main="Figure 3.4: Contraceptive Use by Age, Education and Desire")
+
+> mtext("Model with Age by Desire Interaction", side=3)
+</pre>
+<img src="fig34.png" class="img-responsive center-block"/>
+<p>
+The plot shows clearly how contraceptive use is higher among women who want
+no more children in their thirties and forties, and how it is a bit higher
+among educated women than among their less educated counterparts in the same
+age and preference category. The fit, however, leaves a bit to be desired 
+at the extreme ages, particularly among women in their forties who want more children.
+</p>
+<h4>All Three Two-Factor Interactions</h4>
+<p>
+As explained in the notes, there is some evidence that education may interact
+with the other variables. The model with all two-factor interactions provides
+the best fit, with a deviance of 2.44 on three d.f., bit is substantially
+more complex. 
+</p>
+<p>
+Rather than provide parameter estimates, I will reproduce Figure 3.5 in the notes,
+which provides some hints on how the model could be simlpified.  Thanks to
+our <code>plotmod()</code> function, this is very easy:
+</p>
+<pre class='r'>
+> model <- models[[18]]
+
+> plotmod(model, main="Figure 3.5: Contraceptive Use by Age, Education and Desire")
+
+> mtext("Model with Three Two-Factor Interactions", side=3)
+</pre>
+<img src="fig35.png" class="img-responsive center-block"/>
+<p>
+A picture is indeed worth a thousand words. We see that among women who want no more
+children contraceptive use increases almost linearly with age (in the logit scale)
+with no differences by education except in the oldest age group, where use flattens
+for women with no education. Among women who do want more children contraceptive use
+is generally lower, increases more slowly with age, there are some differences by
+education, and these are higher among older women. There's also a hint of curvature 
+by age for women with no education who want more children. 
+</p>
+<h4>A Parsimonious Model</h4>
+<p>
+These observations suggest ways to simplify the model. The age interactions are quite
+simple: the increase with age is steeper among women who want no more children, and
+the difference by education is larger among women in their forties. Similarly, the
+educational difference is larger in use for spacing and among older women.
+</p>
+<p>
+One way to capture these features is to use a quadratic on age, allow the slope (but
+not the curvature) to vary by desire for more children, and introduce effects of
+education only for spacing and after age 40 (and thus not for limiting before age 40).
+To facilitate interpretation of the resulting parameters I center age around 30:
+</p>
+<pre class='r'>
+> cuse$agem <- c(20, 27.5, 35, 45)[as.numeric(cuse$age)]
+
+> cuse$agec   <- cuse$agem - 30
+
+> cuse$agecsq <- cuse$agec^2
+
+> cuse$educ.spacing <- as.numeric(cuse$education == "high")*(1 - cuse$nomore)
+
+> cuse$educ.at40p   <- as.numeric(cuse$education == "high" & cuse$age == "40-49")
+
+> parsi <- fit("agec+nomore+agec:nomore + agecsq + educ.spacing + educ.at40p")
+
+> summary(parsi)
+
+Call:
+glm(formula = paste("Y", lp, sep = "~"), family = binomial, data = cuse)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-1.2858  -0.4105  -0.1223   0.4498   1.0021  
+
+Coefficients:
+              Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  -1.339265   0.157825  -8.486  < 2e-16 ***
+agec          0.024755   0.011888   2.082 0.037315 *  
+nomore        0.980417   0.179048   5.476 4.36e-08 ***
+agecsq       -0.003431   0.001032  -3.325 0.000885 ***
+educ.spacing  0.432112   0.180899   2.389 0.016909 *  
+educ.at40p    0.979816   0.346293   2.829 0.004663 ** 
+agec:nomore   0.058961   0.018380   3.208 0.001337 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 165.7724  on 15  degrees of freedom
+Residual deviance:   5.8648  on  9  degrees of freedom
+AIC: 91.373
+
+Number of Fisher Scoring iterations: 4
+</pre>
+<p>
+We can now use our handy plotting function to plot this model
+</p>
+<pre class='r'>
+> plotmod(parsi, main ="Contraceptive Use by Age, Education and Desire")
+
+> mtext("A Parsimonious Model", side=3)
+</pre>
+<img src="parsi.png" class="img-responsive center-block"/>

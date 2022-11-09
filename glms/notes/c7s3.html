@@ -1,0 +1,378 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h3>7.3 Approaches to Survival Modeling</h3>
+<p>Up to this point we have been concerned with a homogeneous population, where
+the lifetimes of all units are governed by the same survival function
+\( S(t) \).  We now introduce the third distinguishing characteristic of
+survival models&mdash;the presence of a vector of covariates or explanatory
+variables that may affect survival time&mdash;and consider the general problem
+of modeling these effects.</p>
+
+<h4>7.3.1 Accelerated Life Models*</h4>
+<p>Let \( T_i \) be a random variable representing the (possibly unobserved)
+survival time of the \( i \)-th unit.  Since \( T_i \) must be non-negative, we might
+consider modeling its logarithm using a conventional linear model, say</p>
+
+\[ \log T_i = \boldsymbol{x}_i'\boldsymbol{\beta} + \epsilon_i, \]
+<p>where \( \epsilon_i \) is a suitable error term, with a distribution to be
+specified. This model specifies the distribution of log-survival
+for the \( i \)-th unit as a simple <i>shift</i> of a standard or baseline
+distribution represented by the error term.</p>
+
+<p>Exponentiating this equation, we obtain a model for the
+survival time itself</p>
+
+\[ T_i = \exp\{\boldsymbol{x}_i'\boldsymbol{\beta}\} T_{0i}, \]
+<p>where we have written \( T_{0i} \) for the exponentiated error term. 
+It will also be convenient to use \( \gamma_i \) as shorthand for the
+multiplicative effect \( \exp\{\boldsymbol{x}_i'\boldsymbol{\beta}\} \) of the covariates.</p>
+
+<p>Interpretation of the parameters follows along standard lines.
+Consider, for example, a model with a constant and a
+dummy variable \( x \) representing a factor with two levels, 
+say groups one and zero. Suppose the
+corresponding multiplicative effect is \( \gamma=2 \), so the
+coefficient of \( x \) is \( \beta=\log(2)=0.6931 \). Then we
+would conclude that people in group one live twice as long
+as people in group zero.</p>
+
+<p>There is an interesting alternative interpretation that
+explains the name &lsquo;accelerated life&rsquo; used for this model. 
+Let \( S_0(t) \) denote the survivor function in group zero, 
+which will serve as a reference group, and let \( S_1(t) \) 
+denote the survivor function in group one.  Under this
+model,</p>
+
+\[ S_1(t) = S_0(t/\gamma). \]
+<p>In words, the probability that a member of group one will
+be alive at age \( t \) is exactly the same as the probability
+that a member of group zero will be alive at age \( t/\gamma \).
+For \( \gamma=2 \), this would be half the age, so the probability
+that a member of group one would be alive at age 40 (or 60)
+would be the same as the probability that a member of group
+zero would be alive at age 20 (or 30). Thus, we may think of
+\( \gamma \) as affecting the passage of time. In our example,
+people in group zero age &lsquo;twice as fast&rsquo;.</p>
+
+<p>For the record, the corresponding hazard functions are
+related by</p>
+
+\[ \lambda_1(t) = \lambda_0(t/\gamma)/\gamma, \]
+<p>so if \( \gamma=2 \), at any given age people in group one would be 
+exposed to half the risk of people in group zero half their age.</p>
+
+<p>The name &lsquo;accelerated life&rsquo; stems from industrial applications
+where items are put to test under substantially worse conditions
+than they are likely to encounter in real life, so that tests
+can be completed in a shorter time.</p>
+
+<p>Different kinds of parametric models are obtained by assuming
+different distributions for the error term.
+If the \( \epsilon_i \) are normally distributed, then we obtain
+a log-normal model for the \( T_i \). Estimation of this model for
+censored data by maximum likelihood is known in the econometric
+literature as a Tobit model.</p>
+
+<p>Alternatively, if the \( \epsilon_i \) have an
+extreme value distribution with p.d.f.</p>
+
+\[ f(\epsilon) = \exp\{ \epsilon - \exp \{ \epsilon \} \}, \]
+<p>then \( T_{0i} \) has an exponential distribution, and we
+obtain the exponential regression model, where \( T_i \) is
+exponential with hazard \( \lambda_i \) satisfying the
+log-linear model</p>
+
+\[ \log \lambda_i = \boldsymbol{x}_i'\boldsymbol{\beta}. \]
+<p>An example of a demographic model that belongs to the
+family of accelerated life models is the Coale-McNeil model
+of first marriage frequencies, where the proportion ever married
+at age \( a \) in a given population is written as</p>
+
+\[ F(a) = c F_0( \frac{a-a_0}{k} ), \]
+<p>where \( F_0 \) is a model schedule of proportions married by
+age, among women who will ever marry, based on historical
+data from Sweden; \( c \) is the proportion who will eventually
+marry, \( a_0 \) is the age at which marriage starts, and
+\( k \) is the <i>pace</i> at which  marriage proceeds relative to
+the Swedish standard.</p>
+
+<p>Accelerated life models are essentially standard regression
+models applied to the log of survival time, and except for
+the fact that observations are censored, pose no new
+estimation problems. Once the distribution of the error
+term is chosen, estimation proceeds by maximizing the
+log-likelihood for censored data described in the previous
+subsection. For further details, see Kalbfleish and Prentice&nbsp;(1980).</p>
+
+<h4>7.3.2 Proportional Hazard Models</h4>
+<p>A large family of models introduced by Cox&nbsp;(1972) focuses
+directly on the hazard function.
+The simplest member of the family is the <i>proportional
+hazards</i> model, where the hazard at time \( t \) for an
+individual with covariates \( \boldsymbol{x}_i \) (not including a constant)
+is assumed to be</p>
+
+<a name='e_7_10'></a>\[\tag{7.10}\lambda_i(t|\boldsymbol{x}_i) = \lambda_0(t) \exp\{ \boldsymbol{x}b \}.\]
+<p>In this model \( \lambda_0(t) \) is a baseline hazard function
+that describes the risk for individuals with \( \boldsymbol{x}_i=\boldsymbol{0} \),
+who serve as a reference cell or pivot, and
+\( \exp\{\boldsymbol{x}_i'\boldsymbol{\beta}\} \) is the relative risk, a proportionate
+increase or reduction in risk, associated with the
+set of characteristics \( \boldsymbol{x}_i \). Note that the increase
+or reduction in risk is the same at all durations \( t \).</p>
+
+<p>To fix ideas consider a two-sample problem where we have
+a dummy variable \( x \) which serves to identify groups one
+and zero. Then the model is</p>
+
+\[ 
+\lambda_i(t|x) = \left\{  \begin{array}{ll}  
+\lambda_0(t)& \mbox{if $x=0$,}  \cr
+\lambda_0(t) e^\beta& \mbox{if $x=1$.} 
+\end{array} \right. 
+\]
+<p>Thus, \( \lambda_0(t) \) represents the risk at time \( t \) in group zero,
+and \( \gamma=\exp\{\beta\} \) represents the ratio of the risk
+in group one relative to group zero at any time \( t \).
+If \( \gamma=1 \) (or \( \beta=0 \)) then the risks are the same
+in the two groups. If \( \gamma=2 \) (or \( \beta=0.6931) \),
+then the risk for an individual in group one at any given 
+age is twice the risk of a member of group zero who has the
+same age.</p>
+
+<p>Note that the model separates clearly the effect of time
+from the effect of the covariates. Taking logs, we find
+that the proportional hazards model is a simple
+additive model for the log of the hazard, with</p>
+
+\[ \log \lambda_i(t|\boldsymbol{x}_i) = \alpha_0(t) + \boldsymbol{x}b, \]
+<p>where \( \alpha_0(t)=\log \lambda_0(t) \) is the log of the baseline hazard.
+As in all additive models, we assume that the effect of the covariates 
+\( \boldsymbol{x} \) is the same at all times or ages \( t \). The similarity
+between this expression and a standard analysis of covariance
+model with parallel lines should not go unnoticed.</p>
+
+<p>Returning to Equation <a href='#e_7_10'>7.10</a>, we can integrate
+both sides from \( 0 \) to \( t \) to obtain the cumulative hazards</p>
+
+\[ \Lambda_i(t|\boldsymbol{x}_i) = \Lambda_0(t) \exp\{ \boldsymbol{x}b \}, \]
+<p>which are also proportional. Changing signs and exponentiating
+we obtain the survivor functions</p>
+
+<a name='e_7_11'></a>\[\tag{7.11}S_i(t|\boldsymbol{x}_i) = S_0(t) ^{ \exp\{ \boldsymbol{x}b \}},\]
+<p>where \( S_0(t) = \exp\{ -\Lambda_0(t) \} \) is a baseline
+survival function.  Thus, the effect of the covariate
+values \( \boldsymbol{x}_i \) on the survivor function is to raise it
+to a power given by the relative risk \( \exp\{ \boldsymbol{x}_i'\boldsymbol{\beta}\} \).</p>
+
+<p>In our two-group example with a relative risk of \( \gamma=2 \),
+the probability that a member of group one will be alive
+at any given age \( t \) is the square of the probability that
+a member of group zero would be alive at the same age.</p>
+
+<h4>7.3.3 The Exponential and Weibull Models</h4>
+<p>Different kinds of proportional hazard models 
+may be obtained by making different
+assumptions about the baseline survival function, or equivalently,
+the baseline hazard function.  For example if the baseline
+risk is constant over time, so \( \lambda_0(t) = \lambda_0 \), say,
+we obtain the exponential regression model, where</p>
+
+\[ \lambda_i(t,\boldsymbol{x}_i) = \lambda_0 \exp \{ \boldsymbol{x}b \}. \]
+<p>Interestingly, the exponential regression model belongs to
+both the proportional hazards and the accelerated life families.
+If the baseline risk is a constant and you double or triple
+the risk, the new risk is still constant (just higher).
+Perhaps less obviously, if the baseline risk is constant
+and you imagine time flowing twice or three times as fast,
+the new risk is doubled or tripled but is still constant
+over time, so we remain in the exponential family.</p>
+
+<p>You may be wondering whether there are other cases where
+the two models coincide. The answer is yes, but not many.
+In fact, there is only one distribution where they do, 
+and it includes the exponential as a special case.  
+The one case where the two families coincide is the <i>Weibull</i>
+distribution, which has survival function</p>
+
+\[ S(t) = \exp \{ - (\lambda t)^p \} \]
+<p>and hazard function</p>
+
+\[ \lambda(t) = p \lambda (\lambda t)^{p-1}, \]
+<p>for parameters \( \lambda>0 \) and \( p>0 \). If \( p=1 \), this
+model reduces to the exponential and has constant risk
+over time. If \( p>1 \), then the risk increases over time.
+If \( p<1 \), then the risk decreases over time. In fact,
+taking logs in the expression for the hazard function, we
+see that the log of the Weibull risk is a linear function
+of log time with slope \( p-1 \).</p>
+
+<p>If we pick the Weibull as a baseline risk and then
+multiply the hazard by a constant \( \gamma \) in a
+proportional hazards framework, the resulting distribution
+turns out to be still a Weibull, so the family is closed
+under proportionality of hazards.
+If we pick the Weibull as a baseline survival and then
+speed up the passage of time in an accelerated life
+framework, dividing time by a constant \( \gamma \),
+the resulting distribution is still a Weibull, so the
+family is closed under acceleration of time.</p>
+
+<p>For further details on this distribution see Cox and
+Oakes&nbsp;(1984) or Kalbfleish and Prentice&nbsp;(1980), who
+prove the equivalence of the two Weibull models.</p>
+
+<h4>7.3.4 Time-varying Covariates</h4>
+<p>So far we have considered explicitly only covariates that are
+fixed over time.  The local nature of the proportional hazards
+model, however, lends itself easily to extensions that
+allows for covariates that change over time. Let us consider
+a few examples.</p>
+
+<p>Suppose we are interested in the analysis of birth spacing,
+and study the interval from the birth of one child to the
+birth of the next. One of the possible predictors of interest
+is the mother&rsquo;s education, which in most cases can be taken
+to be fixed over time.</p>
+
+<p>Suppose, however, that we want to introduce breastfeeding status
+of the child that begins the interval. Assuming the child
+is breastfed, this variable would take the value one (&lsquo;yes&rsquo;)
+from birth until the child is weaned, at which time it
+would take the value zero (&lsquo;no&rsquo;). This is a simple example
+of a predictor that can change value only once.</p>
+
+<p>A more elaborate analysis could rely on frequency of 
+breastfeeding in a 24-hour period.  This variable could
+change values from day to day.  For example a sequence of
+values for one woman could be 4,6,5,6,5,4,\( \ldots \)</p>
+
+<p>Let \( \boldsymbol{x}_i(t) \) denote the value of a vector of covariates
+for individual \( i \) at time or duration \( t \). Then the
+proportional hazards model may be generalized to</p>
+
+\[\tag{7.12}\lambda_i(t, \boldsymbol{x}_i(t)) = \lambda_0(t) \exp\{\boldsymbol{x}_i(t)'\boldsymbol{\beta}\}.\]
+<p>The separation of duration and covariate effects is not so
+clear now, and on occasion it may be difficult to identify
+effects that are highly collinear with time. If all children
+were weaned when they are around six months old, for example, 
+it would be difficult to identify effects of breastfeeding from
+general duration effects without additional information.
+In such cases one might still prefer a time-varying covariate,
+however, as a more meaningful predictor of risk than the
+mere passage of time.</p>
+
+<p>Calculation of survival functions when we have time-varying
+covariates is a little bit more complicated, because we
+need to specify a path or trajectory for each variable.
+In the birth intervals example one could calculate a
+survival function for women who breastfeed for six months
+and then wean. This would be done by using the hazard
+corresponding to \( x(t)=0 \) for months 0 to 6 and then the
+hazard corresponding to \( x(t)=1 \) for months 6 onwards.
+Unfortunately, the simplicity of Equation <a href='#e_7_11'>7.11</a>
+is lost; we can no longer simply raise the baseline
+survival function to a power.</p>
+
+<p>Time-varying covariates can be introduced in the context
+of accelerated life models, but this is not so simple and 
+has rarely been done in applications. See Cox and 
+Oakes&nbsp;(1984, p.66) for more information.</p>
+
+<h4>7.3.5 Time-dependent Effects</h4>
+<p>The model may also be generalized to allow for <i>effects</i>
+that vary over time, and therefore are no longer proportional.  
+It is quite possible, for example,
+that certain social characteristics might have a large
+impact on the hazard for children shortly after birth, but 
+may have a relatively small impact later in life.
+To accommodate such models we may write</p>
+
+\[ \lambda_i(t,\boldsymbol{x}_i) = \lambda_0(t) \exp \{ \boldsymbol{x}_i'\boldsymbol{\beta}(t)\}, \]
+<p>where the parameter \( \boldsymbol{\beta}(t) \) is now a function of time.</p>
+
+<p>This model allows for great generality. In the two-sample
+case, for example, the model may be written as</p>
+
+\[ \lambda_i(t|x) = \left\{ \begin{array}{ll}
+\lambda_0(t)& \mbox{if $x=0$} \cr
+\lambda_0(t) e^\beta(t)& \mbox{if $x=1$}\end{array} \right., \]
+<p>which basically allows for two arbitrary hazard functions, one
+for each group. Thus, this is a form of saturated model.</p>
+
+<p>Usually the form of time dependence of the effects must be
+specified parametrically in order to be able to identify the
+model and estimate the parameters.  Obvious candidates are
+polynomials on duration, where \( \beta(t) \) is a linear or
+quadratic function of time.  Cox and Oakes&nbsp;(1984, p.&nbsp;76)
+show how one can use quick-dampening exponentials to model
+transient effects.</p>
+
+<p>Note that we have lost again the simple separation of time
+and covariate effects. Calculation of the survival function
+in this model is again somewhat complicated by the fact that
+the coefficients are now functions of time, so they don&rsquo;t fall
+out of the integral. The simple Equation <a href='#e_7_11'>7.11</a> does
+not apply.</p>
+
+<h4>7.3.6 The General Hazard Rate Model</h4>
+<p>The foregoing extensions to time-varying covariates and
+time-dependent effects may be combined to give the most
+general version of the hazard rate model, as</p>
+
+\[ \lambda_i(t,\boldsymbol{x}_i(t)) = \lambda_0(t) \exp\{ \boldsymbol{x}_i(t)'\boldsymbol{\beta}(t) \}, \]
+<p>where \( \boldsymbol{x}_i(t) \) is a vector of time-varying covariates 
+representing the characteristics of individual \( i \) at time \( t \),
+and \( \boldsymbol{\beta}(t) \) is a vector of time-dependent coefficients,
+representing the effect that those characteristics have 
+at time or duration \( t \).</p>
+
+<p>The case of breastfeeding status and its effect on the length
+of birth intervals is a good example that combines the two
+effects. Breastfeeding status is itself a time-varying
+covariate \( x(t) \), which takes the value one if the woman is 
+breastfeeding her child \( t \) months after birth.
+The effect that breastfeeding may have in inhibiting
+ovulation and therefore reducing the risk of pregnancy is
+known to decline rapidly over time,
+so it should probably be modeled as a time dependent effect
+\( \beta(t) \). Again, further progress would require specifying
+the form of this function of time.</p>
+
+<h4>7.3.7 Model Fitting</h4>
+<p>There are essentially three approaches to fitting survival
+models:</p>
+
+<ul><li><p>
+The first and perhaps most straightforward is
+the <i> parametric</i> approach, where we assume a specific
+functional form for the baseline hazard \(\lambda_0(t)\).
+Examples are models based on the exponential, Weibull, gamma
+and generalized F distributions.
+</p></li><li><p>
+A second approach is what might be called a flexible
+or <i> semi-parametric</i> strategy, where we make mild
+assumptions about the baseline hazard \(\lambda_0(t)\).
+Specifically, we may subdivide time into reasonably small
+intervals and assume that the baseline hazard is constant
+in each interval, leading to a piece-wise exponential model.
+</p></li><li><p>
+The third approach is a <i> non-parametric</i> strategy
+that focuses on estimation of the regression coefficients
+\(\boldsymbol{\beta}\) leaving the baseline hazard \(\lambda_0(t)\)
+completely unspecified. This approach relies on a partial 
+likelihood function proposed by Cox&nbsp;(1972) in his original paper.
+</p></li></ul>
+<p>A complete discussion of these approaches in well beyond
+the scope of these notes. We will focus on the intermediate
+or semi-parametric approach because (1) it is sufficiently
+flexible to provide a useful tool with wide applicability,
+and (2) it is closely related to Poisson regression analysis.</p>
+

@@ -1,0 +1,153 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h2>B. Generalized Linear Model Theory</h2>
+<p>We describe the generalized linear model as formulated by
+Nelder and Wedderburn&nbsp;(1972), and discuss estimation of
+the parameters and tests of hypotheses.</p>
+
+<h3>B.1 The Model</h3>
+<p>Let \( y_1, \ldots, y_n \) denote \( n \) independent observations
+on a response.
+We treat \( y_i \) as a realization of a random variable
+\( Y_i \). In the general linear model we assume that \( Y_i \)
+has a normal distribution with mean \( \mu_i \) and variance
+\( \sigma^2 \)</p>
+
+\[ Y_i \sim \mbox{N}(\mu_i, \sigma^2), \]
+and we further assume that the expected value \( \mu_i \) is
+a linear function of \( p \) predictors that take values
+\( \boldsymbol{x}_i' = (x_{i1}, \ldots, x_{ip}) \) for the \( i \)-th case, so that
+\[ \mu_i = \boldsymbol{x}_i' \boldsymbol{\beta}, \]
+<p>where \( \boldsymbol{\beta} \) is a vector of unknown parameters.</p>
+
+<p>We will generalize this in two steps, dealing with
+the stochastic and systematic components of the model.</p>
+
+<h4>B.1.1 The Exponential Family</h4>
+<p>We will assume that the observations come from a distribution
+in the exponential family with probability density function</p>
+
+\[\tag{B.1}f(y_i) = \exp\{\frac{y_i \theta_i - b(\theta_i)}{a_i(\phi)} +
+c(y_i, \phi) \}.\]
+<p>Here \( \theta_i \) and \( \phi \) are parameters and
+\( a_i(\phi) \), \( b(\theta_i) \) and \( c(y_i, \phi) \) are known
+functions.
+In all models considered in these notes the function
+\( a_i(\phi) \) has the form</p>
+
+\[ a_i(\phi) = \phi/p_i, \]
+<p>where \( p_i \) is a known <i>prior weight</i>, usually 1.</p>
+
+<p>The parameters \( \theta_i \) and \( \phi \) are essentially
+location and scale parameters. It can be shown that if
+\( Y_i \) has a distribution in the exponential family then it
+has mean and variance</p>
+
+\[\tag{B.2}\begin{eqnarray}\mbox{E}(Y_i)& =& \mu_i = b'(\theta_i)\\mbox{var}(Y_i)& =& \sigma^2_i = b''(\theta_i) a_i(\phi),\end{eqnarray}\]
+<p>where \( b'(\theta_i) \) and \( b''(\theta_i) \) are the first and
+second derivatives of \( b(\theta_i) \).
+When \( a_i(\phi)=\phi/p_i \) the variance has the simpler form</p>
+
+\[ \mbox{var}(Y_i) = \sigma^2_i = \phi b''(\theta_i)/p_i. \]
+<p>The exponential family just defined includes as special
+cases the normal, binomial, Poisson, exponential, gamma
+and inverse Gaussian distributions.</p>
+
+<i>Example:</i> The normal distribution has density
+\[ f(y_i) = \frac{1}{\sqrt{2\pi\sigma^2}}
+\exp\{-\frac{1}{2}\frac{(y_i-\mu_i)^2}{\sigma^2}\}. \]
+<p>Expanding the square in the exponent we get
+\( (y_i-\mu_i)^2 =
+y_i^2 + \mu_i^2 - 2 y_i \mu_i \),
+so the coefficient of
+\( y_i \) is \( \mu_i/\sigma^2 \).
+This result identifies \( \theta_i \)
+as \( \mu_i \) and \( \phi \) as \( \sigma^2 \), with \( a_i(\phi)=\phi \).
+Now write</p>
+
+\[ f(y_i) = \exp\{ \frac{y_i \mu_i-\frac{1}{2}\mu_i^2}{\sigma^2}
+- \frac{y_i^2}{2\sigma^2} - \frac{1}{2}\log(2\pi\sigma^2)\}. \]
+<p>This shows that \( b(\theta_i)=\frac{1}{2}\theta_i^2 \) (recall that
+\( \theta_i=\mu_i \)). Let us check the mean and variance:</p>
+
+\[\tag{B.3}\begin{eqnarray*}E(Y_i) = b'(\theta_i) = \theta_i = \mu_i,\\mbox{var}(Y_i) = b''(\theta_i)a_i(\phi) = \sigma^2.\end{eqnarray*}\]
+<p>Try to generalize this result to the case where \( Y_i \) has
+a normal distribution with mean \( \mu_i \) and variance \( \sigma^2/n_i \)
+for known constants \( n_i \), as would be the case if the \( Y_i \)
+represented sample means.\( \Box \)</p>
+
+<i>Example:</i> In Problem Set 1 you will show that the
+exponential distribution with density
+\[ f(y_i)= \lambda_i \exp\{ -\lambda_i y_i\} \]
+<p>belongs to the exponential family.\( \Box \)</p>
+
+<p>In Sections <a href='#s_B_4'>B.4</a> and <a href='#s_B_5'>B.5</a> we verify that
+the binomial and Poisson distributions
+also belong to this family.</p>
+
+<h4>B.1.2 The Link Function</h4>
+<p>The second element of the generalization is that
+instead of modeling the mean, as before, we will introduce a
+one-to-one continuous differentiable transformation
+\( g(\mu_i) \) and focus on</p>
+
+\[\tag{B.4}\eta_i = g(\mu_i).\]
+<p>The function \( g(\mu_i) \) will be called the <i>link\/</i>
+function. Examples of link functions include the
+identity, log, reciprocal, logit and probit.</p>
+
+<p>We further assume that the transformed mean follows a linear
+model, so that</p>
+
+\[\tag{B.5}\eta_i = \boldsymbol{x}_i' \boldsymbol{\beta}.\]
+<p>The quantity \( \eta_i \) is called the <i>linear predictor</i>.
+Note that the model for \( \eta_i \) is pleasantly simple.
+Since the link function is one-to-one we can invert it to
+obtain</p>
+
+\[ \mu_i = g^{-1}(\boldsymbol{x}_i' \boldsymbol{\beta}). \]
+<p>The model for \( \mu_i \) is usually more complicated than the
+model for \( \eta_i \).</p>
+
+<p>Note that we do not transform the response \( y_i \), but rather its
+expected value \( \mu_i \). A model where \( \log y_i \) is linear on
+\( x_i \), for example, is not the same as a generalized linear
+model where \( \log \mu_i \) is linear on \( x_i \).</p>
+
+<i>Example:</i>
+The standard linear model we have studied
+so far can be described as a generalized linear model with
+normal errors and identity link, so that
+\[ \eta_i = \mu_i. \]
+<p>It also happens that \( \mu_i \), and therefore \( \eta_i \), is the
+same as \( \theta_i \), the parameter in the exponential family
+density.\( \Box \)</p>
+
+<p>When the link function makes the linear predictor \( \eta_i \)
+the same as the canonical parameter \( \theta_i \), we say that we have
+a <i>canonical link\/</i>.  The identity is the canonical link
+for the normal distribution. In later sections we will see
+that the logit is the canonical link for the binomial
+distribution and the log is the canonical link for the
+Poisson distribution. This leads to some natural pairings:</p>
+
+<table class='tex-table'>
+<tr class='bt bb'><td class='al'>Error</td><td class='al'>Link</td></tr>
+<tr class='bt'><td class='al'>Normal</td><td class='al'>Identity</td></tr>
+<tr><td class='al'>Binomial</td><td class='al'>Logit</td></tr>
+<tr class='bb'><td class='al'>Poisson</td><td class='al'>Log</td></tr>
+</table>
+
+<p>However, other combinations are also possible.
+An advantage of canonical links is that a minimal sufficient
+statistic for \( \boldsymbol{\beta} \) exists, i.e. all the information about
+\( \boldsymbol{\beta} \) is contained in a function of the data of the
+same dimensionality as \( \boldsymbol{\beta} \).</p>
+

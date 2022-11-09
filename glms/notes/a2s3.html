@@ -1,0 +1,126 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<a name='s_B_3'></a><h3>B.3 Tests of Hypotheses</h3>
+<p>We consider Wald tests and likelihood ratio tests, introducing
+the <i>deviance</i> statistic.</p>
+
+<h4>B.3.1 Wald Tests</h4>
+<p>The Wald test follows immediately from the fact that
+the information matrix for generalized linear models is
+given by</p>
+
+\[\tag{B.9}\boldsymbol{I}(\boldsymbol{\beta}) = \boldsymbol{X}'\boldsymbol{W}\boldsymbol{X}/\phi,\]
+<p>so the large sample
+distribution of the maximum likelihood estimator \( \hat{\boldsymbol{\beta}} \)
+is multivariate normal</p>
+
+\[\tag{B.10}\hat{\boldsymbol{\beta}} \sim N_p( \boldsymbol{\beta}, (\boldsymbol{X}'\boldsymbol{W}\boldsymbol{X})^{-1}\phi ).\]
+<p>with mean \( \boldsymbol{\beta} \) and variance-covariance
+matrix \( (\boldsymbol{X}'\boldsymbol{W}\boldsymbol{X})^{-1}\phi \).</p>
+
+<p>Tests for subsets of \( \boldsymbol{\beta} \) are based on the corresponding
+marginal normal distributions.</p>
+
+<i>Example:</i>
+In the case of normal errors with identity link we have
+\( \boldsymbol{W}=\boldsymbol{I} \) (where \( \boldsymbol{I} \) denotes the identity matrix),
+\( \phi=\sigma^2 \), and the <i>exact</i> distribution of
+\( \hat{\boldsymbol{\beta}} \) is multivariate normal with mean \( \boldsymbol{\beta} \)
+and variance-covariance matrix \( (\boldsymbol{X}'\boldsymbol{X})^{-1}\sigma^2 \).
+<h4>B.3.2 Likelihood Ratio Tests and The Deviance</h4>
+<p>We will show how the likelihood ratio criterion for comparing any
+two nested models, say \( \omega_1 \subset \omega_2 \), can
+be constructed in terms of a statistic called the <i>deviance</i>
+and an unknown scale parameter \( \phi \).</p>
+
+<p>Consider first comparing a model of interest \( \omega \) with
+a <i>saturated</i> model \( \Omega \) that provides a
+separate parameter for each observation.</p>
+
+<p>Let \( \hat{\mu}_i \) denote the fitted values under \( \omega \)
+and let \( \hat{\theta}_i \) denote the corresponding estimates
+of the canonical parameters.
+Similarly, let \( \tilde{\mu}_O=y_i \) and \( \tilde{\theta}_i \)
+denote the corresponding estimates under \( \Omega \).</p>
+
+<p>The likelihood ratio criterion to compare these two models in
+the exponential family has the form</p>
+
+\[ -2\log\lambda = 2 \sum_{i=1}^n
+\frac { y_i(\tilde{\theta_i}-\hat{\theta_i})-
+    b(\tilde{\theta_i}) + b(\hat{\theta_i}) }
+ {a_i(\phi)}. \]
+<p>Assume as usual that \( a_i(\phi)=\phi/p_i \) for known prior weights
+\( p_i \). Then we can write the likelihood-ratio criterion as follows:</p>
+
+\[\tag{B.11}-2\log\lambda = \frac{D(\boldsymbol{y},\hat{\boldsymbol{\mu}})}{\phi}.\]
+<p>The numerator of this expression does not depend on
+unknown parameters and is called the <i>deviance</i>:</p>
+
+\[\tag{B.12}D(\boldsymbol{y},\hat{\boldsymbol{\mu}}) = 2 \sum_{i=1}^n
+ p_i [ y_i(\tilde{\theta_i}-\hat{\theta_i})-
+ b(\tilde{\theta_i}) + b(\hat{\theta_i}) ].\]
+<p>The likelihood ratio criterion \( -2\log L \)
+is the deviance divided by the scale parameter \( \phi \), and
+is called the <i>scaled deviance</i>.</p>
+
+<i>Example:</i>
+Recall that for the normal distribution we had
+\( \theta_i=\mu_i \),
+\( b(\theta_i) = \frac{1}{2}\theta_i^2 \), and
+\( a_i(\phi)=\sigma^2 \), so the prior weights are \( p_i=1 \).
+Thus, the deviance is
+\[\tag{B.13}\begin{eqnarray*}D(\boldsymbol{y},\hat{\boldsymbol{\mu}})& =& 2 \sum\{ y_i(y_i-\hat{\mu_i})-
+\frac{1}{2} y_i^2 +\frac{1}{2}\hat{\mu_i}^2\}\& =& 2\sum\{ \frac{1}{2} y_i^2 - y_i\hat{\mu_i}^2+\frac{1}{2}\hat{\mu_i}^2\}\& =& \sum(y_i - \hat{\mu_i})^2\end{eqnarray*}\]
+<p>our good old friend, the residual sum of squares.\( \Box \)</p>
+
+<p>Let us now return to the comparison of two nested models
+\( \omega_1 \), with \( p_1 \) parameters, and
+\( \omega_2 \), with \( p_2 \) parameters,
+such that \( \omega_1 \in \omega_2 \) and \( p_2 > p1 \).</p>
+
+<p>The log of the ratio of maximized likelihoods under the
+two models can be written as a difference of deviances,
+since the maximized log-likelihood under the saturated model
+cancels out. Thus, we have</p>
+
+\[\tag{B.14}-2\log\lambda = \frac{D(\omega_1)-D(\omega_2)}{\phi}\]
+<p>The scale parameter \( \phi \) is either known or
+estimated using the larger model \( \omega_2 \).</p>
+
+<p>Large sample theory tells us that the asymptotic distribution
+of this criterion under the usual regularity conditions is
+\( \chi^2_\nu \) with \( \nu=p_2-p_1 \) degrees of freedom.</p>
+
+<i>Example:</i>
+In the linear model with normal errors we estimate
+the unknown scale parameter \( \phi \) using
+the residual sum of squares of the larger model,
+so the criterion becomes
+\[ -2\log\lambda= \frac{\mbox{RSS}(\omega_1)-\mbox{RSS}(\omega_2)}
+ {\mbox{RSS}(\omega_2)/(n-p_2)}. \]
+<p>In large samples the approximate distribution of this criterion is
+\( \chi^2_\nu \) with \( \nu=p_2-p_1 \) degrees of freedom.
+Under normality, however, we have an exact result: dividing
+the criterion by \( p_2-p_1 \) we obtain an \( F \) with
+\( p_2-p_1 \) and \( n-p_2 \) degrees of freedom.
+Note that as \( n \rightarrow \infty \)
+the degrees of freedom in the denominator approach \( \infty \) and
+the \( F \) converges to \( (p_2-p_1)\chi^2 \), so the asymptotic and
+exact criteria become equivalent.\( \Box \)</p>
+
+<p>In Sections <a href='#s_B_4'>B.4</a> and <a href='#s_B_5'>B.5</a>
+we will construct likelihood ratio
+tests for binomial and Poisson data.  In those cases \( \phi=1 \)
+(unless one allows over-dispersion and estimates \( \phi \), but
+that&rsquo;s another story)
+and the deviance is the same as the scaled deviance. All
+our tests will be based on asymptotic \( \chi^2 \) statistics.</p>
+

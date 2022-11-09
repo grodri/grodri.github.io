@@ -1,0 +1,32 @@
+---
+layout: default
+section: glms
+tabs: "Problem Sets"
+---
+
+<h2 class="first">Problem Set 3: Medicare and Supplemental Insurance<br/>
+<small>Due Monday, October 24, 2016</small> </h2> 
+
+<p>Cameron and Trivedi (2010) have an interesting dataset based on wave 5 of the Health and Retirement Study (HRS), a survey conducted in 2002 as part of a panel sponsored by NIH. The sample consists of Medicare beneficiaries and the question of interest is whether or not they purchase supplemental insurance (<code>ins</code>). The explanatory variables include socio-economic and demographic factors and an indicator of health status. The data are available from the Stata website, but for your convenience you will find <code>mus14data.dta</code> in the datasets section.</p>
+<h3 id="probabilities-odds-and-logits">[1] Probabilities, Odds and Logits</h3>
+<p>(a) What's the proportion of respondents who have supplemental insurance? What are the odds of having insurance? What's the logit? Construct a 95% confidence interval for the logit and translate it back into corresponding intervals for the odds and probability.</p>
+<p>(b) Hispanics are less likely to have supplemental insurance than others. Estimate the proportions with insurance among hispanics and others and calculate the difference. Estimate and interpret the odds ratio, and test its significance using a Wald test and a likelihood ratio test.</p>
+<p>(c) Let us jump directly to the model used by Cameron and Trivedi. Fit a logit model using retirement status (<code>retire</code>), <code>age</code>, health status (<code>hstatusg</code>, coded 1 for good, very good or excellent and 0 otherwise), household income (<code>hhincome</code>), education in years (<code>eduyears</code>), the indicator for <code>married</code>, and the indicator of hispanic ethnicity (<code>hisp</code>). You should find that all but age have significant effects at the five percent level.</p>
+<p>(d) Interpret carefully the odds ratio for hispanics, comparing it with the result of part (b). Test the significance of the ethnicity effect using a Wald test and a likelihood ratio test.</p>
+<p>(e) Turns out these estimates are sensitive to the specification of household income. An obvious alternative is log-income, but some households have no income. Instead we will group this variable into quartiles, which has been done in <code>qhhinc</code>. Refit the model using this alternative specification and comment on the odds ratio for hispanics. Use this alternative specification in what follows.</p>
+<h3 id="marginal-and-adjusted-effects">[2] Marginal and Adjusted Effects</h3>
+<p>We will estimate several types of marginal effects. I will refer to the calculation based on the derivative as &quot;continuous&quot; and to the unit change as &quot;discrete&quot;.</p>
+<p>(a) Estimate the marginal effect of hispanic using the continuous formula at the mean of all covariates. Try a quick approximation using the formula evaluated at the overall probability. This is known as the marginal effect at the mean.</p>
+<p>(b) Predict insurance for hispanics and others with the other covariates set to their means, and calculate the difference. This is the unit change version of the marginal effect at the mean.</p>
+<p>(c) Predict insurance for everyone with all variables as they are, and compute the marginal effect of hispanic for each respondent using the continuous approximation. This is known as the average marginal effect.</p>
+<p>(d) Make a copy of <code>hisp</code> for safekeeping. Now set <code>hisp</code> to 1 for everyone, predict the probability of having insurance and average. Next set <code>hisp</code> to 0 for everyone, predict again and average. The difference between these two means is the discrete version of the average marginal effect. Don't forget to set <code>hisp</code> back to its true value.</p>
+<p>(e) The last two approaches avoid setting variables such as <code>married</code> to its mean of 0.773, which is not meaningful. Another approach is to select a combination of predictors of interest and predict for that case. Cameron and Trivedi use a 75-year old married person with good health status, 12 years of education and an income in the third quartile. Calculate the predicted probabilities if the person is hispanic and if not, and compute the difference.</p>
+<p>Note: Stata's powerful <code>margins</code> command can do these calculations, but you should do them &quot;by hand&quot;, so you know exactly what's being done.</p>
+<h3 id="goodness-of-fit">[3] Goodness of Fit</h3>
+<p>(a) With individual data the deviance does not have a <span class="math"><em>c</em><em>h</em><em>i</em><sup>2</sup></span> distribution, and even with household income grouped into categories there are too many covariate patterns to trust the asymptotics. Calculate the Hosmer-Lemeshor goodness of fit test using ten groups of approximately equal size based on predicted probabilities.</p>
+<p>(b) Compute predicted probabilities of having insurance and predict that a respondent will have insurance if the predicted probablity is 0.5 or more. Tabulate predicted versus actual outcomes. What's the overall error rate? Comment on the numbers of false positives and false negatives. How well would be do if we just predicted that nobody would buy supplemental insurance? How much reduction in error did the model achieve? (Stata's <code>estat classification</code> will report more details, but you must also do this part &quot;by hand&quot;.)</p>
+<h3 id="probits-and-ols.">[4] Probits and OLS.</h3>
+<p>(a) Fit the model using a probit specification, compute the continous marginal effect using the overall probability of having insurance, and compare with the results of part 2 (a).</p>
+<p>(b) Fit the same model using OLS. The coefficient of <code>hisp</code> is often justified as a quick estimate of the average marginal effect of ethnicity adjusted for the other variables. How does it compare with the logit and probit estimates?</p>
+
+<p class="small">Posted October 14, 2016</p>

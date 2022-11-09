@@ -1,0 +1,153 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h3>4.2 Estimation and Testing</h3>
+<p>The log-linear Poisson model described in the previous section
+is a generalized linear model with Poisson error and link log.
+Maximum likelihood estimation and testing follows immediately
+from the general results in Appendix B. In this section we
+review a few key results.</p>
+
+<h4>4.2.1 Maximum Likelihood Estimation</h4>
+<p>The likelihood function for \( n \) independent Poisson observations
+is a product of probabilities given by Equation <a href='#e_4_1'>4.1</a>.
+Taking logs and ignoring a constant involving  \( \log(y_i!) \),
+we find that the log-likelihood function is</p>
+
+\[ \log L(\boldsymbol{\beta}) = \sum \{  y_i \log(\mu_i) - \mu_i \}, \]
+<p>where \( \mu_i \) depends on the covariates \( \boldsymbol{x}_i \) and a vector of
+\( p \) parameters \( \boldsymbol{\beta} \) through the log link of Equation <a href='#e_4_2'>4.2</a>.</p>
+
+<p>It is interesting to note that the log is the canonical link
+for the Poisson distribution. Taking derivatives of the log-likelihood
+function with respect to the elements of \( \boldsymbol{\beta} \), and setting the
+derivatives to zero, it can be shown that the maximum likelihood
+estimates in log-linear Poisson models satisfy the 
+estimating equations</p>
+
+<a name='e_4_3'></a>\[\tag{4.3}\boldsymbol{X}'\boldsymbol{y} = \boldsymbol{X}'\hat{\boldsymbol{\mu}},\]
+<p>where \( \boldsymbol{X} \) is the model matrix, with one row for each observation and
+one column for each predictor, including the constant (if any),
+\( \boldsymbol{y} \) is the response vector, and \( \hat{\boldsymbol{\mu}} \) is a vector of
+fitted values, calculated from the m.l.e.&rsquo;s \( \hat{\boldsymbol{\beta}} \) by
+exponentiating the linear predictor \( \boldsymbol{\eta} = \boldsymbol{X}'\hat{\boldsymbol{\beta}} \).
+This estimating equation arises not only in Poisson log-linear models,
+but more generally in any generalized linear model with canonical
+link, including linear models for normal data and logistic
+regression models for binomial counts. It is not satisfied,
+however, by estimates in probit models for binary data.</p>
+
+<p>To understand equation <a href='#e_4_3'>4.3</a> it helps to consider a couple of
+special cases.  If the model includes a constant, then one of
+the columns of the model matrix \( \boldsymbol{X} \) is a column of ones. Multiplying
+this column by the response vector \( \boldsymbol{y} \) produces the sum of the 
+observations.
+Similarly, multiplying this column by the fitted values \( \hat{\boldsymbol{\mu}} \)
+produces the sum of the fitted values. 
+Thus, in models with a constant one of the estimating equations
+matches the sum of observed and fitted values. In terms of the
+example introduced at the beginning of this chapter,
+fitting a model with a constant would 
+match the total number of children ever born to all women.</p>
+
+<p>As a second example suppose the model includes a discrete factor
+represented by a series of dummy variables taking the value one
+for observations at a given level of the factor and zero otherwise.
+Multiplying this dummy variable by the response vector \( \boldsymbol{y} \)
+produces the sum of observations at that level of the factor.
+When this is done for all levels we obtain the so-called
+<i>marginal</i> total.
+Similarly, multiplying the dummy variable by the fitted values \( \hat{\boldsymbol{\mu}} \)
+produces the sum of the expected or fitted counts at that level.
+Thus, in models with a discrete factor the estimating equations
+match the observed and fitted marginals for the factor.
+In terms of the example introduced at the outset, if we fit a
+model that treats marital duration as a discrete factor we
+would match the observed and fitted total number of children ever
+born in each category of duration since first marriage.</p>
+
+<p>This result generalizes to higher order terms. Suppose we
+entertain models with two discrete factors, say \( A \) and \( B \).
+The additive model \( A+B \) would reproduce exactly the marginal
+totals by \( A \) or by \( B \).  The model with an interaction effect
+\( AB \) would, in addition, match the totals in each combination
+of categories of \( A \) and \( B \), or the \( AB \) margin. This result,
+which will be important in the sequel, is the basis of an
+estimation algorithm known as <i>iterative proportional fitting</i>.</p>
+
+<p>In general, however, we will use the iteratively-reweighted
+least squares (IRLS) algorithm discussed in Appendix B.
+For Poisson data with link log, the working dependent variable
+\( \boldsymbol{z} \) has elements</p>
+
+\[ z_i = \hat{\eta}_i + \frac{ y_i - \hat{\mu}_i} { \hat{\mu}_i }, \]
+<p>and the diagonal matrix \( \boldsymbol{W} \) of iterative weights has elements</p>
+
+\[ w_{ii} = \hat{\mu}_i, \]
+<p>where \( \hat{\mu}_i \) denotes the fitted values based on the current
+parameter estimates.</p>
+
+<p>Initial values can be obtained by applying the link to the data,
+that is taking the log of the response, and regressing it on the
+predictors using OLS. To avoid problems with counts of 0, one
+can add a small constant to all responses. The procedure
+usually converges in a few iterations.</p>
+
+<h4>4.2.2 Goodness of Fit</h4>
+<p>A measure of discrepancy between observed and fitted values is
+the deviance. In Appendix B we show that for Poisson responses
+the deviance takes the form</p>
+
+\[ D = 2 \sum \{ y_i \log(\frac{y_i}{\hat{\mu}_i}) - (y_i-\hat{\mu}_i)\}. \]
+<p>The first term is identical to the binomial deviance, representing
+&lsquo;twice a sum of observed times log of observed over fitted&rsquo;.
+The second term, a sum of differences between observed and
+fitted values, is usually zero, because m.l.e.&rsquo;s in Poisson
+models have the property of reproducing marginal totals, as
+noted above.</p>
+
+<p>For large samples the distribution of the deviance is approximately
+a chi-squared with \( n-p \) degrees of freedom, where \( n \) is the
+number of observations and \( p \) the number of parameters.
+Thus, the deviance can be used directly to test the goodness of fit
+of the model.</p>
+
+<p>An alternative measure of goodness of fit is Pearson&rsquo;s
+chi-squared statistic, which is defined as</p>
+
+\[ \chi^2_p = \sum \frac{( y_i - \hat{\mu}_i)^2 } { \hat{\mu}_i}. \]
+<p>The numerator is the squared difference between observed and fitted 
+values,
+and the denominator is the variance of the observed value.
+The Pearson statistic has the same form for Poisson and binomial
+data, namely a &lsquo;sum of squared observed minus expected over expected&rsquo;.</p>
+
+<p>In large samples the distribution of Pearson&rsquo;s statistic is
+also approximately chi-squared with \( n-p \) d.f.  One advantage
+of the deviance over Pearson&rsquo;s chi-squared is that it
+can be used to compare nested models, as noted below.</p>
+
+<h4>4.2.3 Tests of Hypotheses</h4>
+<p>Likelihood ratio tests for log-linear models can easily be
+constructed in terms of deviances, just as we did in logistic
+regression models.  In general, the difference in deviances
+between two nested models has approximately in large samples
+a chi-squared distribution with degrees of freedom equal to
+the difference in the number of parameters between the models,
+under the assumption that the smaller model is correct.</p>
+
+<p>One can also construct Wald tests as we have done before, 
+based on the fact that the maximum likelihood estimator
+\( \hat{\boldsymbol{\beta}} \) has approximately in large samples a
+multivariate normal distribution with mean equal to the
+true parameter value \( \boldsymbol{\beta} \) and variance-covariance
+matrix \( \mbox{var}(\hat{\boldsymbol{\beta}})= \boldsymbol{X'WX} \), where \( \boldsymbol{X} \) is the
+model matrix and \( \boldsymbol{W} \) is the diagonal matrix of estimation
+weights described earlier.</p>
+

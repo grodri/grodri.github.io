@@ -1,0 +1,64 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+---
+
+<button type="button" class="btn btn-default pull-right" data-toggle="collapse" 
+data-target="#toc" style="margin-top:1ex">Table of Contents</button>
+
+<h2>Lectures</h2>
+<p> 
+The lecture notes are offered in two formats: HTML and PDF. 
+I expect most of you will want to <i>print</i> the notes, in which case you can use the links
+below to access the PDF file for each chapter.  If you are <i>browsing</i> use the table of contents
+to jump directly to each chapter and section in HTML format. For more details on these formats
+please see the discussion below.</p>
+
+<div style="display:table;margin:auto">
+<div class="list-group">
+<a href='#' class="list-group-item"><span class="toc">
+<img src="/images/pdficon_small.png" class="icon"/> &nbsp; Chapters in PDF Format</span></a>
+<a  href='c2.pdf' class="list-group-item">2. Linear Models for Continuous Data</a>
+<a href='c3.pdf' class="list-group-item">3. Logit Models for Binary Data</a>
+<a href='c4.pdf' class="list-group-item">4. Poisson Models for Count Data</a>
+<a href='c4a.pdf' class="list-group-item">4a*. Addendum on Overdispersed Count Data</a>
+<a href='c5.pdf' class="list-group-item">5. Log-Linear Models for Contingency Tables</a>
+<a href='c6.pdf' class="list-group-item">6. Multinomial Response Models</a>
+<a href='c7.pdf' class="list-group-item">7. Survival Models</a>
+<a href='fixedRandom.pdf' class="list-group-item">8*. Panel and Clustered Data</a>
+<a href='a1.pdf' class="list-group-item">A. Review of Likelihood Theory</a>
+<a href='a2.pdf' class="list-group-item">B. Generalized Linear Model Theory</a>
+</div></div>
+<p></p>
+
+<p> The list above has two extensions to the original notes:
+an <a href='c4addendum.pdf'>addendum</a> on  Over-Dispersed Count Data, 
+which describes models with extra-Poisson variation and negative binomial regression,
+and a <a href='fixedRandom.pdf'>brief discussion</a> of models for longitudinal and clustered data.
+Because of these additions we now skip Chapter 5.</p>
+</p><p>
+No, there is no Chapter 1 ... yet. One day I will write an introduction to the course and that will be Chapter 1.</p>
+</p><p>
+<h3>The Choice of Formats</h3>
+<p>
+It turns out that making the lecture notes available on the web was a bit of a challenge because web browsers were designed to render text and graphs but not equations, which are often shown using bulky graphs or translated into text with less than ideal results.
+</p><p>
+<img class="icon" alt="PDF" style="padding-right:10px;float:left" src="http://www.adobe.com/images/shared/product_mnemonics/50x50/acrobat_reader_50x50.gif"/>
+
+The notes were written using LaTeX, which produces postscript or PDF, so the simplest solution was to post the generated PDF files, one per chapter. This format is best for printing the notes. Our PDF files are now smaller and look better on the screen that before. To view the files you will need Adobe Reader, unless you use a browser like Chrome that can render PDF natively.
+</p><p>
+<a href="http://www.mathjax.org" style='float:left'>
+    <img title="Powered by MathJax" "class="icon"
+    src="http://www.mathjax.org/badge/badge-square-3.png"
+    border="0" alt="Powered by MathJax" style="width:50px;padding-right:10px;"/></a>
+
+ I also wanted to offer a version in HTML, which is best for browsing. Fortunately, there is now an excellent Javascript library called MathJax that does a superb job of rendering mathematics on the web. I combined this library with a custom program that translates the rest of the LaTeX source into HTML, leaving all equations to MathJax. This approach supersedes the original pages, which had been generated using TtH, a program that worked much better than alternatives such as LaTeX2Html and served me well for many years. If you face a similar task nowadays, I suggest you use <a href="https://pandoc.org/">Pandoc</a>, a universal document converter.
+</p>
+<h3>Suggested Citation</h3>
+<p>
+Rodríguez, G. (2007). <i>Lecture Notes on Generalized Linear Models</i>. 
+<span class="initialism">URL:</span> https://grodri.github.io/glms/notes/
+</p>
+
+{% include toc.html %}

@@ -1,0 +1,225 @@
+---
+layout: default
+section: glms
+tab: "R Logs"
+pager: true
+---
+
+
+<h3>6.2 The Multinomial Logit Model</h3>
+<p>
+We start with multinomial logit models treating age as a predictor and 
+contraceptive use as the outcome. 
+</p>
+<p>
+R has several functions that can fit multinomial logit models. We will
+emphasize the classic <code>multinom</code> in Venables and Ripley's
+<code>nnet</code> package because it is simple, does everything we need,
+and is already included in your R installation. 
+Alternatives include <code>mlogit</code> and <code>mnlogit</code>, 
+which fit a wider variety of models but are a bit harder to use.
+</p>
+<p>
+The <code>multinom</code> function accepts a model formula where the
+outcome is a vector with a factor representing the response categories,
+or a matrix with the counts in the various categories, which is the
+case for us. 
+This is a direct generalization of the way logit models work in R.
+</p>
+<h4>Age as a Factor</h4>
+<p>
+Obviously the model that treats age as a factor with 7 levels is 
+saturated for this data. We can easily obtain the log-likelihood, 
+and predicted values if we needed them. 
+By default <code>multinom</code> picks the first response category as
+the reference. We take care of that by putting "no method" first
+</p>
+<pre class='r'>
+> cuse$Y <- as.matrix(cuse[,c("none","ster","other")])
+
+> msat <- multinom(Y ~ ageg, data=cuse); msat
+# weights:  24 (14 variable)
+initial  value 3477.107894 
+iter  10 value 2910.092190
+iter  20 value 2872.978246
+final  value 2872.899103 
+converged
+Call:
+multinom(formula = Y ~ ageg, data = cuse)
+
+Coefficients:
+      (Intercept) ageg20-24 ageg25-29 ageg30-34  ageg35-39  ageg40-44 ageg45-49
+ster    -4.348180 2.7387387 4.0163534 4.6259663 4.39494512  4.2589552  3.649552
+other   -1.335857 0.2643796 0.5039453 0.3533843 0.01143483 -0.5859748 -1.571018
+
+Residual Deviance: 5745.798 
+AIC: 5773.798 
+</pre>
+<p>
+You could use <code>summary(msat)</code> to obtain standard errors 
+as well, but we won't bother.
+</p>
+<h4>Linear and Quadratic Effects</h4>
+<p>
+Following the notes we will consider a model with linear and quadratic
+effects of age. For consistency with the notes we will not center age 
+before computing the square, although I generally recommend that.
+</p>
+<pre class='r'>
+> cuse$age <- seq(17.5,47.5,5)[cuse$a]
+
+> cuse$agesq <- cuse$age^2
+
+> cuse$Y <- as.matrix(cuse[,c("none","ster","other")])
+
+> mlq <- multinom(Y ~ age + agesq, data=cuse)
+# weights:  12 (6 variable)
+initial  value 3477.107894 
+iter  10 value 2883.272291
+final  value 2883.136389 
+converged
+
+> summary(mlq)
+Call:
+multinom(formula = Y ~ age + agesq, data = cuse)
+
+Coefficients:
+      (Intercept)       age        agesq
+ster   -12.618330 0.7097288 -0.009732882
+other   -4.549838 0.2640771 -0.004758144
+
+Std. Errors:
+       (Intercept)         age        agesq
+ster  0.0003634951 0.006137073 0.0001616953
+other 0.0004850755 0.007198081 0.0002166951
+
+Residual Deviance: 5766.273 
+AIC: 5778.273 
+
+> B <- coef(mlq)
+
+> -0.5 * B[,"age"]/B[,"agesq"]
+    ster    other 
+36.46036 27.75000 
+</pre>
+<p>
+Compare the parameter estimates with Table 6.2 in the notes. As usual 
+with quadratics it is easier to plot the results, which we do below. 
+The log-odds of using sterilization rather than no method increase 
+rapidly with age to reach a maximum at 36.5. The log-odds of using a 
+method other than sterilization rather than no method increase slightly 
+to reach a maximum at age 28.5 and then decline. (The turning points 
+were calculated above by setting the derivatives to zero.)
+</p>
+<p>
+The model chi-square, which as usual compares the current and null models, can be obtained by fitting the null model:
+</p>
+<pre class='r'>
+> deviance(multinom(Y~1, data=cuse)) - deviance(mlq)
+# weights:  6 (2 variable)
+initial  value 3477.107894 
+final  value 3133.450437 
+converged
+[1] 500.6281
+</pre>
+<p>
+The hypothesis of no age differences in contraceptive choise is soundly 
+rejected, with a chi-squared of 500.6 on 4 d.f. 
+To see where the d.f. come from, note that the current model has six
+parameters (two quadratics with three parameters each) and the null
+model of course has only two (the two constants).
+</p>
+<p>
+To test the goodness of fit of the quadratic model we compare it with
+the saturated model fitted earlier:
+</p>
+<pre class='r'>
+> x2 <- deviance(mlq) - deviance(msat); x2
+[1] 20.47457
+
+> pchisq(x2, 8, lower.tail=FALSE)
+[1] 0.008682221
+</pre>
+<p>
+We get a deviance of 20.47 on 8 d.f. with a P-value of 0.0087,
+so we have evidence that the model does not fit the data. 
+We explore the lack of fit in a graph. 
+</p>
+<p>
+The "deviances" reported by <code>multinom</code> for these models
+are 5766.273 and 5745.798. They are calculated as -2logL where 
+logL is the <i>individual</i> data log-likelihood. This is why
+the "deviance" for the saturated model is not zero. Differences
+among deviances, however, are correct.
+</p>
+<h4>Plotting Observed and Fitted Logits</h4>
+<p>
+Let us do Figure 6.1, comparing observed and fitted logits. The
+observed logits may be calculated directly from the data or from
+the saturated model.  To obtain smooth curves we evaluate the fitted
+model at ages from 15 to 50 in steps of half a year.
+</p>
+<pre class='r'>
+> obs <- log(cuse$Y[,2:3]/cuse$Y[,1])
+
+> age <- seq(15,50,0.5)
+
+> fit <- cbind(1,age,age^2) %*% t(coef(mlq))
+
+> color <- c("red","green")
+
+> method <- c("ster","other")
+
+> png("fig61.png", width=500, height=400)
+
+> plot(cuse$age, obs[,1], type="n", 
++      xlab="age", ylab="log-odds", xlim=c(15,55))
+
+> for (j in 1:2) {
++   points(cuse$age, obs[,j], pch=19, col=color[j])
++   lines(age, fit[,j], col=color[j])
++   text(52, obs[7,j], label=method[j], col=color[j])
++ }
+
+> dev.off()
+RStudioGD 
+        2 
+</pre>
+
+<img src="fig61.png"  class="img-responsive center-block" />
+
+<p>
+The graph suggests that most of the lack of fit comes from overestimation 
+of the relative odds of being sterilized compared to using no method at 
+ages 15-19. Adding a dummy for this age group confirms the result:
+</p>
+<pre class='r'>
+> mlqt <- multinom(Y ~ age + agesq + I(ageg=="15-19"), data=cuse)
+# weights:  15 (8 variable)
+initial  value 3477.107894 
+iter  10 value 2880.318358
+final  value 2878.946949 
+converged
+
+> x2 <- deviance(mlqt) - deviance(msat); x2
+[1] 12.09569
+
+> pchisq(x2, 6, lower.tail=FALSE)
+[1] 0.05986779
+</pre>
+<p>
+The deviance is now only 12.10 on 6 d.f., so we pass the goodness of fit 
+test. (We really didn't need the dummy in the equation for other methods, 
+so the gain comes from just one d.f.)</p>
+<p>
+An important caveat with multinomial logit models is that we are 
+modeling odds or relative probabilities, and it is always possible for 
+the odds of one category to increase while the probability of that 
+category declines, simply because the odds of another category increase 
+more. To examine this possibility one can always compute predicted 
+probabilities.</p>
+<p> 
+We pursue these issues at greater length in a discussion of the interpretation 
+of multinomial logit coefficients, including the calculation of continuous and 
+discrete marginal effects, in <a href="mlogit.html">an analysis available here</a>.
+</p>

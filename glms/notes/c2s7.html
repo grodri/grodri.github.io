@@ -1,0 +1,498 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+pager: true
+---
+
+
+<h3>2.7 Two-Way Analysis of Variance</h3>
+<p>We now consider models involving two factors with
+discrete levels. We illustrate using the sample data
+with both social setting and family planning effort grouped
+into categories. Key issues involve the concepts of main
+effects and interactions.</p>
+
+<h4>2.7.1 The Two-Way Layout</h4>
+<p>Table <a href='#t_2_13'>2.13</a> shows the CBR decline in our
+20 countries classified according to two criteria:
+social setting, with categories low (under 70),
+medium (70&ndash;79) and high (80+), and
+family planning effort, with categories weak (0&ndash;4),
+moderate (5&ndash;14) and strong (15+).
+In our example both setting and effort are
+factors with three levels.
+Note that there are no countries with strong programs
+in low social settings.</p>
+
+<a name='t_2_13'></a><p class='text-center'>Table 2.13. CBR Decline by Levels of Social Setting<br/>and Levels of Family Planning Effort</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al' rowspan='2'>Setting</td><td colspan='3' align='center'>Effort</td></tr>
+<tr class='bb'><td class='al'>Weak</td><td class='al'>Moderate</td><td class='al'>Strong</td></tr>
+<tr class='bt'><td class='al'>Low</td><td class='al'>1,0,7</td><td class='al'>21,13,4,7</td><td class='al'>&ndash;</td></tr>
+<tr><td class='al'>Medium</td><td class='al'>10,6,2</td><td class='al'>0</td><td class='al'>25</td></tr>
+<tr class='bb'><td class='al'>High</td><td class='al'>9</td><td class='al'>11</td><td class='al'>29,29,40,21,22,29</td></tr>
+</table>
+
+<p>We will modify our notation to reflect the two-way
+layout of the data.
+Let \( n_{ij} \) denote the number of observations in the
+\( (i,j) \)-th cell of the table, i.e. in row \( i \) and
+column \( j \), and let
+\( y_{ijk} \) denote the response of the \( k \)-th unit in
+that cell, for \( k=1, \ldots, n_{ij} \).
+  In our example \( y_{ijk} \) is the CBR decline
+of the \( k \)-th country in the \( i \)-th category of setting
+and the \( j \)-th category of effort.</p>
+
+<h4>2.7.2 The Two-Factor Additive Model</h4>
+<a name='e_2_19'></a>\[\tag{2.19}\mu_{ijk} = \mu + \alpha_i + \beta_j\]
+<p>In this formulation \( \mu \) represents a baseline value,
+\( \alpha_i \) represents the effect of the \( i \)-th level of the
+row factor and
+\( \beta_j \) represents the effect of the \( j \)-th level of the
+column factor.
+Before we proceed further we must note that the model
+is not identified as stated. You could add a constant
+\( \delta \) to each of the \( \alpha_i \)&rsquo;s (or to each of the
+\( \beta_j \)&rsquo;s) and subtract it from
+\( \mu \) without altering any of the expected responses.
+Clearly we need two constraints to identify the model.</p>
+
+<p>Our preferred approach relies on the reference cell method, and
+sets to zero the effects for the first cell (in the top-left
+corner of the table), so that \( \alpha_1 = \beta_1 = 0 \). The best
+way to understand the meaning of the remaining parameters is to
+study Table <a href='#t_2_14'>2.14</a>, showing the expected response for
+each combination of levels of row and column factors having three
+levels each.</p>
+
+<a name='t_2_14'></a><p class='text-center'>Table 2.14. The Two-Factor Additive Model</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al' rowspan='2'>Row</td><td colspan='3' align='center'>Column</td></tr>
+<tr class='bb'><td class='al'>1</td><td class='al'>2</td><td class='al'>3</td></tr>
+<tr class='bt'><td class='al'>1</td><td class='al'>\(\mu\)</td><td class='al'>\(\mu+\beta_2\)</td><td class='al'>\(\mu+\beta_3\)</td></tr>
+<tr><td class='al'>2</td><td class='al'>\(\mu+\alpha_2\)</td><td class='al'>\(\mu+\alpha_2+\beta_2\)</td><td class='al'>\(\mu+\alpha_2+\beta_3\)</td></tr>
+<tr class='bb'><td class='al'>3</td><td class='al'>\(\mu+\alpha_3\)</td><td class='al'>\(\mu+\alpha_3+\beta_2\)</td><td class='al'>\(\mu+\alpha_3+\beta_3\)</td></tr>
+</table>
+
+<p>In this formulation of the model
+\( \mu \) represents the expected response in the reference cell,
+\( \alpha_i \) represents the effect
+of level \( i \) of the row factor (compared to level 1)
+for any fixed level of the column factor, and
+\( \beta_j \) represents the effect of level \( j \) of the column
+factor (compared to level 1) for any fixed level
+of the row factor.</p>
+
+<p>Note that the model is <i>additive</i>, in the sense
+that the effect of each factor is the same at all
+levels of the other factor. To see this point consider
+moving from the first to the second row. The response
+increases by \( \alpha_2 \) if we move down the first
+column, but also if we move down the second or
+third columns.</p>
+
+<h4>2.7.3 Estimates and Standard Errors</h4>
+<p>The model in Equation <a href='#e_2_19'>2.19</a> is a special
+case of the general linear model, where the model matrix
+\( \boldsymbol{X} \) has a column of ones representing the constant, and
+two sets  of dummy or indicator variables representing
+the levels of the row  and column factors, respectively.
+This matrix is not of full column rank because the
+row (as well as the column) dummies add to the constant.
+Clearly we need two constraints and we choose to drop
+the dummy variables corresponding to the first row
+and to the first column. Table <a href='#t_2_15'>2.15</a> shows
+the resulting parameter estimates, standard errors
+and \( t \)-ratios for our example.</p>
+
+<a name='t_2_15'></a><p class='text-center'>Table 2.15. Parameter Estimates for Two-Factor Additive Model<br/>of CBR Decline by Social Setting and
+Family Planning Effort</p>
+<table class='tex-table'>
+<tr class='bt bb'><td colspan='2' align='left'>Parameter</td><td class='ar'>Symbol</td><td class='ar'>Estimate</td><td class='ar'>Std. Error</td><td class='ar'>\(t\)-ratio</td></tr>
+<tr class='bt'><td class='al'>Baseline</td><td class='al'>low/weak</td><td class='ar'>\(\mu\)</td><td class='ar'>5.379</td><td class='ar'>3.105</td><td class='ar'>1.73</td></tr>
+<tr><td class='al'>Setting</td><td class='al'>medium</td><td class='ar'>\(\alpha_2\)</td><td class='ar'>\(-\)1.681</td><td class='ar'>3.855</td><td class='ar'>\(-0.44\)</td></tr>
+<tr><td class='al'></td><td class='al'>high</td><td class='ar'>\(\alpha_3\)</td><td class='ar'>2.388</td><td class='ar'>4.457</td><td class='ar'>0.54</td></tr>
+<tr><td class='al'>Effort</td><td class='al'>moderate</td><td class='ar'>\(\beta_2\)</td><td class='ar'>3.836</td><td class='ar'>3.575</td><td class='ar'>1.07</td></tr>
+<tr class='bb'><td class='al'></td><td class='al'>strong</td><td class='ar'>\(\beta_3\)</td><td class='ar'>20.672</td><td class='ar'>4.339</td><td class='ar'>4.76</td></tr>
+</table>
+
+<p>Thus, we expect a CBR decline of 5.4% in
+countries with low setting and weak programs.
+In countries with medium or high social setting we expect CBR
+declines of 1.7 percentage points <i>less</i> and 2.4 percentage
+points more, respectively, than in countries with low setting and
+the same level of effort.
+Finally, in countries  with moderate or strong programs we
+expect CBR declines of 3.8 and 20.7 percentage points more than
+in countries with weak programs and the same level of social setting.</p>
+
+<p>It appears from a cursory examination of the \( t \)-ratios in Table
+<a href='#t_2_15'>2.15</a> that the only significant effect is the difference
+between strong and weak programs. Bear in mind, however, that the table
+only shows the comparisons that are explicit in the chosen
+parameterization. In this example it turns out that the difference
+between strong and moderate programs is also significant. (This test
+can be calculated from the variance-covariance matrix of the estimates,
+or by fitting the model with strong programs as the reference cell, so
+the medium-strong comparison becomes one of the parameters.) Questions
+of significance for factors with more than two-levels are best
+addressed by using the \( F \)-test discussed below.</p>
+
+<h4>2.7.4 The Hierarchical Anova Table</h4>
+<p>Fitting the two-factor additive model results in a residual
+sum of squares of 574.4 on 15 d.f., and represents an
+improvement over the null model of 2075.8 at the expense of
+four d.f.  We can further decompose this gain as an
+improvement of 1193.8 on 2 d.f.&nbsp;due to social setting
+(from Section 2.6) and a gain of 882.0, also on 2 d.f.,
+due to effort given setting. These calculations are set
+out in Table <a href='#t_2_16'>2.16</a>, which also shows the
+corresponding mean squares and \( F \)-ratios.</p>
+
+<a name='t_2_16'></a><p class='text-center'>Table 2.16. Hierarchical Anova for Two-Factor Additive Model<br/>of CBR Decline by Social Setting and Family Planning Effort</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al'>Source of</td><td class='ar'>Sum of</td><td class='ar'>Degrees of</td><td class='ar'>Mean</td><td class='ar'>\(F\)-</td></tr>
+<tr class='bb'><td class='al'>variation</td><td class='ar'>squares</td><td class='ar'>freedom</td><td class='ar'>squared</td><td class='ar'>ratio</td></tr>
+<tr class='bt'><td class='al'>Setting</td><td class='ar'>1193.8</td><td class='ar'>2</td><td class='ar'>596.9</td><td class='ar'>15.6</td></tr>
+<tr><td class='al'>Effort\(|\)Setting</td><td class='ar'>882.0</td><td class='ar'>2</td><td class='ar'>441.0</td><td class='ar'>11.5</td></tr>
+<tr><td class='al'>Residual</td><td class='ar'>574.4</td><td class='ar'>15</td><td class='ar'>38.3</td><td></td></tr>
+<tr class='bb'><td class='al'>Total</td><td class='ar'>2650.2</td><td class='ar'>19</td><td></td><td></td></tr>
+</table>
+
+<p>We can combine the sum of squares for setting and for effort
+given setting to construct a test for the overall significance
+of the regression. This results in an \( F \)-ratio of 13.6 on
+four and 15 d.f., and is highly significant.
+The second of the \( F \)-ratios shown in
+Table <a href='#t_2_16'>2.16</a>, which is 11.5 on two and 15 d.f.,
+is a test for the <i>net</i>
+effect of family planning effort after accounting for
+social setting, and is highly significant.
+(The first of the \( F \)-ratios in the table, 15.6 on
+two and 15 d.f., is not in common use but is shown
+for completeness; it can be interpreted as an
+alternative test for the <i>gross</i> effect of setting,
+which combines the same numerator as the test in the previous
+section with a more refined denominator that takes into account
+the effect of effort.)</p>
+
+<p>There is an alternative decomposition of the regression
+sum of squares into an improvement of 2040.0 on two d.f.&nbsp;due to effort
+and a further gain of 35.8 on two d.f.&nbsp;due to setting given effort.
+The latter can be contrasted with the error sum of squares
+of 574.4 on 15 d.f.&nbsp;to obtain a test of the <i>net</i> effect
+of setting given effort. This test would address the question
+of whether socio-economic conditions have an effect on
+fertility decline after we have accounted for family
+planning effort.</p>
+
+<h4>2.7.5 Partial and Multiple Correlation Ratios</h4>
+<p>The sums of squares described above can be turned into
+proportions of variance explained using the now-familiar
+calculations. For example the two factors
+together explain 2075.8 out of 2650.2, or 78.3% of
+the variation in CBR decline.</p>
+
+<p>The square root of this proportion, 0.885 in the example,
+is the <i>multiple correlation ratio</i>;
+it is analogous to (and in fact is often called)
+the multiple correlation coefficient. We use the word
+&lsquo;ratio&rsquo; to emphasize the categorical nature of the
+predictors and to note that it generalizes to more than
+one factor the correlation ratio introduced in Section 2.4.</p>
+
+<p>We can also calculate the proportion of variance
+explained by one of the factors out of the amount
+left unexplained by the other. In our example effort
+explained 882.0 out of the 1456.6 that setting had left
+unexplained, or 60.6%.  The square root of this proportion,
+0.778, is called the <i>partial correlation ratio</i>,
+and can be interpreted as a measure of correlation
+between a discrete factor and a continuous variable
+after adjustment for another factor.</p>
+
+<h4>2.7.6 Fitted Means and Standardization</h4>
+<p>Parameter estimates from the additive model can be
+translated into <i>fitted means</i> using Equation <a href='#e_2_19'>2.19</a>
+evaluated at the estimates.
+The body of Table <a href='#t_2_17'>2.17</a> shows these values for
+our illustrative example. Note that we are able to estimate the
+expected CBR decline for strong programs in low social settings although
+there is no country in our dataset with that particular combination of
+attributes.  Such extrapolation relies on the additive nature of
+the model and should be interpreted with caution.
+Comparison of observed and fitted values can yield useful
+insights into the adequacy of the model, a topic that will
+be pursued in more detail when we discuss regression diagnostics
+later in this chapter.</p>
+
+<a name='t_2_17'></a><p class='text-center'>Table 2.17. Fitted Means Based on Two-Factor Additive Model<br/>of CBR Decline by Social Setting and Family Planning Effort</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al' rowspan='2'>Setting</td><td colspan='3' align='center'>Effort</td><td class='ar'>All</td></tr>
+<tr class='bb'><td class='ar'>Weak</td><td class='ar'>Moderate</td><td class='ar'>Strong</td><td></td></tr>
+<tr class='bt'><td class='al'>Low</td><td class='ar'>5.38</td><td class='ar'>9.22</td><td class='ar'>26.05</td><td class='ar'>13.77</td></tr>
+<tr><td class='al'>Medium</td><td class='ar'>3.70</td><td class='ar'>7.54</td><td class='ar'>24.37</td><td class='ar'>12.08</td></tr>
+<tr class='bb'><td class='al'>High</td><td class='ar'>7.77</td><td class='ar'>11.60</td><td class='ar'>28.44</td><td class='ar'>16.15</td></tr>
+<tr class='bt bb'><td class='al'>All</td><td class='ar'>5.91</td><td class='ar'>9.75</td><td class='ar'>26.59</td><td class='ar'>14.30</td></tr>
+</table>
+
+<p>Table <a href='#t_2_17'>2.17</a> also shows column (and row) means,
+representing expected CBR declines by effort (and setting)
+after adjusting for the other factor.
+The column means are calculated as weighted averages of
+the cell means in each column, with weights given by the
+total number of countries in each category of setting.
+In symbols</p>
+
+\[ \hat{\mu}_{.j} = \sum n_{i.} \hat{\mu}_{ij}/ n, \]
+<p>where we have used a dot as a subscript placeholder
+so \( n_{i.} \) is the number of observations in row \( i \) and
+\( \mu_{.j} \)  is the mean for column \( j \).</p>
+
+<p>The resulting estimates may be interpreted as
+<i>standardized</i> means; they estimate the CBR
+decline that would be expected at each level of effort
+if those countries had the same distribution of
+social setting as the total sample.
+(The column means can also be calculated by using the fitted
+model to predict CBR decline for each observation with
+the dummies representing social setting held fixed at their
+sample averages and all other terms kept as observed.
+This construction helps reinforce their interpretation
+in terms of predicted CBR decline at various levels of
+effort adjusted for setting.)</p>
+
+<a name='t_2_18'></a><p class='text-center'>Table 2.18. CBR Decline by Family Planning Effort<br/>Before and After Adjustment for Social Setting</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al' rowspan='2'>Effort</td><td colspan='2' align='center'>CBR Decline</td></tr>
+<tr class='bb'><td class='ar'>Unadjusted</td><td class='ar'>Adjusted</td></tr>
+<tr class='bt'><td class='al'>Weak</td><td class='ar'>5.00</td><td class='ar'>5.91</td></tr>
+<tr><td class='al'>Moderate</td><td class='ar'>9.33</td><td class='ar'>9.75</td></tr>
+<tr class='bb'><td class='al'>Strong</td><td class='ar'>27.86</td><td class='ar'>26.59</td></tr>
+</table>
+
+<p>Standardized means may be useful in presenting the results of a
+regression analysis to a non-technical audience, as done in Table
+<a href='#t_2_18'>2.18</a>. The column labelled unadjusted shows the observed mean
+CBR decline by level of effort. The difference of 23 points between
+strong and weak programs may be due to program effort, but could also
+reflect differences in social setting. The column labelled adjusted
+corrects for compositional differences in social setting using the
+additive model. The difference of 21 points may be interpreted as an
+effect of program effort net of social setting.</p>
+
+<h4>2.7.7 Multiple Classification Analysis</h4>
+<p>Multiple Classification Analysis (MCA), a technique
+that has enjoyed some popularity in Sociology, turns
+out to be just another name for the two factor additive model
+discussed in this section (and more generally, for multi-factor
+additive models).
+A nice feature of MCA, however, is a tradition of presenting the
+results of the analysis in a table that contains</p>
+
+<ul><li><p>
+ the gross effect of each of the factors,
+calculated using a one-factor model under the `usual'
+restrictions, together with the corresponding
+correlation ratios (called `eta' coefficients), and
+
+</p></li><li><p>
+the net effect of each factor, calculated
+using a two-factor additive model under the
+`usual' restrictions, together with
+the corresponding partial correlation ratios
+(unfortunately called `beta' coefficients).
+</p></li></ul>
+<p>Table <a href='#t_2_19'>2.19</a> shows a multiple classification
+analysis of the program effort data that follows
+directly from the results obtained so far.
+Estimates for the additive model under the usual restrictions
+can be obtained from Table <a href='#t_2_18'>2.18</a>
+as differences between the row and column means and
+the overall mean.</p>
+
+<a name='t_2_19'></a><p class='text-center'>Table 2.19. Multiple Classification Analysis of CBR Decline<br/>by Social Setting and Family Planning Effort</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al' rowspan='2'>Factor</td><td class='al' rowspan='2'>Category</td><td class='ar'>Gross</td><td class='ar'  rowspan='2'>Eta</td><td class='ar'>Net</td><td class='ar' rowspan='2'>Beta</td></tr>
+<tr class='bb'><td class='ar'>Effect</td><td class='ar'>Effect</td></tr>
+<tr class='bt'><td class='al'>Setting</td><td class='al'>Low</td><td class='ar'>\(-\)6.73</td><td class='ar'></td><td class='ar'>\(-\)0.54</td><td></td></tr>
+<tr><td class='al'></td><td class='al'>Medium</td><td class='ar'>\(-\)5.70</td><td class='ar'></td><td class='ar'>\(-\)2.22</td><td></td></tr>
+<tr><td class='al'></td><td class='al'>High</td><td class='ar'>9.45</td><td class='ar'></td><td class='ar'>1.85</td><td></td></tr>
+<tr><td class='al'></td><td class='al'></td><td class='ar'></td><td class='ar'>0.67</td><td class='ar'></td><td class='ar'>0.24</td></tr>
+<tr><td class='al'>Effort</td><td class='al'>Weak</td><td class='ar'>\(-\)9.30</td><td class='ar'></td><td class='ar'>\(-\)8.39</td><td></td></tr>
+<tr><td class='al'></td><td class='al'>Moderate</td><td class='ar'>\(-\)4.97</td><td class='ar'></td><td class='ar'>\(-\)4.55</td><td></td></tr>
+<tr><td class='al'></td><td class='al'>Strong</td><td class='ar'>13.56</td><td class='ar'></td><td class='ar'>12.29</td><td></td></tr>
+<tr class='bb'><td class='al'></td><td class='al'></td><td class='ar'></td><td class='ar'>0.88</td><td class='ar'></td><td class='ar'>0.78</td></tr>
+<tr class='bt bb'><td class='al'>Total</td><td class='al'></td><td class='ar'>14.30</td><td class='ar'></td><td class='ar'>14.30</td><td></td></tr>
+</table>
+
+<p>The overall expected decline in the CBR is 14.3%.
+The effects of low, medium and high setting are substantially
+reduced after adjustment for effort, an attenuation
+reflected in the reduction of the correlation ratio
+from 0.67 to 0.24.  On the other hand, the effects
+of weak, moderate and strong programs are slightly reduced
+after adjustment for social setting, as can be seen from
+correlation ratios of 0.88 and 0.78 before and after
+adjustment.
+The analysis indicates that the effects of
+effort are more pronounced and more resilient to
+adjustment than the effects of social setting.</p>
+
+<h4>2.7.8 The Model With Interactions</h4>
+<p>The analysis so far has rested on the assumption of additivity.
+We now consider a more general model for the effects of
+two discrete factors on a continuous response which
+allows for more general effects</p>
+
+\[\tag{2.20}\mu_{ij} = \mu + \alpha_i + \beta_j + (\alpha\beta)_{ij}.\]
+<p>In this formulation the first three terms should be familiar:
+\( \mu \) is a constant,
+and \( \alpha_i \) and \( \beta_j \) are
+the <i>main</i> effects of levels \( i \) of the row factor
+and \( j \) of the column factor.</p>
+
+<p>The new term \( (\alpha\beta)_{ij} \) is an <i>interaction</i> effect.
+It represents the effect of the <i>combination</i> of levels \( i \)
+and \( j \) of the row and column factors.
+(The notation \( (\alpha\beta) \) should be understood
+as a single symbol, not a product;
+we could have used \( \gamma_{ij} \) to denote the interaction,
+but the notation \( (\alpha\beta)_{ij} \) is more suggestive and reminds
+us that the term involves a combined effect.)</p>
+
+<p>One difficulty with the model as defined so far is that it is grossly
+overparameterized. If the row and column factors have \( R \) and \( C \)
+levels, respectively, we have only \( RC \) possible cells but have
+introduced \( 1+R+C+RC \) parameters. Our preferred solution is an
+extension of the reference cell method, and sets to zero all parameters
+involving the first row or the first column in the two-way layout, so
+that \( \alpha_1 = \beta_1 = (\alpha\beta)_{1j} = (\alpha\beta)_{i1} =
+0 \). The best way to understand the meaning of the remaining parameters
+is to study Table <a href='#t_2_20'>2.20</a>, which shows the structure of the
+means in a three by three layout.</p>
+
+<a name='t_2_20'></a><p class='text-center'>Table 2.20. The Two-Factor Model With Interactions</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al'>Row</td><td colspan='3' align='center'>Column</td></tr>
+<tr class='bb'><td class='al'></td><td class='al'>1</td><td class='al'>2</td><td class='al'>3</td></tr>
+<tr class='bt'><td class='al'>1</td><td class='al'>\(\mu\)</td><td class='al'>\(\mu+\beta_2\)</td><td class='al'>\(\mu+\beta_3\)</td></tr>
+<tr><td class='al'>2</td><td class='al'>\(\mu+\alpha_2\)</td><td class='al'>\(\mu + \alpha_2 + \beta_2 + (\alpha\beta)_{22}\)</td><td class='al'>\(\mu + \alpha_2 + \beta_3 + (\alpha\beta)_{23}\)</td></tr>
+<tr class='bb'><td class='al'>3</td><td class='al'>\(\mu + \alpha_3\)</td><td class='al'>\(\mu + \alpha_3 + \beta_2 + (\alpha\beta)_{32}\)</td><td class='al'>\(\mu + \alpha_3 + \beta_3 + (\alpha\beta)_{33}\)</td></tr>
+</table>
+
+<p>Here \( \mu \) is the expected response in the reference cell,
+just as before.
+The main effects are now more specialized:
+\( \alpha_i \) is the effect of level \( i \) of the row factor,
+compared to level one, when the column factor is at level one,
+and
+\( \beta_j \) is the effect of level \( j \) of the column factor,
+compared to level one, when the row factor is at level one.
+The interaction term
+\( (\alpha\beta)_{ij} \) is the additional effect of
+level \( i \) of the row factor, compared to level one,
+when the column factor is at level \( j \) rather than one.
+This term can also be interpreted as the additional effect of
+level \( j \) of the column factor, compared to level one,
+when the row factor is at level \( i \) rather than one.</p>
+
+<p>The key feature of this model is that the effect of a
+factor now depends on the levels of the other. For
+example the effect of level two of the row factor, compared
+to level one, is \( \alpha_2 \) in the first column,
+\( \alpha_2+(\alpha\beta)_{22} \) in the second column, and
+\( \alpha_2+(\alpha\beta)_{23} \) in the third column.</p>
+
+<p>The resulting model is a special case of the general
+lineal model where the model matrix \( \boldsymbol{X} \) has a column
+of ones to represent the constant, a set of \( R-1 \)
+dummy variables representing the row effects, a set
+of \( C-1 \) dummy variables representing the column effects,
+and a set of \( (R-1)(C-1) \) dummy variables representing
+the interactions.</p>
+
+<p>The easiest way to calculate the
+interaction dummies is as products of the row and
+column dummies. If \( r_i \) takes the value one for
+observations in row \( i \) and zero otherwise,
+and \( c_j \) takes the value one for observations in
+column \( j1 \) and zero otherwise, then the product
+\( r_i c_j \) takes the value one for observations that
+are in row \( i \) <i>and</i> column \( j \), and is zero for
+all others.</p>
+
+<p>In order to fit this model to the program effort data
+we need to introduce one additional constraint because the cell
+corresponding to strong programs in low settings is empty.
+As a result, we cannot distinguish \( \beta_3 \) from
+\( \beta_3+(\alpha\beta)_{23} \). A simple solution is to
+set \( (\alpha\beta)_{23}=0 \). This constraint is easily
+implemented by dropping the corresponding dummy,
+which would be \( r_2 c_3 \) in the above notation.</p>
+
+<p>The final model has eight parameters: the constant, two setting
+effects, two effort effects, and three (rather than four)
+interaction terms.</p>
+
+<a name='t_2_21'></a><p class='text-center'>Table 2.21. Anova for Two-Factor Model with Interaction Effect<br/>for CBR Decline by Social Setting and Family Planning Effort</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al'>Source of</td><td class='ar'>Sum of</td><td class='ar'>Degrees of</td><td class='ar'>Mean</td><td class='ar'>\(F\)-</td></tr>
+<tr class='bb'><td class='al'>variation</td><td class='ar'>squares</td><td class='ar'>freedom</td><td class='ar'>squared</td><td class='ar'>ratio</td></tr>
+<tr class='bt'><td class='al'>Setting</td><td class='ar'>1193.8</td><td class='ar'>2</td><td class='ar'>596.9</td><td class='ar'>15.5</td></tr>
+<tr><td class='al'>Effort\(|\)Setting</td><td class='ar'>882.0</td><td class='ar'>2</td><td class='ar'>441.0</td><td class='ar'>11.5</td></tr>
+<tr><td class='al'>Interaction</td><td class='ar'>113.6</td><td class='ar'>3</td><td class='ar'>37.9</td><td class='ar'>1.0</td></tr>
+<tr class='bb'><td class='al'>Residual</td><td class='ar'>460.8</td><td class='ar'>12</td><td class='ar'>38.4</td><td></td></tr>
+<tr class='bt bb'><td class='al'>Total</td><td class='ar'>2650.2</td><td class='ar'>19</td><td></td><td></td></tr>
+</table>
+
+<p>Fitting the model gives a \( \mbox{RSS} \) of 460.8 on
+12 d.f. Combining this result with the anova for the
+additive model leads to the hierarchical anova in
+Table <a href='#t_2_21'>2.21</a>. The \( F \)-test for the interaction
+is one on three and 12 d.f.&nbsp;and is clearly not
+significant. Thus, we have no evidence to contradict
+the assumption of additivity.  We conclude that the
+effect of effort is the same at all social settings.
+Calculation and interpretation of the parameter
+estimates is left as an exercise.</p>
+
+<h4>2.7.9 Factors or Variates?</h4>
+<p>In our analysis of CBR decline we treated
+social setting and family planning effort as continuous
+<i>variates</i> with linear effects in Sections 2.4 and 2.5,
+and as discrete <i>factors</i> in Sections 2.6 and 2.7.</p>
+
+<p>The fundamental difference between the two approaches
+hinges on the assumption of linearity. When we treat a
+predictor as a continuous variate we assume a linear effect.
+If the assumption is reasonable we attain a parsimonious fit,
+but if it is not reasonable we are forced to introduce transformations
+or higher-order polynomial terms, resulting in models which are
+often harder to interpret.</p>
+
+<p>A reasonable alternative in these cases is to model the predictor as a
+discrete factor, an approach that allows arbitrary changes in the
+response from one category to another.  This approach has the advantage
+of a simpler and more direct interpretation, but by grouping the
+predictor into categories we are not making full use of the information
+in the data.</p>
+
+<p>In our example we found that social setting explained 45%
+of the variation in CBR declines when treated as a variate
+and 45% when treated as a factor with three levels. Both
+approaches give the same result, suggesting that the
+assumption of linearity of setting effects is reasonable.</p>
+
+<p>On the other hand family planning effort explained 64%
+when treated as a variate and 77% when treated as a
+factor with three levels.  The difference suggests that we
+might be better off grouping effort into three categories.
+The reason, of course, is that the effect of effort is
+non-linear: CBR decline changes little as we move from
+weak to moderate programs, but raises steeply for strong
+programs.</p>

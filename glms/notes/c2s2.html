@@ -1,0 +1,166 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+pager: true
+---
+
+
+<h3>2.2 Estimation of the Parameters</h3>
+<p>Consider for now a rather abstract model where \( \mu_i = \boldsymbol{x}_i'\boldsymbol{\beta} \)
+for some predictors \( \boldsymbol{x}_i \). How do we estimate the parameters \( \boldsymbol{\beta} \)
+and \( \sigma^2 \)?</p>
+
+<h4>2.2.1 Estimation of \( \beta \)</h4>
+<p>The likelihood principle instructs us to pick the values of the
+parameters that maximize the likelihood, or equivalently, the
+logarithm of the likelihood function.  If the observations
+are independent, then the likelihood function is a product
+of normal densities of the form given in Equation <a href='#e_2_1'>2.1</a>.
+Taking logarithms we obtain the normal log-likelihood</p>
+
+<a name='e_2_5'></a>\[\tag{2.5}\log L(\boldsymbol{\beta}, \sigma^2) =
+-\frac{n}{2}\log(2 \pi \sigma^2) -
+\frac{1}{2} \sum (y_i - \mu_i)^2/\sigma^2,\]
+<p>where \( \mu_i=\boldsymbol{x}_i'\boldsymbol{\beta} \).
+The most important thing to notice about this expression is that
+maximizing the log-likelihood with respect to the linear parameters
+\( \boldsymbol{\beta} \) for a fixed value of \( \sigma^2 \)
+is exactly equivalent to
+minimizing the sum of squared differences between observed
+and expected values, or residual sum of squares</p>
+
+<a name='e_2_6'></a>\[\tag{2.6}\mbox{RSS}(\boldsymbol{\beta}) = \sum  (y_i - \mu_i)^2  = (\boldsymbol{y}-\boldsymbol{X\beta})'(\boldsymbol{y}-\boldsymbol{X\beta}).\]
+<p>In other words, we need to pick values of \( \boldsymbol{\beta} \) that make the
+fitted values \( \mu_i=\boldsymbol{x}_i'\boldsymbol{\beta} \) as close as possible to the
+observed values \( y_i \).</p>
+
+<p>Taking derivatives of the residual sum of squares with respect to
+\( \boldsymbol{\beta} \) and setting the derivative equal to zero
+leads to the so-called <i>normal equations</i> for the
+maximum-likelihood estimator \( \hat{\boldsymbol{\beta}} \)</p>
+
+\[ \boldsymbol{X}'\boldsymbol{X} \hat{\boldsymbol{\beta}} = \boldsymbol{X}' \boldsymbol{y}. \]
+<p>If the model matrix \( \boldsymbol{X} \) is of full column rank, so that
+no column is an exact linear combination of the others, then the matrix
+of cross-products \( \boldsymbol{X}'\boldsymbol{X} \) is of full rank and can be inverted
+to solve the normal equations. This gives an explicit formula
+for the <i>ordinary least squares</i> (OLS) or maximum likelihood
+estimator of the linear parameters:</p>
+
+<a name='e_2_7'></a>\[\tag{2.7}\hat{\boldsymbol{\beta}} = (\boldsymbol{X}'\boldsymbol{X})^{-1} \boldsymbol{X}'\boldsymbol{y}.\]
+<p>If \( \boldsymbol{X} \) is not of full column rank one can use generalized inverses,
+but interpretation of the results is much more straightforward if one
+simply eliminates redundant columns. Most current statistical
+packages are smart enough to detect and omit redundancies
+automatically.</p>
+
+<p>There are several numerical methods for solving the normal equations,
+including methods that operate on \( \boldsymbol{X}'\boldsymbol{X} \),
+such as Gaussian elimination or the Choleski decomposition,
+and methods that attempt to simplify the calculations by factoring
+the model matrix \( \boldsymbol{X} \), including Householder reflections,
+Givens rotations and the Gram-Schmidt orthogonalization.
+We will not discuss these methods here, assuming that you
+will trust the calculations to a reliable statistical package.
+For further details see McCullagh and Nelder (1989, Section 3.8)
+and the references therein.</p>
+
+<p>The foregoing results were obtained by maximizing the
+log-likelihood with respect to \( \boldsymbol{\beta} \) for a fixed value of \( \sigma^2 \).
+The result obtained in Equation <a href='#e_2_7'>2.7</a> does not depend
+on \( \sigma^2 \), and is therefore a global maximum.</p>
+
+<p>For the <i>null</i> model \( \boldsymbol{X} \) is a vector of ones, \( \boldsymbol{X}'\boldsymbol{X} = n \)
+and \( \boldsymbol{X}'\boldsymbol{y} = \sum \boldsymbol{y}_i \) are scalars and \( \hat{\beta}=\bar{y} \),
+the sample mean. For our sample data \( \bar{y}=14.3 \). Thus,
+the calculation of a sample mean can be viewed as the simplest case
+of maximum likelihood estimation in a linear model.</p>
+
+<h4>2.2.2 Properties of the Estimator</h4>
+<p>The least squares estimator \( \hat{\boldsymbol{\beta}} \) of Equation <a href='#e_2_7'>2.7</a>
+has several interesting properties.  If the model is correct, in
+the (weak) sense that the expected value of the response \( Y_i \)
+given the predictors \( \boldsymbol{x}_i \) is indeed \( \boldsymbol{x}_i'\boldsymbol{\beta} \), then the OLS
+estimator is <i>unbiased</i>, its expected value equals the
+true parameter value:</p>
+
+<a name='e_2_8'></a>\[\tag{2.8}\mbox{E}(\hat{\boldsymbol{\beta}}) = \boldsymbol{\beta}.\]
+<p>It can also be shown that if the observations are uncorrelated
+and have constant variance \( \sigma^2 \), then the
+variance-covariance matrix of the OLS estimator is</p>
+
+<a name='e_2_9'></a>\[\tag{2.9}\mbox{var}(\hat{\boldsymbol{\beta}}) = (\boldsymbol{X}'\boldsymbol{X})^{-1} \sigma^2.\]
+<p>This result follows immediately from the fact that \( \hat{\boldsymbol{\beta}} \)
+is a linear function of the data \( \boldsymbol{y} \) (see Equation <a href='#e_2_7'>2.7</a>),
+and the assumption that the variance-covariance matrix of the
+data is \( \mbox{var}(\boldsymbol{Y})=\sigma^2 \boldsymbol{I} \), where \( \boldsymbol{I} \) is the identity
+matrix.</p>
+
+<p>A further property of the estimator is that it has minimum
+variance among all unbiased estimators that are linear functions
+of the data, i.e. it is the best linear unbiased estimator (BLUE).
+Since no other unbiased estimator can have lower variance for a
+fixed sample size, we say that OLS estimators are fully <i>efficient</i>.</p>
+
+<p>Finally, it can be shown that the sampling distribution of the
+OLS estimator \( \hat{\boldsymbol{\beta}} \) in large samples is approximately
+multivariate normal with the mean and variance given above, i.e.</p>
+
+\[ \hat{\boldsymbol{\beta}} \sim N_p( \boldsymbol{\beta}, (\boldsymbol{X}'\boldsymbol{X})^{-1} \sigma^2). \]
+<p>Applying these results to the <i>null</i> model we see that
+the sample mean \( \bar{y} \) is an unbiased estimator of \( \mu \),
+has variance \( \sigma^2/n \), and is approximately normally
+distributed in large samples.</p>
+
+<p>All of these results depend only on second-order assumptions
+concerning the mean, variance and covariance of the observations,
+namely
+the assumption that \( E(\boldsymbol{Y})=\boldsymbol{X\beta} \) and \( \mbox{var}(\boldsymbol{Y})=\sigma^2 \boldsymbol{I} \).</p>
+
+<p>Of course, \( \hat{\boldsymbol{\beta}} \) is also a maximum likelihood estimator
+under the assumption of normality of the observations.
+If \( \boldsymbol{Y} \sim N_n(\boldsymbol{X\beta}, \sigma^2\boldsymbol{I}) \) then the sampling distribution
+of \( \hat{\boldsymbol{\beta}} \) is <i>exactly</i> multivariate normal with the
+indicated mean and variance.</p>
+
+<p>The significance of these results cannot be overstated: the
+assumption of normality of the observations is required only
+for inference in small samples.  The really important assumption
+is that the observations are uncorrelated and have constant
+variance, and this is sufficient for inference in large samples.</p>
+
+<h4>2.2.3 Estimation of \( \sigma^2 \)</h4>
+<p>Substituting the OLS estimator of \( \boldsymbol{\beta} \) into the log-likelihood
+in Equation <a href='#e_2_5'>2.5</a> gives a profile likelihood for \( \sigma^2 \)</p>
+
+\[ \log L(\sigma^2) = -\frac{n}{2}\log(2\pi\sigma^2) - \frac{1}{2}
+\mbox{RSS}(\hat{\boldsymbol{\beta}}) / \sigma^2. \]
+<p>Differentiating this expression with respect to \( \sigma^2 \) (not \( \sigma \))
+and setting the derivative to zero leads to the maximum
+likelihood estimator</p>
+
+\[ \hat{\sigma^2} = \mbox{RSS}(\hat{\boldsymbol{\beta}})/n. \]
+<p>This estimator happens to be <i>biased</i>, but the bias is
+easily corrected dividing by \( n-p \) instead of \( n \).
+The situation is exactly analogous to the use of \( n-1 \) instead of \( n \)
+when estimating a variance.
+In fact, the estimator of \( \sigma^2 \) for the <i>null</i> model
+is the sample variance, since \( \hat{\beta}=\bar{y} \) and
+the residual sum of squares is \( \mbox{RSS}=\sum(y_i-\bar{y})^2 \).</p>
+
+<p>Under the assumption of normality, the ratio \( \mbox{RSS}/\sigma^2 \)
+of the residual sum of squares to the true parameter value
+has a chi-squared distribution with \( n-p \) degrees of freedom
+and is independent of the estimator of the linear parameters.
+You might be interested to know that using the chi-squared
+distribution as a likelihood to estimate \( \sigma^2 \) (instead of the
+normal likelihood to estimate both \( \boldsymbol{\beta} \) and \( \sigma^2 \))
+leads to the unbiased estimator.</p>
+
+<p>For the sample data the \( \mbox{RSS} \) for the null model is 2650.2
+on 19 d.f.&nbsp;and therefore \( \hat{\sigma}=11.81 \), the sample
+standard deviation.</p>
+

@@ -1,0 +1,437 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h3>3.5 Models With Two Predictors</h3>
+<p>We now consider models involving two predictors, and discuss the
+binary data analogues of two-way analysis of variance,
+multiple regression with dummy variables, and analysis of
+covariance models. An important element of the discussion
+concerns the key concepts of main effects and interactions.</p>
+
+<h4>3.5.1 Age and Preferences</h4>
+<p>Consider the distribution of contraceptive use by age and
+desire for more children, as summarized in Table <a href='#t_3_7'>3.7</a>.
+We have a total of eight groups, which will be indexed by
+a pair of subscripts \( i,j \), with \( i=1,2,3,4 \) referring to
+the four age groups and \( j=1,2 \) denoting the two categories
+of desire for more children. We let \( y_{ij} \) denote the number
+of women using contraception and \( n_{ij} \) the total number of
+women in age group \( i \) and category \( j \) of desire for more children.</p>
+
+<a name='t_3_7'></a><p class='text-center'>Table 3.7. Contraceptive Use by Age and Desire for More Children</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al'>Age</td><td class='al'>Desires</td><td class='ar'>Using</td><td class='ar'>Not Using</td><td class='ar'>All</td></tr>
+<tr class='bb'><td class='al'>\(i\)</td><td class='al'>\(j\)</td><td class='ar'>\(y_{ij}\)</td><td class='ar'>\(n_{ij}-y_{ij}\)</td><td class='ar'>\(n_{ij}\)</td></tr>
+<tr class='bt'><td class='al'>\(<\)25</td><td class='al'>Yes</td><td class='ar'>58</td><td class='ar'>265</td><td class='ar'>323</td></tr>
+<tr><td class='al'></td><td class='al'>No</td><td class='ar'>14</td><td class='ar'>60</td><td class='ar'>74</td></tr>
+<tr><td class='al'>25&ndash;29</td><td class='al'>Yes</td><td class='ar'>68</td><td class='ar'>215</td><td class='ar'>283</td></tr>
+<tr><td class='al'></td><td class='al'>No</td><td class='ar'>37</td><td class='ar'>84</td><td class='ar'>121</td></tr>
+<tr><td class='al'>30&ndash;39</td><td class='al'>Yes</td><td class='ar'>79</td><td class='ar'>230</td><td class='ar'>309</td></tr>
+<tr><td class='al'></td><td class='al'>No</td><td class='ar'>158</td><td class='ar'>145</td><td class='ar'>303</td></tr>
+<tr><td class='al'>40&ndash;49</td><td class='al'>Yes</td><td class='ar'>14</td><td class='ar'>43</td><td class='ar'>57</td></tr>
+<tr class='bb'><td class='al'></td><td class='al'>No</td><td class='ar'>79</td><td class='ar'>58</td><td class='ar'>137</td></tr>
+<tr class='bt bb'><td class='al'>Total</td><td class='al'></td><td class='ar'>507</td><td class='ar'>1100</td><td class='ar'>1607</td></tr>
+</table>
+
+<p>We now analyze these data under the usual assumption of a binomial
+error structure, so the \( y_{ij} \) are viewed as realizations of
+independent random variables \( Y_{ij} \sim B(n_{ij}, \pi_{ij}) \).</p>
+
+<h4>3.5.2 The Deviance Table</h4>
+<p>There are five basic models of interest for the systematic structure
+of these data, ranging from the null to the saturated model.
+These models are listed in Table <a href='#t_3_8'>3.8</a>, which
+includes the name of the model,
+a descriptive notation,
+the formula for the linear predictor,
+the deviance or
+goodness of fit likelihood ratio chi-squared statistic, and
+the degrees of freedom.</p>
+
+<p>Note first that the null model does not fit the data: the deviance of
+145.7 on 7 d.f.&nbsp;is much greater than 14.1, the 95-th percentile of
+the chi-squared distribution with 7 d.f.
+This result is not surprising, since we already knew that contraceptive
+use depends on desire for more children and varies by age.</p>
+
+<a name='t_3_8'></a><p class='text-center'>Table 3.8. Deviance Table for Models of Contraceptive Use<br/>by Age (Grouped) and Desire for More Children</p>
+<table class='tex-table'>
+<tr class='bt bb'><td class='al'>Model</td><td class='al'>Notation</td><td class='al'>\(\mbox{logit}(\pi_{ij})\)</td><td class='ar'>Deviance</td><td class='ar'>d.f.</td></tr>
+<tr class='bt'><td class='al'>Null</td><td class='al'>\(\phi\)</td><td class='al'>\(\eta\)</td><td class='ar'>145.7</td><td class='ar'>7</td></tr>
+<tr><td class='al'>Age</td><td class='al'>\(A\)</td><td class='al'>\(\eta + \alpha_i\)</td><td class='ar'>66.5</td><td class='ar'>4</td></tr>
+<tr><td class='al'>Desire</td><td class='al'>\(D\)</td><td class='al'>\(\eta + \beta_j\)</td><td class='ar'>54.0</td><td class='ar'>6</td></tr>
+<tr><td class='al'>Additive</td><td class='al'>\(A+D\)</td><td class='al'>\(\eta + \alpha_i + \beta_j\)</td><td class='ar'>16.8</td><td class='ar'>3</td></tr>
+<tr class='bb'><td class='al'>Saturated</td><td class='al'>\(A D\)</td><td class='al'>\(\eta+\alpha_i + \beta_j + (\alpha\beta)_{ij}\)</td><td class='ar'>0</td><td class='ar'>0</td></tr>
+</table>
+
+<p>Introducing age in the model reduces the deviance to 66.5 on four d.f.
+The difference in deviances between the null model and the age model
+provides a test for the <i>gross</i> effect of age.
+The difference is 79.2 on three d.f., and is highly significant.
+This value is exactly the same that we obtained in the previous section,
+when we tested for an age effect using the data classified by age only.
+Moreover, the estimated age effects based on fitting the age model
+to the three-way classification in Table <a href='#t_3_7'>3.7</a>
+would be exactly the same as those estimated in the previous section,
+and have the property of reproducing exactly the proportions using
+contraception in each age group.</p>
+
+<p>This equivalence illustrate an important property of binomial models.
+All information concerning the gross effect of age on contraceptive
+use is contained in the marginal distribution of contraceptive use
+by age. We can work with the data classified by age only,
+by age and desire for more children,
+by age, education and desire for more children,
+or even with the individual data.
+In all cases the estimated effects, standard errors, and likelihood
+ratio tests based on differences between deviances will be the same.</p>
+
+<p>The deviances themselves will vary, however, because they depend on the
+context. In the previous section the deviance of the age model was
+zero, because treating age as a factor reproduces exactly the
+proportions using contraception by age.
+In this section the deviance of the age model is 66.5 on four d.f.
+and is highly significant, because the age model does not
+reproduce well the table of contraceptive use by both age and
+preferences.
+In both cases, however, the difference in deviances between
+the age model and the null model is 79.2 on three d.f.</p>
+
+<p>The next model in Table <a href='#t_3_8'>3.8</a> is the model with a main effect
+of desire for more children, and has a deviance of 54.0 on six d.f.
+Comparison of this value with the deviance of the null model
+shows a gain of 97.1 at the expense of one d.f., indicating a
+highly significant <i>gross</i> effect of desire for more
+children.  This is, of course, the same result that we obtained in
+Section 3.3, when we first looked at contraceptive use by desire
+for more children. Note also that this model does not fit the
+data, as it own deviance is highly significant.</p>
+
+<p>The fact that the effect of desire for more children has a chi-squared
+statistic of 91.7 with only one d.f., whereas age gives 79.2 on
+three d.f., suggests that desire for more children has a stronger
+effect on contraceptive use than age does. Note, however, that the
+comparison is informal; the models are not nested, and therefore we
+cannot construct a significance test from their deviances.</p>
+
+<h4>3.5.3 The Additive Model</h4>
+<p>Consider now the two-factor additive model, denoted \( A+D \) in
+Table <a href='#t_3_8'>3.8</a>. In this model the logit of the probability of
+using contraception in age group \( i \) and in category \( j \) of desire for
+more children is</p>
+
+\[ \mbox{logit}(\pi_{ij}) = \eta + \alpha_i + \beta_j, \]
+<p>where \( \eta \) is a constant, the \( \alpha_i \) are age effects and the
+\( \beta_j \) are effects of desire for more children.
+To avoid redundant parameters we adopt the reference cell
+method and set \( \alpha_1 = \beta_1 = 0 \). The parameters may then be
+interpreted as follows:</p>
+
+<table class="tex-list"><tr><td>\(\eta\)</td><td>
+ is the logit of the probability of using contraception for women under 25
+who want more children, who serve as the reference cell,
+</tr></tr><tr><td>\(\alpha_i\)</td><td>
+ for \(i=2,3,4\) represents the
+<i> net</i> effect of ages 25&ndash;29, 30&ndash;39 and 40&ndash;49, compared to
+women under age 25 in the same category of desire for more children,
+</tr></tr><tr><td>\(\beta_2\)</td><td>
+ represents the <i> net</i> effect of wanting no more children,
+compared to women who want more children in the same age group.
+</tr></tr></table>
+<p>The model is additive in the logit scale, in the usual sense that the
+effect of one variable does not depend on the value of the other.
+For example, the effect of desiring no more children is \( \beta_2 \) in all
+four age groups. (This assumption must obviously be tested, and we
+shall see that it is not consistent with the data.)</p>
+
+<p>The deviance of the additive model is 16.8 on three d.f.
+With this value we can calculate three different tests of interest,
+all of which involve comparisons between nested models.</p>
+
+<ul><li><p>
+As we move from model \(D\) to \(A+D\) the deviance decreases by 37.2 while
+we lose three d.f.
+This statistic tests the hypothesis \(H_0: \alpha_i=0\) for all \(i\),
+concerning the <i> net</i> effect of age
+after adjusting for desire for more children, and is highly significant.
+</p></li><li><p>
+As we move from model \(A\) to \(A+D\) we reduce the deviance by 49.7 at the
+expense of one d.f.  This chi-squared statistic tests the hypothesis
+\(H_0: \beta_2=0\) concerning the <i> net</i> effect of desire for
+more children after adjusting for age. This value is highly significant,
+so we reject the hypothesis of no net effects.
+</p></li><li><p>
+Finally, the deviance of 16.8 on three d.f. is a measure of goodness of
+fit of the additive model: it compares this model with the saturated model,
+which adds an interaction between the two factors. Since the deviance
+exceeds 11.3, the one-percent critical value in the chi-squared distribution for
+three d.f., we conclude that the additive model fails to fit
+the data.
+</p></li></ul>
+<p>Table <a href='#t_3_9'>3.9</a> shows parameter estimates for the additive model.
+We show briefly how they would be interpreted, although we have evidence
+that the additive model does not fit the data.</p>
+
+<a name='t_3_9'></a><p class='text-center'>Table 3.9. Parameter Estimates for Additive Logit Model of<br/>Contraceptive Use by Age (Grouped) and Desire for Children</p>
+<table class='tex-table'>
+<tr class='bt bb'><td colspan='2' align='left'>Parameter</td><td class='al'>Symbol</td><td class='ar'>Estimate</td><td class='ar'>Std.&nbsp;Error</td><td class='ar'>\(z\)-ratio</td></tr>
+<tr class='bt'><td colspan='2' align='left'>Constant</td><td class='al'>\(\eta\)</td><td class='ar'>\(-\)1.694</td><td class='ar'>0.135</td><td class='ar'>\(-\)12.53</td></tr>
+<tr><td class='al'>Age</td><td class='al'>25&ndash;29</td><td class='al'>\(\alpha_2\)</td><td class='ar'>0.368</td><td class='ar'>0.175</td><td class='ar'>2.10</td></tr>
+<tr><td class='al'></td><td class='al'>30&ndash;39</td><td class='al'>\(\alpha_3\)</td><td class='ar'>0.808</td><td class='ar'>0.160</td><td class='ar'>5.06</td></tr>
+<tr><td class='al'></td><td class='al'>40&ndash;49</td><td class='al'>\(\alpha_4\)</td><td class='ar'>1.023</td><td class='ar'>0.204</td><td class='ar'>5.01</td></tr>
+<tr class='bb'><td class='al'>Desire</td><td class='al'>No</td><td class='al'>\(\beta_2\)</td><td class='ar'>0.824</td><td class='ar'>0.117</td><td class='ar'>7.04</td></tr>
+</table>
+
+<p>The estimates of the \( \alpha_j \)&rsquo;s  show a monotonic effect of age on
+contraceptive use. Although there is evidence that this effect may
+vary depending on whether women desire more children, on average the
+odds of using contraception among women age 40 or higher are nearly three
+times the corresponding odds among women under age 25 in the same
+category of desire for another child.</p>
+
+<p>Similarly, the estimate of \( \beta_2 \) shows
+a strong effect of wanting no more children. Although there is evidence
+that this effect may depend on the woman&rsquo;s age, on average the odds of using
+contraception among women who desire no more children are more than
+double the corresponding odds among women in the same age group
+who desire another child.</p>
+
+<h4>3.5.4 A Model With Interactions</h4>
+<p>We now consider a model which includes an interaction of age
+and desire for more children, denoted \( A D \) in Table <a href='#t_3_8'>3.8</a>.
+The model is</p>
+
+\[ \mbox{logit}(\pi_{ij}) = \eta + \alpha_i + \beta_j + (\alpha\beta)_{ij}, \]
+<p>where \( \eta \) is a constant, the \( \alpha_i \) and \( \beta_j \) are the
+main effects of age and desire, and \( (\alpha\beta)_{ij} \) is the
+interaction effect.
+To avoid redundancies we follow the reference cell method and set
+to zero all parameters involving the first cell, so that
+\( \alpha_1 = \beta_1 = 0 \), \( (\alpha\beta)_{1j} = 0 \) for all \( j \)
+and \( (\alpha\beta)_{i1} = 0 \) for all \( i \). The remaining parameters
+may be interpreted as follows:</p>
+
+<table class="tex-list"><tr><td>\(\eta\)</td><td>
+is the logit of the reference group: women under age 25 who desire
+more children.
+</tr></tr><tr><td>\(\alpha_i\)</td><td>
+ for \(i=2,3,4\) are the effects of the age groups
+25&ndash;29, 30&ndash;39 and 40&ndash;49, compared to ages under 25,
+for women who want another child.
+</tr></tr><tr><td>\(\beta_2\)</td><td>
+ is the effect of desiring no more children, compared to
+wanting another child, for women under age 25.
+</tr></tr><tr><td>\((\alpha\beta)_{i2}\)</td><td>
+ for \(i=2,3,4\) is the <i> additional</i> effect of
+desiring no more children, compared to wanting another child,
+for women in age group \(i\) rather than under age 25.
+(This parameter is also the <i> additional</i> effect of age group
+\(i\), compared to ages under 25,
+for women who desire no more children rather than those who want more.)
+</tr></tr></table>
+<p>One way to simplify the presentation of results involving interactions
+is to combine the interaction terms with one of the main effects,
+and present them as effects of one factor within categories or
+levels of the other. In our example, we can combine the
+interactions \( (\alpha\beta)_{i2} \) with the main effects
+of desire \( \beta_2 \), so that</p>
+
+<table class="tex-list"><tr><td>\(\beta_2\) + \((\alpha\beta)_{i2}\)</td><td>
+ is the effect of desiring no more children,
+compared to wanting another child, for women in age group \(i\).
+</tr></tr></table>
+<p>Of course, we could also combine the interactions with the main
+effects of age, and speak of age effects which are specific to women in each
+category of desire for more children.
+The two formulations are statistically equivalent, but the one chosen
+here seems demographically more sensible.</p>
+
+<p>To obtain estimates based on this parameterization of the model we have
+to define the columns of the model matrix as follows. Let \( a_i \) be a
+dummy variable representing age group \( i \), for \( i=2,3,4 \), and let \( d \)
+take the value one for women who want no more children and zero
+otherwise. Then the model matrix \( \boldsymbol{X} \) should have a column of ones to
+represent the constant or reference cell, the age dummies \( a_2, a_3 \)
+and \( a_4 \) to represent the age effects for women in the reference cell,
+and then the dummy \( d \) and the products \( a_2 d, a_3 d \) and \( a_4 d \), to
+represent the effect of wanting no more children at ages \( <25 \), 25&ndash;29,
+30&ndash;39 and 40&ndash;49, respectively. The resulting estimates and standard
+errors are shown in Table <a href='#t_3_10'>3.10</a>.</p>
+
+<a name='t_3_10'></a><p class='text-center'>Table 3.10. Parameter Estimates for Model of Contraceptive Use With an<br/>Interaction Between Age (Grouped) and Desire for More Children</p>
+<table class='tex-table'>
+<tr class='bt bb'><td colspan='2' align='left'>Parameter</td><td class='ar'>Estimate</td><td class='ar'>Std.&nbsp;Error</td><td class='ar'>\(z\)-ratio</td></tr>
+<tr class='bt'><td class='al'>Constant</td><td class='al'></td><td class='ar'>\(-\)1.519</td><td class='ar'>0.145</td><td class='ar'>\(-\)10.481</td></tr>
+<tr><td class='al'>Age</td><td class='al'>25&ndash;29</td><td class='ar'>0.368</td><td class='ar'>0.201</td><td class='ar'>1.832</td></tr>
+<tr><td class='al'></td><td class='al'>30&ndash;39</td><td class='ar'>0.451</td><td class='ar'>0.195</td><td class='ar'>2.311</td></tr>
+<tr><td class='al'></td><td class='al'>40&ndash;49</td><td class='ar'>0.397</td><td class='ar'>0.340</td><td class='ar'>1.168</td></tr>
+<tr><td class='al'>Desires</td><td class='al'>\(<\)25</td><td class='ar'>0.064</td><td class='ar'>0.330</td><td class='ar'>0.194</td></tr>
+<tr><td class='al'>No More</td><td class='al'>25&ndash;29</td><td class='ar'>0.331</td><td class='ar'>0.241</td><td class='ar'>1.372</td></tr>
+<tr><td class='al'>at Age</td><td class='al'>30&ndash;39</td><td class='ar'>1.154</td><td class='ar'>0.174</td><td class='ar'>6.640</td></tr>
+<tr class='bb'><td class='al'></td><td class='al'>40&ndash;49</td><td class='ar'>1.431</td><td class='ar'>0.353</td><td class='ar'>4.057</td></tr>
+</table>
+
+<p>The results indicate that contraceptive use among women who
+desire more children varies little by age, increasing up to
+age 35&ndash;39 and then declining somewhat.
+On the other hand, the effect of wanting no more children
+increases dramatically with age, from no effect among
+women below age 25 to an odds ratio of 4.18 at ages 40&ndash;49.
+Thus, in the older cohort the odds of
+using contraception among women who want no more children
+are four times the corresponding odds among women who
+desire more children.
+The results can also be summarized by noting that
+contraceptive use for spacing (i.e. among women who desire
+more children) does not vary much by age, but
+contraceptive use for limiting fertility (i.e among women
+who want no more children) increases sharply with age.</p>
+
+<h4>3.5.5 Analysis of Covariance Models</h4>
+<p>Since the model with an age by desire interaction is saturated,
+we have essentially reproduced the observed data.
+We now consider whether we could attain a more parsimonious
+fit by treating age as a variate and desire for more children
+as a factor, in the spirit of covariance analysis models.</p>
+
+<p>Table <a href='#t_3_11'>3.11</a> shows deviances for three models that
+include a linear effect of age using, as before, the midpoints
+of the age groups.
+To emphasize this point we use \( X \) rather than \( A \) to denote age.</p>
+
+<a name='t_3_11'></a><p class='text-center'>Table 3.11. Deviance Table for Models of Contraceptive Use<br/>by Age (Linear) and Desire for More Children</p>
+<table class='tex-table'>
+<tr class='bt bb'><td class='al'>Model</td><td class='al'>Notation</td><td class='al'>\(\mbox{logit}(\pi_{ij})\)</td><td class='ar'>Deviance</td><td class='ar'>d.f.</td></tr>
+<tr class='bt'><td class='al'>One Line</td><td class='al'>\(X\)</td><td class='al'>\(\alpha  +\beta   x_i\)</td><td class='ar'>68.88</td><td class='ar'>6</td></tr>
+<tr><td class='al'>Parallel Lines</td><td class='al'>\(X+D\)</td><td class='al'>\(\alpha_j+\beta   x_i\)</td><td class='ar'>18.99</td><td class='ar'>5</td></tr>
+<tr class='bb'><td class='al'>Two Lines</td><td class='al'>\(X D\)</td><td class='al'>\(\alpha_j+\beta_j x_i\)</td><td class='ar'>9.14</td><td class='ar'>4</td></tr>
+</table>
+
+<p>The first model assumes that the logits are linear functions of
+age. This model fails to fit the data, which is not surprising
+because it ignores desire for more children, a factor that has
+a large effect on contraceptive use.</p>
+
+<p>The next model, denoted \( X+D \), is analogous to the two-factor additive
+model. It allows for an effect of desire for more children which is the
+same at all ages.  This common effect is modelled by allowing each
+category of desire for more children to have its own constant, and
+results in two parallel lines. The common slope is the effect of age
+within categories of desire for more children. The reduction in
+deviance of 39.9 on one d.f.&nbsp;indicates that desire for no more children
+has a strong effect on contraceptive use after controlling for a linear
+effect of age. However, the attained deviance of 19.0 on five d.f.&nbsp;is
+significant, indicating that the assumption of two parallel lines is
+not consistent with the data.</p>
+
+<p>The last model in the table, denoted \( X D \), includes an interaction
+between the linear effect of age and desire, and thus allows the effect
+of desire for more children to vary by age. This variation is modelled
+by allowing each category of desire for more children to have its own
+slope in addition to its own constant, and results in two regression
+lines.  The reduction in deviance of 9.9 on one d.f.&nbsp;is a test of the
+hypothesis of parallelism or common slope \( H_0: \beta_1=\beta_2 \), which
+is rejected with a P-value of 0.002. The model deviance of 9.14 on four
+d.f.&nbsp;is just below the five percent critical value of the chi-squared
+distribution with four d.f., which is 9.49. Thus, we have no evidence
+against the assumption of two straight lines.</p>
+
+<p>Before we present parameter estimates we need to discuss briefly the
+choice of parameterization. Direct application of the reference cell
+method leads us to use four variables: a dummy variable always equal to
+one, a variable \( x \) with the mid-points of the age groups, a dummy
+variable \( d \) which takes the value one for women who want no more
+children, and a variable \( d x \) equal to the product of this dummy by
+the mid-points of the age groups. This choice leads to parameters
+representing the constant and slope for women who want another child,
+and parameters representing the <i>difference</i> in constants and
+slopes for women who want no more children.</p>
+
+<p>An alternative is to simply report the constants and slopes for the two
+groups defined by desire for more children. This parameterization can
+be easily obtained by omitting the constant and using the following
+four variables: \( d \) and \( 1-d \) to represent the two constants and \( d x \)
+and \( (1-d)x \) to represent the two slopes. One could, of course, obtain
+the constant and slope for women who want no more children from the
+previous parameterization simply by adding the main effect and the
+interaction. The simplest way to obtain the standard errors, however,
+is to change parameterization.</p>
+
+<p>In both cases the constants represent effects at age zero and are not
+very meaningful. To obtain parameters that are more directly
+interpretable, we can center age around the sample mean, which is 30.6
+years.  Table <a href='#t_3_12'>3.12</a> shows parameter estimates obtained under
+the two parameterizations discussed above, using the mid-points of the
+age groups minus the mean.</p>
+
+<a name='t_3_12'></a><p class='text-center'>Table 3.12. Parameter Estimates for Model of Contraceptive Use With an<br/>Interaction Between Age (Linear) and Desire for More Children</p>
+<table class='tex-table'>
+<tr class='bt bb'><td class='al'>Desire</td><td class='al'>Age</td><td class='al'>Symbol</td><td class='ar'>Estimate</td><td class='ar'>Std.&nbsp;Error</td><td class='ar'>\(z\)-ratio</td></tr>
+<tr class='bt'><td class='al'>More</td><td class='al'>Constant</td><td class='al'>\(\alpha_1\)</td><td class='ar'>\(-\)1.1944</td><td class='ar'>0.0786</td><td class='ar'>\(-\)15.20</td></tr>
+<tr><td class='al'></td><td class='al'>Slope</td><td class='al'>\(\beta_1\)</td><td class='ar'>0.0218</td><td class='ar'>0.0104</td><td class='ar'>2.11</td></tr>
+<tr><td class='al'>No More</td><td class='al'>Constant</td><td class='al'>\(\alpha_2\)</td><td class='ar'>\(-\)0.4369</td><td class='ar'>0.0931</td><td class='ar'>\(-\)4.69</td></tr>
+<tr class='bb'><td class='al'></td><td class='al'>Slope</td><td class='al'>\(\beta_2\)</td><td class='ar'>0.0698</td><td class='ar'>0.0114</td><td class='ar'>6.10</td></tr>
+<tr class='bt'><td class='al'>Difference</td><td class='al'>Constant</td><td class='al'>\(\alpha_2-\alpha_1\)</td><td class='ar'>0.7575</td><td class='ar'>0.1218</td><td class='ar'>6.22</td></tr>
+<tr class='bb'><td class='al'></td><td class='al'>Slope</td><td class='al'>\(\beta_2-\beta_1\)</td><td class='ar'>0.0480</td><td class='ar'>0.0154</td><td class='ar'>3.11</td></tr>
+</table>
+
+<p>Thus, we find that contraceptive use increases with age, but at a
+faster rate among women who want no more children. The estimated
+slopes correspond to increases in the odds of two and seven percent
+per year of age for women who want and do not want more children,
+respectively. The difference of the slopes is significant by
+a likelihood ratio test or by Wald&rsquo;s test, with a \( z \)-ratio
+of 3.11.</p>
+
+<p>Similarly, the effect of wanting no more children increases
+with age. The odds ratio around age 30.6&mdash;which we obtain
+by exponentiating the difference in constants&ndash;is 2.13, so not wanting
+more children at this age is associated with a doubling of the
+odds of using contraception. The difference in slopes of
+0.048 indicates that this differential increases five percent per
+year of age.</p>
+
+<p>The parameter estimates in Table <a href='#t_3_12'>3.12</a> may be used
+to produce fitted logits for each age group and category of
+desire for more children. In turn, these can be compared with
+the empirical logits for the original eight groups, to obtain a
+visual impression of the nature of the relationships studied
+and the quality of the fit.  The comparison appears in Figure
+<a href='#f_3_3'>3.3</a>, with the solid line representing the linear
+age effects (the dotted lines are discussed below).
+The graph shows clearly how the effect of wanting no more children
+increases with age (or, alternatively, how age has much stronger
+effects among limiters than among spacers).</p>
+
+<a name='f:cuse2'></a><a name='f_3_3'></a><p style='text-align:center'>Figure 3.3 Observed and Fitted Logits for Models of Contraceptive Use<br/>With Effects of Age (Linear and Quadratic), Desire for More Children</p><img src="cuse2.png" class="img-responsive center-block"/>
+<p>The graph also shows that the assumption of linearity of age
+effects, while providing a reasonably parsimonious description
+of the data, is somewhat suspect, particularly at higher ages.
+We can improve the fit by adding higher-order terms on age.
+In particular</p>
+
+<ul><li><p>
+Introducing a quadratic term on age yields an excellent fit,
+with a deviance of 2.34 on three d.f. This model consists of
+two parabolas, one for each category of desire for more children,
+but with the same curvature.
+</p></li><li><p>
+Adding a quadratic age by desire interaction further
+reduces the deviance to 1.74 on two d.f.
+This model allows for two separate parabolas tracing contraceptive
+use by age, one for each category of desire.
+</p></li></ul>
+<p>Although the linear model passes the goodness of fit test, the
+fact that we can reduce the deviance by 6.79 at the expense of
+one d.f.&nbsp;indicates significant curvature.
+The dotted line in Figure <a href='#f_3_3'>3.3</a> shows the intermediate model,
+where the curvature by age is the same for the two groups.
+While the fit is much better, the overall substantive
+conclusions do not change.</p>
+

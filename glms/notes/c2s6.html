@@ -1,0 +1,217 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+pager: true
+---
+
+
+<h3>2.6 One-Way Analysis of Variance</h3>
+<p>We now consider models where the predictors are categorical
+variables or <i>factors</i> with a discrete number of levels.
+To illustrate the use of these models we will group the
+index of social setting (and later the index of family planning
+effort) into discrete categories.</p>
+
+<h4>2.6.1 The One-Way Layout</h4>
+<p>Table <a href='#t_2_10'>2.10</a> shows the percent decline in the CBR
+for the 20 countries in our illustrative dataset, classified
+according to the index of social setting in three categories:
+low (under 70 points), medium (70&ndash;79) and high (80 or more).</p>
+
+<a name='t_2_10'></a><p class='text-center'>Table 2.10. CBR Decline by Levels of Social Setting</p>
+<table class='tex-table'>
+<tr class='bt bb'><td class='al'>Setting</td><td class='al'>Percent decline in CBR</td></tr>
+<tr class='bt'><td class='al'>Low</td><td class='al'>1, 0, 7, 21, 13, 4, 7</td></tr>
+<tr><td class='al'>Medium</td><td class='al'>10, 6, 2, 0, 25</td></tr>
+<tr class='bb'><td class='al'>High</td><td class='al'>9, 11, 29, 29, 40, 21, 22, 29</td></tr>
+</table>
+
+<p>It will be convenient to modify our notation to reflect the
+one-way layout of the data explicitly.
+Let \( k \) denote the number of groups or levels of the factor,
+\( n_i \) denote the number of observations in group \( i \), and
+let  \( y_{ij} \) denote the response for the \( j \)-th unit
+in the \( i \)-th group, for \( j=1,\ldots,n_i \), and \( i=1,\ldots,k \).
+In our example \( k=3 \) and \( y_{ij} \) is the CBR decline in the
+\( j \)-th country in the \( i \)-th category of social setting, with
+\( i=1,2,3; j=1, \ldots, n_i; n_1=7, n_2=5 \) and \( n_3=8 \)).</p>
+
+<h4>2.6.2 The One-Factor Model</h4>
+<p>As usual, we treat \( y_{ij} \) as a realization of a random
+variable \( Y_{ij} \sim N(\mu_{ij}, \sigma^2) \), where the
+variance is the same for all observations. In terms of the
+systematic structure of the model, we assume that</p>
+
+<a name='e_2_18'></a>\[\tag{2.18}\mu_{ij} = \mu + \alpha_i,\]
+<p>where \( \mu \) plays the role of the constant and \( \alpha_i \)
+represents the effect of level \( i \) of the factor.</p>
+
+<p>Before we proceed further, it is important to note that the
+model as written is not identified. We have essentially \( k \)
+groups but have introduced \( k+1 \) linear parameters.
+The solution is to introduce a constraint, and there are
+several ways in which we could proceed.</p>
+
+<p>One approach is to set \( \mu=0 \) (or simply drop \( \mu \)).
+If we do this, the \( \alpha_i \)&rsquo;s become <i>cell means</i>, with
+\( \alpha_i \) representing the expected response in group \( i \).
+While simple and attractive, this approach does not generalize
+well to models with more than one factor.</p>
+
+<p>Our preferred alternative is to set one of the \( \alpha_i \)&rsquo;s to
+zero. Conventionally we set \( \alpha_1=0 \), but any of the groups
+could be chosen as the <i>reference cell</i> or level.
+In this approach \( \mu \) becomes the expected response in the
+reference cell, and \( \alpha_i \) becomes the effect of level
+\( i \) of the factor, compared to the reference level.</p>
+
+<p>A third alternative is to require the group effects to add-up
+to zero, so \( \sum \alpha_i = 0 \).  In this case \( \mu \) represents
+some sort of overall expected response, and \( \alpha_i \) measures
+the extent to which responses at level \( i \) of the factor
+deviate from the overall mean. Some statistics texts refer to
+this constraint as the &lsquo;usual&rsquo; restrictions, but I think the
+reference cell method is now used more widely in social research.</p>
+
+<p>A variant of the &lsquo;usual&rsquo; restrictions is to require a
+weighted sum of the effects to add up to zero, so
+\( \sum w_i \alpha_i = 0 \).  The weights are often taken to
+be the number of observations in each group, so  \( w_i=n_i \).
+In this case \( \mu \) is a weighted average representing the
+expected response, and \( \alpha_i \) is, as before, the extent
+to which responses at level \( i \) of the factor deviate from
+the overall mean.</p>
+
+<p>Each of these parameterizations can easily be translated into one of
+the others, so the choice can rest on practical considerations.  The
+reference cell method is easy to implement in a regression context and
+the resulting parameters have a clear interpretation.</p>
+
+<h4>2.6.3 Estimates and Standard Errors</h4>
+<p>The model in Equation <a href='#e_2_18'>2.18</a> is a special case of the
+generalized linear model, where the design matrix \( \boldsymbol{X} \) has
+\( k+1 \) columns: a column of ones representing the constant,
+and \( k \) columns of indicator variables, say \( x_1, \ldots, x_k \),
+where \( x_i \) takes the value one for observations at
+level \( i \) of the factor and the value zero otherwise.</p>
+
+<p>Note that the model matrix as defined so far is rank deficient,
+because the first column is the sum of the last \( k \). Hence
+the need for constraints. The cell means approach is
+equivalent to dropping the constant, and the reference cell
+method is equivalent to dropping one of the indicator
+or dummy variables representing the levels of the factor.
+Both approaches are easily implemented.  The other two
+approaches, which set to zero either the unweighted or weighted
+sum of the effects, are best implemented using Lagrange
+multipliers and will not be considered here.</p>
+
+<p>Parameter estimates, standard errors and \( t \) ratios can
+then be obtained from the general results of Sections 2.2 and
+2.3. You may be interested to know that the estimates of
+the regression coefficients in the one-way layout are simple
+functions of the cell means. Using the reference cell method,</p>
+
+\[ \hat{\mu} = \bar{y}_1 \quad\mbox{and}\quad
+\hat{\alpha_i} = \bar{y}_i-\bar{y}_1 \:\mbox{for}\:i>1, \]
+<p>where \( \bar{y}_i \) is the average of the responses at
+level \( i \) of the factor.</p>
+
+<p>Table <a href='#t_2_11'>2.11</a> shows the estimates for our sample data.
+We expect a CBR decline of almost 8% in countries with low
+social setting (the reference cell).
+Increasing social setting to medium or high
+is associated with additional declines of one and 16
+percentage points, respectively, compared to low setting.</p>
+
+<a name='t_2_11'></a><p class='text-center'>Table 2.11. Estimates for One-Way Anova Model of<br/>CBR Decline by Levels of Social Setting</p>
+<table class='tex-table'>
+<tr class='bt bb'><td class='al'>Parameter</td><td class='ar'>Symbol</td><td class='ar'>Estimate</td><td class='ar'>Std. Error</td><td class='ar'>\(t\)-ratio</td></tr>
+<tr class='bt'><td class='al'>Low</td><td class='ar'>\(\mu\)</td><td class='ar'>7.571</td><td class='ar'>3.498</td><td class='ar'>2.16</td></tr>
+<tr><td class='al'>Medium (vs.&nbsp;low)</td><td class='ar'>\(\alpha_2\)</td><td class='ar'>1.029</td><td class='ar'>5.420</td><td class='ar'>0.19</td></tr>
+<tr class='bb'><td class='al'>High (vs.&nbsp;low)</td><td class='ar'>\(\alpha_3\)</td><td class='ar'>16.179</td><td class='ar'>4.790</td><td class='ar'>3.38</td></tr>
+</table>
+
+<p>Looking at the \( t \) ratios we see that the difference between medium
+and low setting is not significant, so we accept \( H_0: \alpha_2=0 \),
+whereas the difference between high and low setting, with a
+\( t \)-ratio of 3.38 on 17 d.f.&nbsp;and a two-sided P-value of 0.004, is
+highly significant, so we reject \( H_0:\alpha_3=0 \).
+These \( t \)-ratios test the significance of two particular contrasts:
+medium vs.&nbsp;low and high vs.&nbsp;low. In the next subsection we
+consider an overall test of the significance of social setting.</p>
+
+<h4>2.6.4 The One-Way Anova Table</h4>
+<p>Fitting the model with social setting treated as a factor
+reduces the \( \mbox{RSS} \) from 2650.2 (for the null model) to
+\( 1456.4 \), a gain of 1193.8 at the expense of two degrees of
+freedom (the two \( \alpha \)&rsquo;s). We can contrast this gain
+with the remaining \( \mbox{RSS} \) of 1456.4 on 17 d.f. The calculations
+are laid out in Table <a href='#t_2_12'>2.12</a>, and lead to an \( F \)-test
+of 6.97 on 2 and 17 d.f., which has a P-value of 0.006.
+We therefore reject the hypothesis  \( H_0: \alpha_2=\alpha_3=0 \)
+of no setting effects, and conclude that the expected
+response depends on social setting.</p>
+
+<a name='t_2_12'></a><p class='text-center'>Table 2.12. Analysis of Variance for One-Factor Model<br/>of CBR Decline by Levels of Social Setting</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al'>Source of</td><td class='ar'>Sum of</td><td class='ar'>Degrees of</td><td class='ar'>Mean</td><td class='ar'>\(F\)-</td></tr>
+<tr class='bb'><td class='al'>variation</td><td class='ar'>squares</td><td class='ar'>Freedom</td><td class='ar'>squared</td><td class='ar'>ratio</td></tr>
+<tr class='bt'><td class='al'>Setting</td><td class='ar'>1193.8</td><td class='ar'>2</td><td class='ar'>596.9</td><td class='ar'>6.97</td></tr>
+<tr class='bb'><td class='al'>Residual</td><td class='ar'>1456.4</td><td class='ar'>17</td><td class='ar'>85.7</td><td></td></tr>
+<tr class='bt bb'><td class='al'>Total</td><td class='ar'>2650.2</td><td class='ar'>19</td><td></td><td></td></tr>
+</table>
+
+<p>Having established that social setting has an effect
+on CBR decline, we
+can inspect the parameter estimates and \( t \)-ratios to learn
+more about the nature of the effect. As noted earlier,
+the difference between high and low settings is significant,
+while that between medium and low is not.</p>
+
+<p>It is instructive to calculate the Wald test for this
+example. Let \( \boldsymbol{\alpha} = (\alpha_2,\alpha_3)' \) denote
+the two setting effects.  The estimate and its
+variance-covariance matrix, calculated using the general
+results of Section 2.2, are</p>
+
+\[ \hat{\boldsymbol{\alpha}} =
+\left( \begin{array}{r} 1.029\\16.179 \end{array} \right)
+ \quad\mbox{and}\quad
+\hat{\mbox{var}}(\hat{\boldsymbol{\alpha}}) =
+\left( \begin{array}{rr} 29.373& 12.239 \\ 
+        12.239& 22.948 \end{array} \right). \]
+<p>The Wald statistic is</p>
+
+\[ W = \hat{\boldsymbol{\alpha}}' \:
+    \hat{\mbox{var}}^{-1}(\hat{\boldsymbol{\alpha}}) \:
+    \hat{\boldsymbol{\alpha}}
+= 13.94, \]
+<p>and has approximately a chi-squared distribution with two d.f.
+Under the assumption of normality, however, we can divide by two to
+obtain \( F \) = 6.97, which has an \( F \) distribution with two and 17
+d.f., and coincides with the test based on the reduction
+in the residual sum of squares, as shown in Table <a href='#t_2_12'>2.12</a>.</p>
+
+<h4>2.6.5 The Correlation Ratio</h4>
+<p>Note from Table <a href='#t_2_12'>2.12</a>
+that the model treating social setting as a factor with three
+levels has reduced the \( \mbox{RSS} \) by 1456.6 out of 2650.2, thereby
+explaining 45.1%. The square root of the proportion of
+variance explained by a discrete factor is called the
+<i>correlation ratio</i>, and is often denoted \( \eta \).
+In our example \( \hat{\eta}=0.672 \).</p>
+
+<p>If the factor has only two categories the resulting coefficient
+is called the <i>point-biserial correlation</i>, a measure
+often used in psychometrics to correlate a test score
+(a continuous variable) with the answer to a dichotomous item
+(correct or incorrect).  Note that both measures are
+identical in construction to Pearson&rsquo;s correlation coefficient.
+The difference in terminology reflects whether the predictor
+is a continuous variable with a linear effect or a discrete
+variable with two or more than two categories.</p>
+

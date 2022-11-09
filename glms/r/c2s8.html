@@ -1,0 +1,256 @@
+---
+layout: default
+section: glms
+tab: "R Logs"
+pager: true
+---
+
+
+<h3>2.8 Analysis of Covariance Models</h3>
+<p>
+We now consider models that combine continuous and categorical predictors,
+traditionally called "ancova" models. We illustrate them by treating
+social setting as a continuous covariate with a linear effect and
+program effort as a discrete factor with three levels: low, medium
+and strong:
+</p>
+<pre class='r'>
+> m2cg <- lm(change ~ setting + effort.g, data=fpe)
+> summary(m2cg)
+Call:
+lm(formula = change ~ setting + effort.g, data = fpe)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-10.0386  -2.8198   0.1036   1.3269  11.4416 
+
+Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)       -5.9540     7.1660  -0.831    0.418    
+setting            0.1693     0.1056   1.604    0.128    
+effort.gModerate   4.1439     3.1912   1.299    0.213    
+effort.gStrong    19.4476     3.7293   5.215 8.51e-05 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 5.732 on 16 degrees of freedom
+Multiple R-squared:  0.8016,	Adjusted R-squared:  0.7644 
+F-statistic: 21.55 on 3 and 16 DF,  p-value: 7.262e-06
+</pre>
+<p>
+I included the <code>data</code> parameter, even though the data are
+attached, because that ensures propagation of row names when we use
+extractor functions, and will be convenient when we consider diagnostics.
+</p>
+<p>
+Compare the coefficients with Table 2.23 in the notes.
+Countries with strong programs show steeper fertility declines, 
+on average 19 percentage points more, than countries with weak programs 
+and the same social setting.  
+</p>
+<p>
+To test significance of the net effect of effort we call the
+<code>anova()</code> function:
+</p>
+<pre class='r'>
+> anova(m2cg)
+Analysis of Variance Table
+
+Response: change
+          Df  Sum Sq Mean Sq F value    Pr(>F)    
+setting    1 1201.08 1201.08  36.556 1.698e-05 ***
+effort.g   2  923.43  461.71  14.053 0.0002999 ***
+Residuals 16  525.69   32.86                      
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+</pre>
+<p>
+Compare the results with Table 2.24 in the notes. We obtain an
+F-ratio of 14.1 on 2 and 16 d.f.
+</p>
+<p>
+This analysis has adjusted for linear effects of setting, whereas 
+the analysis of <a href='c2s7.html'>Section 2.7</a> adjusted for
+the effects of setting grouped in three categories.
+As it happens, both analyses lead to similar estimates of the difference
+between strong and weak programs at the same level of setting.
+</p>
+<h4>Plotting Observed and Fitted</h4> 
+<p>
+Let us do Figure 2.5, a plot of change versus setting identifying 
+the level of program effort corresponding to each point.
+I will also superimpose the three parallel lines corresponding
+to the fitted model. 
+</p>
+<p>
+This is easily done using <code>plot()</code> for the data
+and <code>text()</code> for the labels. We could use <code>abline()</code>
+for the fitted lines, but we will plot the actual fitted values instead,
+so we restrict the lines to the values of setting where we actually 
+have data for each level of effort
+</p>
+<pre class='r'>
+> xy <- cbind(setting, fitted(m2cg))
+> plot(setting, change, xlim=c(35,100))
+> text(setting, change, labels=effort.g, pos=4, cex=0.75)
+> lines(xy[effort.g=="Weak",])
+> lines(xy[effort.g=="Moderate",])
+> lines(xy[effort.g=="Strong",])
+> dev.print(png,"fig25.png",width=500,height=400)
+RStudioGD 
+        2 
+</pre>
+<img src="fig25.png" class="img-responsive center-block"/>
+<p class="em text-center">Figure 2.5: Analysis of Covariance Model</p>
+<p>
+If you wanted to label the points using just the initials "w", "m","s",
+you could write <code>labels=tolower(substr(effort.g,1,1))</code>,
+using <code>substr()</code> to get the first character and 
+<code>tolower()</code> to change it to lower case. 
+</p>
+<h4>Adjusted and Unadjusted Means</h4>
+<p>
+Let us turn to the comparison of adjusted and unadjusted declines 
+in Table 2.26, a useful way to present regression results to a 
+non-technical audience.
+</p>
+<p>
+To obtain adjusted estimates we predict fertility change for each
+country using its observed level of effort, but with social setting
+set to the sample mean, which happens to be 72.1. One way
+to do this is to obtain the model matrix, available through the 
+extractor function <code>model.matrix</code>, change the setting
+column to the mean, and then multiply by the coefficients
+using <code>%*%</code> to denote matrix multiplication
+</p>
+<pre class='r'>
+> X <- model.matrix(m2cg)
+> X[,2] <- mean(setting)
+> adj <- X %*%coef(m2cg)
+</pre>
+<p>
+The next step is to compute observed and adjusted means for
+each category of effort, which we can do with <code>tapply()</code>.
+I bind the result using <code>data.frame</code> to get column names:
+</p>
+<pre class='r'>
+> data.frame(obs = tapply(change,effort.g, mean),
++            adj = tapply(adj,   effort.g, mean))
+               obs       adj
+Weak      5.000000  6.250163
+Moderate  9.333333 10.394077
+Strong   27.857143 25.697771
+</pre>
+<p>
+Countries with strong programs average a 28% decline in fertility,
+but they also tend to have higher settings; we estimate a slightly 
+smaller decline of about 26% at average social setting.
+The estimate is based on the model, which adjusts linearly for setting
+and assumes that the slope is the same at all levels of effort.
+The next step will be to examine this assumption.
+</p>
+<p>
+The generic function <code>predict()</code> can calculate predictions
+for various models. One of the arguments taken by this function is
+a new dataset to use in the predictions. All we need is a three-row
+dataset, with setting set to 72.1 and effort set to Weak, Moderate,
+and Strong. The results are exactly the same as above.
+</p>
+<pre class='r'>
+> pds<-data.frame(
++   setting=rep(mean(setting),3),
++   effort.g=levels(effort.g))
+
+> pds
+  setting effort.g
+1    72.1     Weak
+2    72.1 Moderate
+3    72.1   Strong
+
+> predict(m2cg,newdata=pds)
+        1         2         3 
+ 6.250163 10.394077 25.697771 
+</pre>
+<p>
+In this example we proceeded from  first principles because the 
+calculations are easy to do, and you can see exactly what is 
+being done.
+</p>
+<h4>The Assumption of Parallelism</h4> 
+<p>
+We will now allow the linear relationship between change and setting
+to vary with level of effort, by introducing an interaction between
+setting and the indicators of effort.
+Before we do that we center the index of social setting by subtracting 
+the mean, a practice I highly recommend to simplify the interpretation
+of so-called "main"" effects when the model has interactions:
+</p>
+<pre class='r'>
+> setting.c <- setting - mean(setting)
+> m3cg <- lm(change ~ setting.c * effort.g)
+> summary(m3cg)
+Call:
+lm(formula = change ~ setting.c * effort.g)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-9.7364 -2.2036 -0.0549  1.8122 11.4571 
+
+Coefficients:
+                           Estimate Std. Error t value Pr(>|t|)  
+(Intercept)                 6.35583    2.47730   2.566   0.0224 *
+setting.c                   0.18357    0.13970   1.314   0.2099  
+effort.gModerate            3.58373    3.66235   0.979   0.3444  
+effort.gStrong             13.33320    8.20916   1.624   0.1266  
+setting.c:effort.gModerate -0.08684    0.23258  -0.373   0.7145  
+setting.c:effort.gStrong    0.45670    0.60392   0.756   0.4620  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 5.959 on 14 degrees of freedom
+Multiple R-squared:  0.8124,	Adjusted R-squared:  0.7454 
+F-statistic: 12.13 on 5 and 14 DF,  p-value: 0.0001112
+</pre>
+<p>
+Compare the parameter estimates with Table 2.27 in the notes.
+Because we centered setting, the coefficients for moderate and strong
+programs summarize differences by effort at mean setting, rather than 
+at setting zero (which is well outside the range of the data). 
+Thus, fertility decline averages 13 percentage points more under strong 
+than under weak programs in countries with average social setting. 
+</p>
+<p>
+The interaction terms can be used to compute how these differences 
+vary as we move away from the mean. 
+For example in countries which are ten points above the mean social 
+setting, the strong versus weak difference is  almost five percentage 
+points more than at the mean. 
+</p>
+<p>
+These differences, however, are not significant, as we verify
+using the <code>anova()</code> function to reproduce Table 2.28:
+</p>
+<pre class='r'>
+> anova(m3cg)
+Analysis of Variance Table
+
+Response: change
+                   Df  Sum Sq Mean Sq F value    Pr(>F)    
+setting.c           1 1201.08 1201.08 33.8263 4.476e-05 ***
+effort.g            2  923.43  461.71 13.0034 0.0006426 ***
+setting.c:effort.g  2   28.59   14.30  0.4026 0.6760530    
+Residuals          14  497.10   35.51                      
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+</pre>
+<p>
+The F-ratio for the interaction is 0.4 on 2 and 14 d.f.,
+so we have no evidence that the three slopes are not all the same.
+</p>
+<p>
+<i>Exercise</i>. Plot the data and the regression lines implied
+by the model with a linear setting by effort interaction. Note
+how the difference between strong and weak programs increases with
+social setting. The interaction is not significant, however, so
+we have no evidence that the lines are not in fact parallel.
+</p>

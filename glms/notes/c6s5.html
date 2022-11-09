@@ -1,0 +1,494 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h3>6.5 Models for Ordinal Response Data</h3>
+<p>Most of the models discussed so far are appropriate for the
+analysis of nominal responses.  They may be applied to
+<i>ordinal</i> data as well, but the models make no explicit
+use of the fact that the response categories are ordered.
+We now consider models designed specifically for the analysis
+of responses measured on an ordinal scale. Our discussion
+follows closely McCullagh (1980).</p>
+
+<h4>6.5.1 Housing Conditions in Copenhagen</h4>
+<p>We will illustrate the application of models for ordinal
+data using the data in Table <a href='#t_6_4'>6.4</a>, which was
+first published by Madsen (1976) and was reproduced in
+Agresti (1990, p.&nbsp;341).
+The table classifies 1681 residents of twelve areas in
+Copenhagen in terms of the type of housing they had,
+their feeling of influence on apartment management,
+their degree of contact with other residents,
+and their satisfaction with housing conditions.</p>
+
+<a name='t_6_4'></a><p class='text-center'>Table 6.4. Housing Condition in Copenhagen</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al'>Housing Type</td><td class='al'>Influence</td><td class='al'>Contact</td><td colspan='3' align='center'>Satisfaction</td></tr>
+<tr class='bb'><td class='al'></td><td class='al'></td><td class='al'></td><td class='ar'>low</td><td class='ar'>medium</td><td class='ar'>high</td></tr>
+<tr class='bt'><td class='al'>Tower block</td><td class='al'>low</td><td class='al'>low</td><td class='ar'>21</td><td class='ar'>21</td><td class='ar'>28</td></tr>
+<tr><td class='al'></td><td class='al'></td><td class='al'>high</td><td class='ar'>14</td><td class='ar'>19</td><td class='ar'>37</td></tr>
+<tr><td class='al'></td><td class='al'>medium</td><td class='al'>low</td><td class='ar'>34</td><td class='ar'>22</td><td class='ar'>36</td></tr>
+<tr><td class='al'></td><td class='al'></td><td class='al'>high</td><td class='ar'>17</td><td class='ar'>23</td><td class='ar'>40</td></tr>
+<tr><td class='al'></td><td class='al'>high</td><td class='al'>low</td><td class='ar'>10</td><td class='ar'>11</td><td class='ar'>36</td></tr>
+<tr><td class='al'></td><td class='al'></td><td class='al'>high</td><td class='ar'>3</td><td class='ar'>5</td><td class='ar'>23</td></tr>
+<tr><td class='al'>Apartments</td><td class='al'>low</td><td class='al'>low</td><td class='ar'>61</td><td class='ar'>23</td><td class='ar'>17</td></tr>
+<tr><td class='al'></td><td class='al'></td><td class='al'>high</td><td class='ar'>78</td><td class='ar'>46</td><td class='ar'>43</td></tr>
+<tr><td class='al'></td><td class='al'>medium</td><td class='al'>low</td><td class='ar'>43</td><td class='ar'>35</td><td class='ar'>40</td></tr>
+<tr><td class='al'></td><td class='al'></td><td class='al'>high</td><td class='ar'>48</td><td class='ar'>45</td><td class='ar'>86</td></tr>
+<tr><td class='al'></td><td class='al'>high</td><td class='al'>low</td><td class='ar'>26</td><td class='ar'>18</td><td class='ar'>54</td></tr>
+<tr><td class='al'></td><td class='al'></td><td class='al'>high</td><td class='ar'>15</td><td class='ar'>25</td><td class='ar'>62</td></tr>
+<tr><td class='al'>Atrium houses</td><td class='al'>low</td><td class='al'>low</td><td class='ar'>13</td><td class='ar'>9</td><td class='ar'>10</td></tr>
+<tr><td class='al'></td><td class='al'></td><td class='al'>high</td><td class='ar'>20</td><td class='ar'>23</td><td class='ar'>20</td></tr>
+<tr><td class='al'></td><td class='al'>medium</td><td class='al'>low</td><td class='ar'>8</td><td class='ar'>8</td><td class='ar'>12</td></tr>
+<tr><td class='al'></td><td class='al'></td><td class='al'>high</td><td class='ar'>10</td><td class='ar'>22</td><td class='ar'>24</td></tr>
+<tr><td class='al'></td><td class='al'>high</td><td class='al'>low</td><td class='ar'>6</td><td class='ar'>7</td><td class='ar'>9</td></tr>
+<tr><td class='al'></td><td class='al'></td><td class='al'>high</td><td class='ar'>7</td><td class='ar'>10</td><td class='ar'>21</td></tr>
+<tr><td class='al'>Terraced houses</td><td class='al'>low</td><td class='al'>low</td><td class='ar'>18</td><td class='ar'>6</td><td class='ar'>7</td></tr>
+<tr><td class='al'></td><td class='al'></td><td class='al'>high</td><td class='ar'>57</td><td class='ar'>23</td><td class='ar'>13</td></tr>
+<tr><td class='al'></td><td class='al'>medium</td><td class='al'>low</td><td class='ar'>15</td><td class='ar'>13</td><td class='ar'>13</td></tr>
+<tr><td class='al'></td><td class='al'></td><td class='al'>high</td><td class='ar'>31</td><td class='ar'>21</td><td class='ar'>13</td></tr>
+<tr><td class='al'></td><td class='al'>high</td><td class='al'>low</td><td class='ar'>7</td><td class='ar'>5</td><td class='ar'>11</td></tr>
+<tr class='bb'><td class='al'></td><td class='al'></td><td class='al'>high</td><td class='ar'>5</td><td class='ar'>6</td><td class='ar'>13</td></tr>
+</table>
+
+<p>In our analysis of these data we will treat housing satisfaction
+as an ordered response, with categories low, medium and high,
+and the other three factors as explanatory variables.</p>
+
+<a name='s_6_5_2'></a><h4>6.5.2 Cumulative Link Models</h4>
+<p>All of the models to be considered in this section arise
+from focusing on the <i>cumulative</i> distribution of the
+response. Let \( \pi_{ij} = \Pr\{Y_i=j\} \) denote the
+probability that the response of an individual with
+characteristics \( \boldsymbol{x}_i \) falls in the \( j \)-th category, and
+let \( \gamma_{ij} \) denote the corresponding cumulative
+probability</p>
+
+\[\tag{6.18}\gamma_{ij} = \Pr\{ Y_i \le j\}\]
+<p>that the response falls in the \( j \)-th category <i>or below</i>,
+so</p>
+
+\[\tag{6.19}\gamma_{ij} = \pi_{i1} + \pi_{i2} + \ldots + \pi_{ij}.\]
+<p>Let \( g(.) \) denote a link function mapping probabilities to
+the real line. Then the class of models that we will consider
+assumes that the transformed <i>cumulative</i> probabilities
+are a linear function of the predictors, of the form</p>
+
+<a name='e_6_20'></a>\[\tag{6.20}g(\gamma_{ij}) = \theta_j + \boldsymbol{x}_i'\boldsymbol{\beta}.\]
+<p>In this formulation \( \theta_j \) is a constant representing
+the baseline value of the transformed cumulative probability
+for category \( j \),
+and \( \boldsymbol{\beta} \) represents the effect of the covariates on the
+transformed cumulative probabilities. Since we write the
+constant explicitly, we assume that the predictors do not
+include a column of ones.
+Note that there is just one equation:
+if \( x_{ik} \) increases by one, then <i>all</i>
+transformed cumulative probabilities increase by \( \beta_k \).
+Thus, this model is more parsimonious than a multinomial
+logit or a hierarchical logit model; by focusing on the
+cumulative probabilities we can postulate a single effect.
+We will return to the issue of interpretation when we consider
+specific link functions.</p>
+
+<p>These models can also be interpreted in terms of a <i>latent
+variable</i>. Specifically, suppose that the manifest response
+\( Y_i \) results from grouping an underlying continuous variable
+\( Y_i^* \) using cut-points \( \theta_1 < \theta_2 < \ldots < \theta_{J-1} \),
+so that \( Y_i \) takes the value 1 if \( Y_i^* \) is below \( \theta_1 \),
+the value 2 if \( Y_i^* \) is between \( \theta_1 \) and \( \theta_2 \), and
+so on, taking the value \( J \) if \( Y_i^* \) is above \( \theta_{J-1} \).
+Figure <a href='#f_6_4'>6.4</a> illustrates this idea for the
+case of five response categories.</p>
+
+<a name='fig:cumlink'></a><a name='f_6_4'></a><p style='text-align:center'>Figure 6.4 An Ordered Response and its  Latent Variable</p><img src="cumlink.png" class="img-responsive center-block"/>
+<p>Suppose further that the underlying continuous variable follows
+a linear model of the form</p>
+
+\[\tag{6.21}Y_i^* = \boldsymbol{x}_i'\boldsymbol{\beta}^* + \epsilon_i,\]
+<p>where the error term \( \epsilon_i \) has c.d.f.&nbsp;\( F(\epsilon_i) \).
+Then, the probability that the response of the \( i \)-th individual
+will fall in the \( j \)-th category <i>or below</i>, given \( \boldsymbol{x}_i \),
+satisfies the equation</p>
+
+\[\tag{6.22}\gamma_{ij} = \Pr\{ Y_i^* < \theta_j\}
+ = \Pr\{ \epsilon_i < \theta_j - \boldsymbol{x}_i'\boldsymbol{\beta}^*\}
+ = F(\theta_j - \boldsymbol{x}_i'\boldsymbol{\beta}^*)\]
+<p>and therefore follows the general form in Equation (<a href='#e_6_20'>6.20</a>)
+with link given by the inverse of the c.d.f.&nbsp;of the error term</p>
+
+\[\tag{6.23}g(\gamma_{ij}) = F^{-1}(\gamma_{ij}) = \theta_j - \boldsymbol{x}_i'\boldsymbol{\beta}^*\]
+<p>and coefficients \( \boldsymbol{\beta}^*=-\boldsymbol{\beta} \) differing only in sign from
+the coefficients in the cumulative link model.
+Note that in both formulations we assume that the predictors \( \boldsymbol{x}_i \)
+do not include a column of ones because the constant is absorbed in
+the cutpoints.</p>
+
+<p>With grouped data the underlying continuous variable \( Y^* \) will have
+real existence and the cutpoints \( \theta_j \) will usually be known.
+For example income data are often collected in broad categories,
+and all we known is the interval where an observation falls,
+i.e. \( < \) $25,000,  between $25,000 and $50,000, and so on.</p>
+
+<p>With ordinal categorical data the underlying continuous variable
+will often represent a latent or unobservable trait, and the cutpoints
+will not be known. This would be the case, for example, if
+respondents are asked whether they support a balance budget amendment,
+and the response categories are strongly against, against, neutral,
+in favor, and strongly in favor. We could imagine an underlying
+degree of support \( Y_i^* \) and thresholds \( \theta_1 \) to \( \theta_4 \),
+such that when the support is below \( \theta_1 \) one is strongly
+against, when the support exceeds \( \theta_1 \) but not \( \theta_2 \)
+one is against, and so on, until the case where the support
+exceeds \( \theta_4 \) and one is strongly for the amendment.</p>
+
+<p>While the latent variable interpretation is convenient, it is
+not always necessary, since some of the models can be interpreted
+directly in terms of the transformation \( g(.) \) of the cumulative
+probabilities.</p>
+
+<h4>6.5.3 The Proportional Odds Model</h4>
+<p>The first model we will consider is a direct extension of the
+usual logistic regression model. Instead of applying the
+logit transformation to the response probabilities \( \pi_{ij} \),
+however,
+we apply it to the <i>cumulative</i> response probabilities \( \gamma_{ij} \),
+so that</p>
+
+<a name='e_6_24'></a>\[\tag{6.24}\mbox{logit}(\gamma_{ij}) = \log\frac{\gamma_{ij}}{1-\gamma_{ij}}
+= \theta_j + \boldsymbol{x}_i'\boldsymbol{\beta}.\]
+<p>Some authors refer to this model as the ordered logit model,
+because it is a generalization of the logit model to ordered
+response categories.
+McCullagh (1980) calls it the <i>proportional odds</i> model,
+for reasons that will be apparent presently.
+Exponentiating (<a href='#e_6_24'>6.24</a>) we find
+that the odds of \( Y_{ij} \le j \), in words,
+the odds of a response in category \( j \) or below, are</p>
+
+\[\tag{6.25}\frac{\gamma_{ij}}{1-\gamma_{ij}}
+= \lambda_j \exp\{\boldsymbol{x}_i'\boldsymbol{\beta}\}\]
+<p>where \( \lambda_j=\exp\{\theta_j\} \). The \( \lambda_j \) may be
+interpreted as the <i>baseline</i> odds of a response in
+category \( j \) or below when \( x=0 \). The effect of the covariates
+\( x \) is to raise or lower the odds of a response in
+category \( j \) or below by the factor \( \exp\{\boldsymbol{x}_i'\boldsymbol{\beta}\} \).
+Note that the effect is a proportionate change in the odds of \( Y_i \le j \)
+for all response categories \( j \). If a certain combination of
+covariate values doubles the odds of being in category 1,
+it also doubles the odds of being in category 2 or below,
+or in category 3 or below. Hence the name proportional odds.</p>
+
+<p>This model may also be obtained from the latent variable formulation
+assuming that the error term \( \epsilon_i \) has a standard logistic
+distribution. In this case
+the cdf is</p>
+
+\[\tag{6.26}F(\eta)= \frac{\exp\{ \eta\}}{1 + \exp\{ \eta \}}\]
+<p>and the inverse cdf is the logit transformation.
+The \( \boldsymbol{\beta}^* \) coefficients may then be interpreted as linear
+effects on the underlying continuous variable \( Y_i^* \).</p>
+
+<p>The proportional odds model is not a log-linear model,
+and therefore it can not be fit using the standard Poisson trick.
+It is possible, however, to use an iteratively re-weighted
+least squares algorithm very similar to the standard
+algorithm for generalized linear models, for details
+see McCullagh (1980).</p>
+
+<p>We will illustrate this model applying it to the
+housing satisfaction data in Table <a href='#t_6_4'>6.4</a>.
+Let us start by noting that the log-likelihood for
+a saturated multinomial model that treats each of the 24
+covariate patterns as a different group
+is -1715.71.
+Fitting a proportional odds model with additive effects
+of housing type, influence in management and contact with
+neighbors, yields a log-likelihood of -1739.57, which
+corresponds to a deviance (compared to the saturated
+multinomial model) of 47.73 on 40 d.f. To calculate the
+degrees of freedom note that the saturated multinomial
+model has 48 parameters (2 for each of 24 groups), while
+the additive proportional odds model has only 8 (2 threshold
+parameters, 3 for housing type, 2 for influence and one for
+contact). The 95% critical point of the \( \chi^2_{40} \) distribution
+is 55.8, so you might think that this model fits the data.</p>
+
+<p>To be thorough, however, we should investigate interaction
+effects. The models with one two-factor interaction have
+log-likelihoods of -1739.47 (including contact \( \times \) influence),
+-1735.24 (including housing \( \times \) contact), and -1728.32
+(including housing \( \times \) influence), with corresponding
+deviance reductions of 0.21, 8.67 and 22.51, at the
+expense of 2, 3 and 6 degrees of freedom, respectively.
+Clearly the only interaction of note is that of
+housing \( \times \) influence, which has a P-value of 0.001.
+Adding this term gives a model deviance of 25.22 on 34 d.f.&nbsp;and
+an excellent fit to the data.</p>
+
+<p>Table <a href='#t_6_5'>6.5</a> shows parameter estimates for the
+final model with all three predictors and a housing \( \times \)
+influence interaction. The table lists the
+cutpoints and the regression coefficients.</p>
+
+<a name='t_6_5'></a><p class='text-center'>Table 6.5. Parameter Estimates for Ordered Logit Model<br/>(Latent Variable Formulation)</p>
+<table class='tex-table'>
+<tr class='bt bb'><td class='al'>Parameter</td><td class='ar'>Estimate</td><td class='ar'>Std. Error</td><td class='ar'>\(z\)-ratio</td></tr>
+<tr class='bt'><td class='al'>Apartments</td><td class='ar'>-1.1885</td><td class='ar'>.1972</td><td class='ar'>-6.026</td></tr>
+<tr><td class='al'>Atrium house</td><td class='ar'>-.6067</td><td class='ar'>.2446</td><td class='ar'>-2.481</td></tr>
+<tr><td class='al'>Terraced house</td><td class='ar'>-1.6062</td><td class='ar'>.2410</td><td class='ar'>-6.665</td></tr>
+<tr><td class='al'>Influence medium</td><td class='ar'>-.1390</td><td class='ar'>.2125</td><td class='ar'>-0.654</td></tr>
+<tr><td class='al'>Influence high</td><td class='ar'>.8689</td><td class='ar'>.2743</td><td class='ar'>3.167</td></tr>
+<tr><td class='al'>Contact high</td><td class='ar'>.3721</td><td class='ar'>.0960</td><td class='ar'>3.876</td></tr>
+<tr><td class='al'>Apart \(\times\) Influence med</td><td class='ar'>1.0809</td><td class='ar'>.2658</td><td class='ar'>4.066</td></tr>
+<tr><td class='al'>Apart \(\times\) Influence high</td><td class='ar'>.7198</td><td class='ar'>.3287</td><td class='ar'>2.190</td></tr>
+<tr><td class='al'>Atrium \(\times\) Influence med</td><td class='ar'>.6511</td><td class='ar'>.3450</td><td class='ar'>1.887</td></tr>
+<tr><td class='al'>Atrium \(\times\) Influence high</td><td class='ar'>-.1556</td><td class='ar'>.4105</td><td class='ar'>-0.379</td></tr>
+<tr><td class='al'>Terrace \(\times\) Influence med</td><td class='ar'>.8210</td><td class='ar'>.3307</td><td class='ar'>2.483</td></tr>
+<tr class='bb'><td class='al'>Terrace \(\times\) Influence high</td><td class='ar'>.8446</td><td class='ar'>.4303</td><td class='ar'>1.963</td></tr>
+<tr class='bt'><td class='al'>Cutpoint 1</td><td class='ar'>-.8881</td><td class='ar'>.1672</td><td></td></tr>
+<tr class='bb'><td class='al'>Cutpoint 2</td><td class='ar'>.3126</td><td class='ar'>.1657</td><td></td></tr>
+</table>
+
+<p>Note first the cutpoints: -.89 and .31, corresponding to cumulative odds of
+0.41 and  1.37, or to cumulative probabilities of 0.29 and 0.58, for the
+reference cell. Considering residents of tower blocks with low influence
+in management and low contact with neighbors, we estimate that 29% have
+low satisfaction, 29% (58-29) have medium satisfaction, and
+42% (100-58) have high satisfaction. (These values are fairly close
+to the observed proportions.)</p>
+
+<p>Before we discuss interpretation of the remaining coefficients, we
+must note that I have reported the coefficients corresponding to
+the latent variable formulation (the \( \boldsymbol{\beta}^* \)&rsquo;s) rather than the
+cumulative link coefficients (the \( \boldsymbol{\beta} \)&rsquo;s), which have opposite sign.
+Thus, a positive coefficient is equivalent to a shift to the right
+on the latent scale, which increases the odds of being to the <i>right</i>
+of a cutpoint.
+Equation (<a href='#e_6_24'>6.24</a>) models the odds of being
+to the <i>left</i> of a cutpoint, which would then decrease.
+I prefer the sign used here
+because the interpretation is more straightforward. A positive
+coefficient increases one&rsquo;s underlying satisfaction, which makes
+a &lsquo;high&rsquo; response more likely.</p>
+
+<p>The coefficient of contact indicates that residents who have high contact with
+their neighbors are generally more satisfied than those who have low contact.
+The odds of high satisfaction (as opposed to medium or low),
+are 45% higher for high contact than for low contact,
+as are the odds of medium or high satisfaction (as opposed to low).
+The fact that the effect of contact on the odds is the same
+45% for the two comparisons is a feature of the model.</p>
+
+<p>To interpret the effects of the next two variables, type of housing
+and degree of influence, we have to allow for their interaction effect.
+One way to do this is to consider the effect of type of housing
+when the residents feel that they have low influence on management;
+then residents of apartments and houses (particularly terraced houses)
+are <i>less</i> satisfied than residents of tower blocks.
+Feeling that one has some influence on management generally increases
+satisfaction; the effect of having high rather than low influence
+is to increase the odds of medium or high satisfaction (as opposed to low)
+by 138% for residents of tower blocks, 390% for apartment dwellers,
+104% for residents of atrium houses and 455% for those who live
+in terraced houses.
+Having medium influence is generally better than having low influence
+(except for tower clock residents), but not quite as good as having
+high influence (except possibly for residents of atrium houses).</p>
+
+<p>Although we have interpreted the results in terms of odds,
+we can also interpret the coefficients in terms of a latent
+variable representing degree of satisfaction.
+The effect of having high contact with the neighbors,
+as compared to low contact, is to
+shift one&rsquo;s position on the latent satisfaction scale by
+0.37 points. Similarly, having high influence on
+management, as compared to low influence, shifts one&rsquo;s position
+by an amount that varies from 0.71 for residents of atrium
+houses to 1.71 for residents of terraced houses.
+Interpretation of these numbers must be done by
+reference to the standard logistic distribution,
+which is depicted in Figure <a href='#f_6_4'>6.4</a>.
+This symmetric distribution has mean 0 and
+standard deviation \( \pi/\sqrt 3=1.81 \). The
+quartiles are \( \pm 1.1 \), and just over 90% of
+the area lies between -3 and 3.</p>
+
+<h4>6.5.4 The Ordered Probit Model</h4>
+<p>The ordered probit model, first considered by Aitchison and
+Silvey (1957), results from modeling the <i>probit</i> of the
+cumulative probabilities as a linear function of the covariates,
+so that</p>
+
+\[\tag{6.27}\Phi^{-1}(\gamma_{ij}) = \theta_j + \boldsymbol{x}_i'\boldsymbol{\beta}\]
+<p>where \( \Phi() \) is the standard normal cdf. The model can
+also be obtained from the latent-variable formulation assuming
+that the error term has a standard normal distribution,
+and this is usually the way one would interpret the parameters.</p>
+
+<p>Estimates from the ordered probit model are usually very similar
+to estimates from the ordered logit model&mdash;as one would expect from
+the similarity of the normal and the logistic distributions&mdash;provided
+one remembers to standardize the coefficients to correct for the
+fact that the standard normal distribution has variance one,
+whereas the standard logistic has variance \( \pi^2/3 \).</p>
+
+<p>For the Copenhagen data, the ordered probit model with
+an interaction between housing type and influence has a
+log-likelihood of -1728.67, corresponding to a deviance
+of 25.9 on 34 d.f., almost indistinguishable from the
+deviance for the ordered logit model with the same terms.
+Table <a href='#t_6_6'>6.6</a> shows parameter estimates for this model.</p>
+
+<a name='t_6_6'></a><p class='text-center'>Table 6.6. Parameter Estimates for Ordered Probit Model<br/>(Latent Variable Formulation)</p>
+<table class='tex-table'>
+<tr class='bt bb'><td class='al'>Parameter</td><td class='ar'>Estimate</td><td class='ar'>Std. Error</td><td class='ar'>\(z\)-ratio</td></tr>
+<tr class='bt'><td class='al'>Apartments</td><td class='ar'>-.7281</td><td class='ar'>.1205</td><td class='ar'>-6.042</td></tr>
+<tr><td class='al'>Atrium house</td><td class='ar'>-.3721</td><td class='ar'>.1510</td><td class='ar'>-2.464</td></tr>
+<tr><td class='al'>Terraced house</td><td class='ar'>-.9790</td><td class='ar'>.1456</td><td class='ar'>-6.725</td></tr>
+<tr><td class='al'>Influence medium</td><td class='ar'>-.0864</td><td class='ar'>.1303</td><td class='ar'>-0.663</td></tr>
+<tr><td class='al'>Influence high</td><td class='ar'>.5165</td><td class='ar'>.1639</td><td class='ar'>3.150</td></tr>
+<tr><td class='al'>Contact high</td><td class='ar'>.2285</td><td class='ar'>.0583</td><td class='ar'>3.918</td></tr>
+<tr><td class='al'>Apart \(\times\) Influence med</td><td class='ar'>.6600</td><td class='ar'>.1626</td><td class='ar'>4.060</td></tr>
+<tr><td class='al'>Apart \(\times\) Influence high</td><td class='ar'>.4479</td><td class='ar'>.1971</td><td class='ar'>2.273</td></tr>
+<tr><td class='al'>Atrium \(\times\) Influence med</td><td class='ar'>.4109</td><td class='ar'>.2134</td><td class='ar'>1.925</td></tr>
+<tr><td class='al'>Atrium \(\times\) Influence high</td><td class='ar'>-.0780</td><td class='ar'>.2496</td><td class='ar'>-0.312</td></tr>
+<tr><td class='al'>Terrace \(\times\) Influence med</td><td class='ar'>.4964</td><td class='ar'>.2016</td><td class='ar'>2.462</td></tr>
+<tr class='bb'><td class='al'>Terrace \(\times\) Influence high</td><td class='ar'>.5217</td><td class='ar'>.2587</td><td class='ar'>2.016</td></tr>
+<tr class='bt'><td class='al'>Cutpoint 1</td><td class='ar'>-.5440</td><td class='ar'>.1023</td><td></td></tr>
+<tr class='bb'><td class='al'>Cutpoint 2</td><td class='ar'>.1892</td><td class='ar'>.1018</td><td></td></tr>
+</table>
+
+<p>The cutpoints can be interpreted in terms of z-scores: the boundary
+between low and medium satisfaction is at \( z=-0.54 \) and the boundary
+between medium and high satisfaction is at \( z=0.19 \). These values
+leave \( \Phi(-.54)=0.29 \) or 29% of the reference group in the
+low satisfaction category, \( \Phi(0.19)-\Phi(-0.54)=0.28 \) or 28%
+in the medium satisfaction category, and \( 1-\Phi(0.19)=0.42 \) or 42%
+in the high satisfaction category.</p>
+
+<p>The remaining coefficients can be interpreted as in a linear regression
+model. For example, having high contact with the neighbors, compared
+to low contact, increases one&rsquo;s position in the latent satisfaction scale
+by 0.23 standard deviations (or increases one&rsquo;s \( z \)-score by 0.23),
+everything else being equal.</p>
+
+<p>Note that this coefficient is very similar to the equivalent
+value obtained in the ordered logit model.
+A shift of 0.37 in a standard logistic
+distribution, where \( \sigma=\pi/\sqrt 3= 1.81 \), is equivalent
+to a shift of \( 0.37/1.81=0.21 \) standard deviations,
+which in turn is very similar to
+the ordered probit estimate of 0.23 standard deviations.
+A similar comment applies to the other coefficients.
+You may also wish to compare the Wald tests for the
+individual coefficients in Tables <a href='#t_6_5'>6.5</a> and <a href='#t_6_6'>6.6</a>,
+which are practically identical.</p>
+
+<h4>6.5.5 Proportional Hazards</h4>
+<p>A third possible choice of link is the complementary log-log link,
+which leads to the model</p>
+
+<a name='e_6_28'></a>\[\tag{6.28}\log(-\log( 1- \gamma_{ij}) ) = \theta_j + \boldsymbol{x}_i'\boldsymbol{\beta}\]
+<p>This model may be interpreted in terms of a latent variable
+having a (reversed) extreme value (log Weibull) distribution,
+with cdf</p>
+
+\[\tag{6.29}F(\eta) = 1 - \exp\{ -\exp \{\eta\} \}\]
+<p>This distribution is asymmetric, it has mean equal to
+negative Euler&rsquo;s constant \( -0.57722 \) and variance \( \pi^2/6=1.6449 \).
+The median is \( \log\log 2= -0.3665 \)
+and the quartiles are -1.2459 and 0.3266. Note that the
+inverse cdf is indeed, the complementary log-log transformation
+in Equation (<a href='#e_6_28'>6.28</a>).</p>
+
+<p>This model can also be interpreted in terms of a proportional
+hazards model. The hazard function plays a central role in
+survival analysis, and will be discussed in detail in the next
+Chapter.</p>
+
+<h4>6.5.6 Extensions and Other Approaches</h4>
+<p>The general cumulative link model of Section <a href='#s_6_5_2'>6.5.2</a> will
+work with any monotone link function mapping probabilities to the
+real line, but the three choices mentioned here, namely the logit,
+probit, and complementary log-log, are by far the most popular
+ones. McCullagh (1980) has extended the basic model by relaxing
+the assumption of constant variance for the latent continuous
+variable. His most general model allows a separate scale parameter
+for each multinomial observation, so that</p>
+
+\[\tag{6.30}g(\gamma_{ij}) = \frac{\theta_j+\boldsymbol{x}_i'\boldsymbol{\beta}}{\tau_i}\]
+<p>where the \( \tau_i \) are unknown scale parameters. A constraint, such
+as \( \tau_1=0 \), is required for identification. More generally,
+\( \tau_i \) may be allowed to depend on a vector of covariates.</p>
+
+<p>An alternative approach to the analysis of ordinal data is
+to assign scores to the response categories and then use
+linear regression to model the mean score.
+Ordinary least squares procedures are not appropriate in this
+case, but Grizzle et al.&nbsp;(1969) have proposed weighted least-squares
+procedures that make proper allowances for the underlying
+independent multinomial sampling scheme.
+For an excellent discussion of these models see Agresti (1990, Section 9.6).</p>
+
+<p>A similar approach, used often in two-way contingency tables corresponding
+to one predictor and one response, is to assign scores to the rows
+and columns of the table and to use these scores to model the
+interaction term in the usual log-linear model. Often the scores
+assigned to the columns are the integers \( 1,2, \ldots, J-1 \),
+but other choices are possible.
+If integer scores are used for both rows and columns,
+then the resulting model has an interesting property,
+which has been referred to as <i>uniform association</i>.
+Consider calculating an odds ratio
+for adjacent rows \( i \) and \( i+1 \), across <i>adjacent</i> columns
+or  response categories \( j \) and \( j+1 \), that is</p>
+
+\[\tag{6.31}\rho_{ij}=\frac{ \pi_{i,j} / \pi_{i,j+1}} { \pi_{i+1,j} / \pi_{i+1,j+1} }\]
+<p>Under the additive log-linear model of independence, this ratio
+is unity for all \( i \) and \( j \). Introducing an interaction term based on
+integer scores, of the form \( (\alpha\beta)_{ij}= \gamma i j \),
+makes the odds ratio constant across adjacent categories.
+This model often produces fits similar to the proportional odds
+model, but the parameters are not so easily interpreted. For further
+details see Haberman (1974), Goodman (1979) or Agresti (1990, Section 8.1).</p>
+
+<p>A fourth family of models for ordinal responses follows from
+introducing constraints in the multinomial logit model.
+Let \( \boldsymbol{\beta}_j \) denote the vector of coefficients for the \( j \)-th
+equation, comparing the \( j \)-th category with the last category,
+for \( j=1, 2, \ldots, J-1 \).
+The most restrictive model assumes that these coefficients are
+the same for all contrasts, so \( \boldsymbol{\beta}_j=\boldsymbol{\beta} \) for all \( j \).
+A less restrictive assumption is that the coefficients have a
+linear trend over the categories, so that \( \boldsymbol{\beta}_j = j \boldsymbol{\beta} \).
+Anderson (1984) has proposed a model termed the <i>stereotype</i>
+model where the coefficients are proportional across categories,
+so \( \boldsymbol{\beta}_j = \gamma_j \boldsymbol{\beta} \), with unknown  proportionality factors
+given by scalars \( \gamma_j \).</p>
+
+<p>One advantage of the cumulative link models considered here is
+that the parameter estimates refer to the cumulative distribution
+of the manifest response (or the distribution of the underlying
+latent variable) and therefore are not heavily dependent on the
+actual categories (or cutpoints) used.  In particular, we would
+not expect the results to change much if we were to combine
+two adjacent categories, or if we recoded the response using fewer
+categories.
+If the cumulative odds are indeed proportional before collapsing
+categories, the argument goes, they should continue to be so afterwards.</p>
+
+<p>In contrast, inferences based on log-linear or multinomial
+logit models apply only to the actual categories used.
+It is quite possible, for example, that odds ratios that are
+relatively constant across adjacent categories will no longer
+exhibit this property if some of the categories are combined.
+These considerations are particularly relevant if the
+categories used are somewhat arbitrary.</p>
+

@@ -1,0 +1,167 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h3>7.2 Censoring and The Likelihood Function</h3>
+<p>The second distinguishing feature of the field of survival analysis
+is censoring: the fact that for some units the event of interest 
+has occurred and therefore we know the exact waiting time, 
+whereas for others it has not occurred, and all we know is that 
+the waiting time exceeds the observation time.</p>
+
+<h4>7.2.1 Censoring Mechanisms</h4>
+<p>There are several mechanisms that can lead to censored data.
+Under censoring of <i>Type I</i>, a sample of \( n \) units is followed
+for a fixed time \( \tau \).  The number of units experiencing the
+event, or the number of &lsquo;deaths&rsquo;, is random, but the total
+duration of the study is fixed.  The fact that the duration is
+fixed may be an important practical advantage in designing a
+follow-up study.</p>
+
+<p>In a simple generalization of this scheme, called <i>fixed censoring</i>,
+each unit has a potential maximum observation time \( \tau_i \)
+for \( i=1,\ldots,n \) which may differ from one case to the next but
+is nevertheless fixed in advance. The probability that unit \( i \) will
+be alive at the end of her observation time is \( S(\tau_i) \), and the
+total number of deaths is again random.</p>
+
+<p>Under censoring of <i>Type II</i>, a sample of \( n \) units is followed 
+as long as necessary until \( d \) units have experienced the event.
+In this design the number of deaths \( d \), which determines the
+precision of the study, is fixed in advance and can be used as
+a design parameter. Unfortunately, the total duration of the
+study is then random and cannot be known with certainty in advance.</p>
+
+<p>In a more general scheme called <i>random censoring</i>, each unit has
+associated with it a potential censoring time \( C_i \) and a potential
+lifetime \( T_i \), which are assumed to the independent random variables.
+We observe \( Y_i = \min\{C_i,T_i\} \), the minimum of the censoring
+and life times, and an indicator variable, often called \( d_i \) or
+\( \delta_i \), that tells us whether observation terminated by death or 
+by censoring.</p>
+
+<p>All these schemes have in common the fact that the censoring 
+mechanism is <i>non-informative</i> 
+and they all lead to essentially the same
+likelihood function.  The weakest assumption required to obtain
+this common likelihood is that the censoring of an observation
+should not provide any information regarding the prospects of
+survival of that particular unit beyond the censoring time.
+In fact, the basic assumption that we will make is simply this:
+all we know for an observation censored at duration \( t \) is that
+the lifetime exceeds \( t \).</p>
+
+<a name='s_7_2_2'></a><h4>7.2.2 The Likelihood Function for Censored Data</h4>
+<p>Suppose then that we have \( n \) units with lifetimes governed by a 
+survivor function \( S(t) \) with associated density \( f(t) \) and
+hazard \( \lambda(t) \).  Suppose unit \( i \) is observed for a time
+\( t_i \).
+If the unit died at \( t_i \), its contribution to the
+likelihood function is the density at that duration, which
+can be written as the product of the survivor and hazard functions</p>
+
+\[ L_i = f(t_i) = S(t_i) \lambda(t_i). \]
+<p>If the unit is still alive at \( t_i \), all we know under non-informative
+censoring is that the lifetime exceeds \( t_i \). The probability of this 
+event is</p>
+
+\[ L_i = S(t_i), \]
+<p>which becomes the contribution of a censored observation to the
+likelihood.</p>
+
+<p>Note that both types of contribution share the survivor function
+\( S(t_i) \), because in both cases the unit lived up to time \( t_i \). 
+A death multiplies this contribution by the hazard \( \lambda(t_i) \), 
+but a censored observation does not. 
+We can write the two contributions in a single expression.
+To this end, let \( d_i \) be a death indicator, taking the value one if 
+unit \( i \) died and the value zero otherwise.  Then the likelihood
+function may be written as follows</p>
+
+\[ L = \prod_{i=1}^n L_i = \prod_i \lambda(t_i)^{d_i} S(t_i). \]
+<p>Taking logs, and recalling the expression linking the survival
+function \( S(t) \) to the cumulative hazard function \( \Lambda(t) \),
+we obtain the log-likelihood function for censored survival data</p>
+
+<a name='e_7_7'></a>\[\tag{7.7}\log L = \sum_{i=1}^n \{ d_i \log \lambda(t_i) - \Lambda(t_i) \}.\]
+<p>We now consider an example to reinforce these ideas.</p>
+
+<i>Example:</i> Suppose we have a sample of \( n \) censored
+observations from an exponential distribution. Let \( t_i \) be the
+observation time and \( d_i \) the death indicator for unit \( i \).
+<p>In the exponential distribution  \( \lambda(t) = \lambda \) for all \( t \).
+The cumulative risk turns out to be the integral of a constant
+and is therefore \( \Lambda(t) = \lambda t \).  Using these two
+results on Equation <a href='#e_7_7'>7.7</a> gives the log-likelihood
+function</p>
+
+\[ \log L = \sum \{ d_i \log \lambda - \lambda t_i \}. \]
+<p>Let \( D = \sum d_i \) denote the total number of deaths, and let
+\( T = \sum t_i \) denote the total observation (or exposure) time.
+Then we can rewrite the log-likelihood as a function of these
+totals to obtain</p>
+
+<a name='e_7_8'></a>\[\tag{7.8}\log L = D \log \lambda - \lambda T.\]
+<p>Differentiating this expression with respect to \( \lambda \) we obtain
+the score function</p>
+
+\[ u(\lambda) = \frac{D}{\lambda} - T, \]
+<p>and setting the score to zero gives the maximum likelihood
+estimator of the hazard</p>
+
+<a name='e_7_9'></a>\[\tag{7.9}\hat{\lambda} = \frac{D}{T},\]
+<p>the total number of deaths divided by the total exposure time.
+Demographers will recognize this expression as the general definition
+of a death rate. Note that the estimator is optimal (in a maximum
+likelihood sense) only if the risk is constant and does not depend
+on age.</p>
+
+<p>We can also calculate the observed information by taking minus
+the second derivative of the score, which is</p>
+
+\[ I(\lambda) = \frac{D}{\lambda^2}. \]
+<p>To obtain the expected information we need to calculate the
+expected number of deaths, but this depends on the censoring
+scheme. For example under Type I censoring with fixed duration \( \tau \),
+one would expect \( n(1-S(\tau)) \) deaths. Under Type II censoring
+the number of deaths would have been fixed in advance. Under
+some schemes calculation of the expectation may be fairly
+complicated if not impossible.</p>
+
+<p>A simpler alternative is to use the observed information,
+estimated using the m.l.e.&nbsp;of \( \lambda \) given in Equation <a href='#e_7_9'>7.9</a>.
+Using this approach, the large sample variance of the
+m.l.e.&nbsp;of the hazard rate may be estimated as</p>
+
+\[ \hat{\mbox{var}}(\hat{\lambda}) = \frac{D}{T^2}, \]
+<p>a result that leads to large-sample tests of hypotheses 
+and confidence intervals for \( \lambda \).</p>
+
+<p>If there are no censored cases, so that \( d_i=1 \) for all \( i \) and \( D=n \),
+then the results obtained here reduce to standard maximum likelihood
+estimation for the exponential distribution,
+and the m.l.e.&nbsp;of \( \lambda \) turns out to be
+the reciprocal of the sample mean.</p>
+
+<p>It may be interesting to note in passing that the log-likelihood
+for censored exponential data given in Equation <a href='#e_7_8'>7.8</a> 
+coincides exactly (except for constants) with the log-likelihood that 
+would be obtained by treating \( D \) as a Poisson random variable with
+mean \( \lambda T \). To see this point, you should write the Poisson
+log-likelihood when \( D \sim P(\lambda T) \), 
+and note that it differs from Equation <a href='#e_7_8'>7.8</a>
+only in the presence of a term \( D\log(T) \), which is a constant
+depending on the data but not on the parameter \( \lambda \).</p>
+
+<p>Thus, treating the deaths as Poisson conditional on exposure time
+leads to exactly the same estimates (and standard errors) as
+treating the exposure times as censored observations from an
+exponential distribution. This result will be exploited below
+to link survival models to generalized linear models with Poisson
+error structure.</p>
+

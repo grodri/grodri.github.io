@@ -1,0 +1,172 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h3>6.3 The Conditional Logit Model</h3>
+<p>In this section I will describe an extension of the multinomial
+logit model that is particularly appropriate in models of
+choice behavior, where the explanatory variables may include
+attributes of the choice alternatives (for example cost) as well
+as characteristics of the individuals making the choices (such as
+income). 
+To motivate the extension I will first
+reintroduce the multinomial logit model in terms of an underlying
+latent variable.</p>
+
+<h4>6.3.1 A General Model of Choice</h4>
+<p>Suppose that \( Y_i \) represents a discrete choice among \( J \) alternatives.
+Let \( U_{ij} \) represent the value or <i>utility</i> of the \( j \)-th choice to
+the \( i \)-th individual. We will treat the \( U_{ij} \) as independent
+random variables with a systematic component \( \eta_{ij} \) and  a
+random component \( \epsilon_{ij} \) such that</p>
+
+<a name='e_6_9'></a>\[\tag{6.9}U_{ij} = \eta_{ij} + \epsilon_{ij}.\]
+<p>We assume that individuals act in a rational way, maximizing their 
+utility.  Thus, subject \( i \) will choose alternative \( j \) if
+\( U_{ij} \) is the largest of \( U_{i1}, \ldots, U_{iJ} \). Note that the
+choice has a random component, since it depends on random utilities.
+The <i>probability</i> that subject \( i \) will choose alternative \( j \) is</p>
+
+\[\tag{6.10}\pi_{ij} = \mbox{Pr}\{Y_i=j\} = \mbox{Pr}\{ \max(U_{i1},\ldots,U_{iJ}) = U_{ij} \}.\]
+<p>It can be shown that if the error terms \( \epsilon_{ij} \) have
+standard Type I extreme value distributions with density</p>
+
+\[\tag{6.11}f(\epsilon) = \exp\{ -\epsilon - \exp\{-\epsilon\}\}\]
+<p>then (see for example Maddala, 1983, pp 60&ndash;61)</p>
+
+<a name='e_6_12'></a>\[\tag{6.12}\pi_{ij} = \frac{\exp\{\eta_{ij}\}}{\sum\exp\{\eta_{ik}\}},\]
+<p>which is the basic equation defining the multinomial logit model.</p>
+
+<p>In the special case where \( J=2 \), individual \( i \) will choose the
+first alternative if \( U_{i1}-U_{i2} > 0 \). If the random utilities
+\( U_{ij} \) have independent extreme value distributions, their difference
+can be shown to have a logistic distribution, and we obtain the
+standard logistic regression model.</p>
+
+<p>Luce (1959) derived Equation <a href='#e_6_12'>6.12</a> starting from a simple requirement
+that the odds of choosing alternative \( j \) over alternative \( k \) should be
+independent of the choice set for all pairs \( j,k \). This property
+is often referred to as the axiom of <i>independence from
+irrelevant alternatives</i>.  Whether or not this assumption is
+reasonable (and other alternatives are indeed irrelevant) depends 
+very much on the nature of the choices.</p>
+
+<p>A classical example where the multinomial logit model does not work well
+is the so-called &ldquo;red/blue bus&rdquo; problem. Suppose you have a choice
+of transportation between a train, a red bus and a blue bus. 
+Suppose half the people take the train and half take the bus.
+Suppose further that people who take the bus are indifferent to the
+color, so they distribute themselves equally between the red and the
+blue buses. The choice probabilities of \( \pi = (.50, .25, .25) \) would
+be consistent with expected utilities of \( \eta =(\log 2, 0, 0) \).</p>
+
+<p>Suppose now the blue bus service is discontinued. You might expect
+that all the people who used to take the blue bus would take the red
+bus instead, leading to a 1:1 split between train and bus. 
+On the basis of the expected utilities of \( \log 2 \) and \( 0 \),
+however, the multinomial logit model would predict a 2:1 split.</p>
+
+<p>Keep this caveat in mind as we consider modeling the expected
+utilities.</p>
+
+<h4>6.3.2 Multinomial Logits</h4>
+<p>In the usual multinomial logit model, the expected utilities
+\( \eta_{ij} \) are modeled in terms of characteristics of the
+individuals, so that</p>
+
+\[ \eta_{ij} = \boldsymbol{x}_i'\boldsymbol{\beta}_j. \]
+<p>Here the regression coefficients \( \boldsymbol{\beta}_j \) may be interpreted
+as reflecting the effects of the covariates on the odds of
+making a given choice (as we did in the previous section) 
+or on the underlying utilities of the various choices.</p>
+
+<p>A somewhat restrictive feature of the model is that the same
+attributes \( \boldsymbol{x}_i \) are used to model the utilities of all \( J \)
+choices.</p>
+
+<h4>6.3.3 Conditional Logits</h4>
+<p>McFadden&nbsp;(1973) proposed modeling the expected utilities
+\( \eta_{ij} \) in terms of characteristics of the alternatives
+rather than attributes of the individuals. 
+If \( \boldsymbol{z}_j \) represents a vector
+of characteristics of the \( j \)-th alternative, then he 
+postulated the model</p>
+
+\[ \eta_{ij} = \boldsymbol{z}_j'\boldsymbol{\gamma}. \]
+<p>This model is called the <i>conditional logit</i> model,
+and turns out to be equivalent to a log-linear model where 
+the main effect of the response is represented in terms of 
+the covariates \( \boldsymbol{z}_j \).</p>
+
+<p>Note that with \( J \) response categories the response margin
+may be reproduced exactly using any \( J-1 \) linearly independent
+attributes of the choices. Generally one would want the
+dimensionality of \( z_j \) to be substantially less than \( J \).
+Consequently, conditional logit models are often used when
+the number of possible choices is large.</p>
+
+<h4>6.3.4 Multinomial/Conditional Logits</h4>
+<p>A more general model may be obtained by combining the multinomial 
+and conditional logit formulations,
+so the underlying utilities \( \eta_{ij} \) depend
+on characteristics of the individuals as well as 
+attributes of the choices, or even 
+variables defined for combinations of individuals and choices
+(such as an individual&rsquo;s perception of the value of a choice).
+The general model is usually written as</p>
+
+\[\tag{6.13}\eta_{ij} = \boldsymbol{x}_i'\boldsymbol{\beta}_j + \boldsymbol{z}_{ij}'\boldsymbol{\gamma}\]
+<p>where \( \boldsymbol{x}_i \) represents characteristics of the individuals 
+that are constant across choices, and
+\( \boldsymbol{z}_{ij} \) represents characteristics that vary across choices
+(whether they vary by individual or not).</p>
+
+<p>Some statistical packages have procedures for
+fitting conditional logit models to datasets where each
+combination of individual and possible choice is treated
+as a separate observation. These models may also be fit using
+any package that does Poisson regression. If the last
+response category is used as the baseline or reference cell,
+so that \( \eta_{iJ} = 0 \) for all \( i \),
+then the \( \boldsymbol{z}_{ij} \) should be entered in the model as
+differences from the last category. In other words,
+you should use \( \boldsymbol{z}^*_{ij} = \boldsymbol{z}_{ij} - \boldsymbol{z}_{iJ} \) as the
+predictor.</p>
+
+<h4>6.3.5 Multinomial/Conditional Probits</h4>
+<p>Changing the distribution of the error term in Equation <a href='#e_6_9'>6.9</a>
+leads to alternative models.
+A popular alternative to the logit models considered so far
+is to assume that the \( \epsilon_{ij} \) have independent 
+standard normal distributions for all \( i,j \). 
+The resulting model is called the multinomial/conditional 
+<i>probit</i> model,
+and produces results very similar to the multinomial/conditional
+logit model after standardization.</p>
+
+<p>A more attractive alternative is to retain independence across
+subjects but allow dependence across alternatives, assuming that 
+the vector \( \boldsymbol{\epsilon}_i = 
+(\epsilon_{i1}, \ldots, \epsilon_{iJ})' \)
+has a <i>multivariate</i> normal distribution with mean vector <b>0</b>
+and arbitrary correlation matrix <b>R.</b> (As usual with latent
+variable formulations of binary or discrete response models, the variance
+of the error term cannot be separated from the regression coefficients.
+Setting the variances to one means that we work with a correlation
+matrix rather than a covariance matrix.)</p>
+
+<p>The main advantage of this model is that it allows correlation between 
+the utilities that an individual assigns to the various alternatives.
+The main difficulty is that fitting the model requires evaluating 
+probabilities given by multidimensional normal integrals,
+a limitation that effectively restricts routine practical application of
+the model to problems involving no more than three or four alternatives.</p>
+
+<p>For further details on discrete choice models see Chapter&nbsp;3 in
+Maddala&nbsp;(1983).</p>
+

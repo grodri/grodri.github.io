@@ -1,0 +1,191 @@
+---
+layout: default
+section: glms
+tab: "R Logs"
+pager: true
+---
+
+
+<h3>6.4 The Sequential Logit Model</h3>
+<p>
+We now fit the hierarchical logit model described in the notes. 
+Because the term <i>hierarchical</i> has come to be closely associated with 
+multilevel models, I now prefer calling this model the <i>sequential</i> 
+logit model, reflecting the fact that the model proceeds as if decisions 
+were made in a sequence of stages.
+</p>
+<p>
+This model is not to be confused with the <i>nested</i> logit model, 
+a term used in econometrics to refer to a random-utility model where 
+the errors within subsets of choices are correlated and the predictors 
+include alternative-specific variables. Our approach is much simpler, 
+but doesn't have a strict utility maximization interpretation.
+</p>
+<p>
+We assume that women first decide whether or not to use a method, 
+and  we model this choice using a conventional logit model. We then focus 
+exclusively on women who use a method, and model their choice of 
+sterilization or another method using another conventional logit model. 
+(I told you this would be simpler :)
+</p>
+<h4>The Decision to Use</h4>
+<p>
+We continue to use the same data frame. All we need is to construct
+the response matrices that correspond to each stage. Here is the
+standard logit model for the contrast between any method and no method:
+</p>
+<pre class='r'>
+> cuse$A <- cbind(cuse[,"ster"] + cuse[,"other"], cuse[,"none"])
+
+> sla <- glm(A ~ age + agesq, data=cuse, family=binomial)
+
+> summary(sla)
+
+Call:
+glm(formula = A ~ age + agesq, family = binomial, data = cuse)
+
+Deviance Residuals: 
+       1         2         3         4         5         6         7  
+ 0.97930  -1.35134   0.35492   1.33848  -1.18100   0.09934   0.11041  
+
+Coefficients:
+              Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -7.1803625  0.5215578  -13.77   <2e-16 ***
+age          0.4397399  0.0330984   13.29   <2e-16 ***
+agesq       -0.0063448  0.0004992  -12.71   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 218.8388  on 6  degrees of freedom
+Residual deviance:   6.1195  on 4  degrees of freedom
+AIC: 57.07
+
+Number of Fisher Scoring iterations: 3
+
+> b <- coef(sla)
+
+> -0.5*b["age"]/b["agesq"]
+     age 
+34.65384 
+</pre>
+<p>
+The estimates indicate that the odds of using contraception 
+(sterilization or other method as opposed to no method) 
+increase with age to reach a maximum at 34.7 and then decline. 
+This is more easily appreciated in a graph, which we will do below.
+</p>
+<h4>The Choice of Method Among Users</h4>
+<p>
+For the second step we look just at current users, and model the logit 
+of the conditional probability of being sterilized given that the 
+woman uses contraception as a quadratic function of age:
+</p>
+<pre class='r'>
+> cuse$S.A <- cbind(cuse[,"ster"], cuse[,"other"])
+
+> sls <- glm(S.A ~ age + agesq, data=cuse, family=binomial)
+
+> summary(sls)
+
+Call:
+glm(formula = S.A ~ age + agesq, family = binomial, data = cuse)
+
+Deviance Residuals: 
+      1        2        3        4        5        6        7  
+-2.1069   0.5844   0.6137   0.4552  -1.9305  -0.2530   1.2722  
+
+Coefficients:
+             Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -8.868692   1.065769  -8.321  < 2e-16 ***
+age          0.494245   0.066797   7.399 1.37e-13 ***
+agesq       -0.005674   0.001011  -5.613 1.99e-08 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 302.264  on 6  degrees of freedom
+Residual deviance:  10.774  on 4  degrees of freedom
+AIC: 52.097
+
+Number of Fisher Scoring iterations: 4
+
+> b <- coef(sls)
+
+> -0.5*b["age"]/b["agesq"]
+     age 
+43.55567 
+</pre>
+<p>
+The estimates indicate that the odds of begin sterilized among users 
+(sterilization as opposed to other method) increase with age but at a 
+decreasing rate, reaching a maximum at 43.6. Again, a picture is worth 
+a thousand words and we will plot these curves below.
+</p>
+<h4>Comparing Model Likelihoods and Deviances</h4>
+<p>
+Adding the log-likelihoods for the two stages we get the overall 
+log-likelihood. The same is true of the deviances:
+</p>
+<pre class='r'>
+> x2 <- deviance(sla) + deviance(sls); x2
+[1] 16.89298
+
+> pchisq(x2, 8, lower.tail=FALSE)
+[1] 0.03124295
+</pre>
+<p>
+We see that the deviance is a bit better (smaller) than for the 
+multinomial logit model, although it also reveals significant lack of 
+fit. We will build a plot to examine where the lack of fit comes from.
+</p>
+<h4>Plotting Observed and Fitted Logits</h4>
+<p>
+We now reproduce  Figure 6.2 in the notes, which is similar to 6.1 
+but for the sequential logit model. 
+We produce 'observed' logits by direct calculation from the data,
+and use the same vector of ages as before to plot smooth curves
+</p>
+<pre class='r'>
+> obs <- log(cbind(cuse$A[,1]/cuse$A[,2], cuse$S.A[,1]/cuse$S.A[,2]))
+
+> B <- rbind(coef(sla),coef(sls))
+
+> fit <- cbind(1, age, age^2) %*% t(B)
+
+> label <- c("any method","ster|any")
+
+> color <- c("green","red")
+
+> png("fig62.png", width=500, height=400)
+
+> plot(cuse$age, obs[,2], type="n", 
++      xlab="age", ylab="log-odds", xlim=c(15,55))
+
+> for (j in 1:2) {
++   points(cuse$age, obs[,j], pch=19, col=color[j])
++   lines(age, fit[,j], col=color[j])
++   text(53, obs[7,j], label=label[j], col=color[j])
++ }
+
+> dev.off()
+RStudioGD 
+        2 
+</pre>
+<img src="fig62.png"  class="img-responsive center-block" />
+<p class="em text-center">Logits for Any Method and Sterilization|Any Method</p>
+<p>
+We see that the two quadratics fit reasonably well except for overestimating the
+probability of sterilization among contraceptive users at ages 15 to 19, a 
+problem similar to that noted in the multinomial logit model. We could easily 
+remedy this deficiency by adding a dummy variable for teenagers in the 
+second-stage model.
+</p>
+<p>
+<i>Exercise</i>. 
+In the next section we will study ordered logit models. You may want
+to try fitting an ordered logit model to this dataset treating the three choices
+as ordered in terms of contraceptive effectiveness.
+</p>

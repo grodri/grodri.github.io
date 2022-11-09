@@ -1,0 +1,32 @@
+[{"url":"c2s1", "title":"2. Linear Models for Continuous Data", "sections":[ 
+{"url":"c2s1","title":"2.1. Introduction to Linear Models"}, 
+{"url":"c2s4","title":"2.4. Simple Linear Regression"}, 
+{"url":"c2s5","title":"2.5. Multiple Linear Regression"}, 
+{"url":"c2s6","title":"2.6. One-Way Analysis of Variance"}, 
+{"url":"c2s7","title":"2.7. Two-Way Analysis of Variance"}, 
+{"url":"c2s8","title":"2.8. Analysis of Covariance Models"}, 
+{"url":"c2s9","title":"2.9. Regression Diagnostics"}, 
+{"url":"c2s10","title":"2.10. Transforming the Data"}]},
+{"url":"c3s1","title":"3. Logit Models for Binary Data", "sections":[ 
+{"url":"c3s1","title":"3.3. The Comparison of Two Groups"}, 
+{"url":"c3s4","title":"3.4. The Comparison of Several Groups"}, 
+{"url":"c3s5","title":"3.5. Models With Two Predictors"}, 
+{"url":"c3s6","title":"3.6. Multi-factor Models: Model Selection"}, 
+{"url":"c3s7","title":"3.7. Other Choices of Link"}, 
+{"url":"c3s8","title":"3.8. Regression Diagnostics for Binary Data"}]},
+{"url":"c4s1","title":"4. Poisson Models for Count Data", "sections":[
+{"url":"c4s1","title":"4.3. A Model for Heteroscedastic Counts"}, 
+{"url":"overdispersion","title":"4.A. Models for Over-Dispersed Count Data"}]},
+{"url":"c6s1","title":"6. Multinomial Response Models", "sections":[ 
+{"url":"c6s1","title":"6.1. The Nature of Multinomial Data"}, 
+{"url":"c6s2","title":"6.2. The Multinomial Logit Model"}, 
+{"url":"c6s3","title":"6.3. The Conditional Logit Model"}, 
+{"url":"c6s4","title":"6.4. The Sequential Logit Model"}, 
+{"url":"c6s5","title":"6.5. Models for Ordinal Response Data"}]},
+{"url":"c7s1","title":"7. Survival Models", "sections":[
+{"url":"c7s1","title":"7.5. Infant and Child Mortality in Colombia"}, 
+{"url":"recidivism","title":"7.A Piecewise Exponential Models"}]},
+{"url":"fixedRandom","title":"8. Clustered and Panel Data","sections":[
+{"url":"fixedRandom","title":"8.1 Clustered Linear Model"},
+{"url":"fixedRandom2","title":"8.2 Longitudinal Linear Model"},
+{"url":"fixedRandom3","title":"8.3 Longitudinal Logit Model"}]}]

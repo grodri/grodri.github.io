@@ -1,0 +1,79 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h3>B.2 Maximum Likelihood Estimation</h3>
+<p>An important practical feature of generalized linear models
+is that they can all be fit to data using the same algorithm,
+a form of <i>iteratively re-weighted least squares</i>.
+In this section we describe the algorithm.</p>
+
+<p>Given a trial estimate of the parameters \( \hat{\boldsymbol{\beta}} \),
+we calculate the estimated linear predictor
+\( \hat{\eta_i} = \boldsymbol{x}_i'\hat{\boldsymbol{\beta}} \)
+and use that to obtain the fitted values
+\( \hat{\mu_i} = g^{-1}(\hat{\eta_i}) \). Using these quantities,
+we calculate the working dependent variable</p>
+
+<a name='e_B_6'></a>\[\tag{B.6}z_i = \hat{\eta_i} + (y_i - \hat{\mu_i})
+ \frac{\mbox{d} \eta_i}{\mbox{d} \mu_i},\]
+<p>where the rightmost term is the derivative of the link function
+evaluated at the trial estimate.</p>
+
+<p>Next we calculate the iterative weights</p>
+
+<a name='e_B_7'></a>\[\tag{B.7}w_i = p_i/[ b''(\theta_i) (\frac{\mbox{d}\eta_i}{\mbox{d}\mu_i})^2],\]
+<p>where \( b''(\theta_i) \) is the second derivative of \( b(\theta_i) \)
+evaluated at the trial estimate and we have assumed that
+\( a_i(\phi) \) has the usual form \( \phi/p_i \).
+This weight is inversely proportional to the variance of the
+working dependent variable \( z_i \) given the current estimates of
+the parameters, with proportionality factor \( \phi \).</p>
+
+<p>Finally, we obtain an improved estimate of \( \boldsymbol{\beta} \) regressing
+the working dependent variable \( z_i \) on the predictors
+\( \boldsymbol{x}_i \) using the weights \( w_i \), i.e. we calculate
+the weighted least-squares estimate</p>
+
+<a name='e_B_8'></a>\[\tag{B.8}\hat{\beta} = (\boldsymbol{X}'\boldsymbol{W}\boldsymbol{X})^{-1} \boldsymbol{X}'\boldsymbol{W} \boldsymbol{z},\]
+<p>where \( \boldsymbol{X} \) is the model matrix,
+\( \boldsymbol{W} \) is a diagonal matrix of weights with entries
+\( w_i \) given by (<a href='#e_B_7'>B.7</a>) and
+\( \boldsymbol{z} \) is a response vector with entries
+\( z_i \) given by (<a href='#e_B_6'>B.6</a>).</p>
+
+<p>The procedure is repeated until successive estimates change by less
+than a specified small amount.
+McCullagh and Nelder&nbsp;(1989) prove that this algorithm is equivalent
+to Fisher scoring and leads to maximum likelihood estimates.
+These authors consider the case of general \( a_i(\phi) \)
+and include \( \phi \) in their expression for the iterative weight.
+In other words, they use \( w^*_i = \phi w_i \), where \( w_i \) is the
+weight used here.  The proportionality factor \( \phi \) cancels
+out when you calculate the weighted least-squares estimates
+using (<a href='#e_B_8'>B.8</a>), so the estimator is exactly the same.
+I prefer to show \( \phi \) explicitly rather than include it in \( \boldsymbol{W} \).</p>
+
+<i>Example:</i>
+For normal data with identity link \( \eta_i=\mu_i \),
+so the derivative is \( d\eta_i/ d\mu_i=1 \) and the working
+dependent variable is \( y_i \) itself.
+Since in addition \( b''(\theta_i)=1 \) and \( p_i=1 \),
+the weights are constant and no iteration is required.\( \Box \)
+<p>In Sections <a href='#s_B_4'>B.4</a> and <a href='#s_B_5'>B.5</a>
+we derive the working dependent variable and
+the iterative weights required for binomial data with link
+logit and for Poisson data with link log. In both cases
+iteration will usually be necessary.</p>
+
+<p>Starting values may be obtained by applying the link to the data,
+i.e. we take \( \hat{\mu_i}=y_i \) and \( \hat{\eta_i}= g(\hat{\mu_i}) \).
+Sometimes this requires a few adjustments, for example to avoid
+taking the log of zero, and we will discuss these at the
+appropriate time.</p>
+

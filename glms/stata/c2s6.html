@@ -1,0 +1,245 @@
+---
+layout: default
+section: glms
+tab: "Stata Logs"
+pager: true
+---
+
+
+<h3 class="first">2.6 One-Way Analysis of Variance</h3> 
+<P>
+Let us group social setting into categories. 
+<P>
+First we will make a copy, which I'll call <code>setting_g</code> 
+for social setting grouped. (Everyone has their own conventions
+for naming variables. I try to keep variable names short, lowercase,
+and hopefully not too cryptic. 
+Because we are just starting I will emphasize the 'not too cryptic' 
+part, otherwise I might have used <code>ssg</code>. 
+Stata allows variable names to have up to 32 characters, but most 
+commands print only 12, so it is best to stick to a maximum of 12.)
+<pre class='stata'>
+. generate setting_g = setting</pre>
+<P>
+Then we recode it into categories &lt;70, 70-79, and 80+, thus
+creating a discrete <i>factor</i> with three levels.
+<pre class='stata'>
+. recode setting_g min/69=1 70/79=2 80/max=3
+(setting_g: 20 changes made)</pre>
+<P>
+It might be  good idea to label the new variable and its categories.
+I will define a new set of labels called <code>setting_g</code> and 
+assign it to the values of the variable. The names of the variable
+and the label don't have to be the same. For example one could have
+a label called <code>yesno</code> assigned to the values of all
+variables that take "Yes" and "No" values. In this case it makes
+sense to use the same name.
+<pre class='stata'>
+. label var setting_g "Social Setting (Grouped)
+
+. label define setting_g 1 "Low" 2 "Medium" 3 "High"
+
+. label values setting_g setting_g</pre>
+<P>
+By the way one can shorten this process using options of the
+<code>recode</code> command as shown in 
+<a ref="c2s7.html">Section 2.7</a> in this log,
+but I think it's good to see all the steps once.
+<P>
+Let us look at the mean response by level of social setting
+<pre class='stata'>
+. tabulate setting_g, summarize(change)
+
+<table class='stata'>
+<tr><td class='br'>     Social </td><td class='bl'> Summary of % Change in CBR between </td></tr>
+<tr><td class='br'>    Setting </td><td class='bl'>            1965 and 1975           </td></tr>
+<tr class='bb'><td class='br'>  (Grouped) </td><td class='bl'>        Mean   Std. Dev.       Freq.</td></tr>
+<tr class='bt'><td class='br'>        Low </td><td class='bl'>   7.5714286   7.3452284           7</td></tr>
+<tr><td class='br'>     Medium </td><td class='bl'>         8.6   9.9398189           5</td></tr>
+<tr class='bb'><td class='br'>       High </td><td class='bl'>       23.75   10.264363           8</td></tr>
+<tr class='bt'><td class='br'>      Total </td><td class='bl'>        14.3   11.810343          20</td></tr>
+</table></pre>
+<P>
+We observe substantially more fertility decline in countries with
+higher setting, but only a small difference between the low and
+medium categories. 
+<P>
+<h4>Dummy Variables</h4> 
+<P>
+Stata has an <code>anova</code> command that can fit linear models 
+with discrete factors as predictors. 
+We will use <code>regress</code> instead, to emphasize that all 
+these models are in fact regression models.
+This will help us along when we move on to logit and Poisson models,
+which no longer make this distinction. 
+<P>
+This means that we need to code the factor using dummy variables.
+This can be done in three different ways:
+<P>
+<ul> 
+<li><p> 
+Stata 11 introduced <i>factor variables</i>, a very powerful
+way of specifying main effects and interactions in regression models.
+This supersedes the <code>xi:</code> prefix that could be used
+with commands such as <code>regress</code> in versions 10 and earlier.
+This is the simplest and quickest way to proceed. A disadvantage in
+versions 11 and 12 is that the results are not labelled, but version
+13 fixed that. We'll have an example soon.
+</li></p><p><li> 
+A second way is to generate the dummies using the <code>gen</code> 
+option of the <code>tabulate</code> command. This generates a dummy
+or indicator variable for each category of the factor. You specify 
+a "stem" or prefix for the names and Stata adds a sequence number.
+This makes it very easy to generate dummies called setting_g1, 
+setting_g2, etc.
+</li></p><p><li>
+The most flexible way is to generate the dummies "by hand" using
+<code>gen</code>, taking advantage of the fact that in Stata
+logical expressions take the value 1 when they are true and 0 when
+they are false. This leads to very readable code. Just one word of
+caution: you have to be careful with open-ended expressions such as
+<code> if x &gt; 100</code> because Stata stores missing values as
+very large numbers, so the expression is true if <code>x = 200</code>,
+but also true if <code>x</code> is missing. The safe way to code this
+condition is <code>if x > 100 & !missing(x)</code>. 
+</li></p> 
+</ul>
+<P>
+Let us start with the third way.
+To represent a factor with three categories we need only two dummy
+variables. I will choose low setting (&lt; 70) as the reference
+category and create dummies for medium (70-79) and high (80+):
+<pre class='stata'>
+. gen setting_med  = setting_g==2 // or setting >= 70 & setting < 80
+
+. gen setting_high = setting_g==3 // or setting >= 80 & !missing(setting)</pre>
+<P>
+We could have coded the conditions in terms of the original variable
+as shown in the comments above, with exactly the same result. 
+I probably would have used that approach if the dummies were called
+<code>setting70to79</code> and <code>setting80plus</code>. 
+<P>
+We are now ready to fit the one-factor model:
+<pre class='stata'>
+. regress change setting_med setting_high
+
+<table class='stata'><tr><td><table class='stata'>
+<tr class='bb'><td class='br'>      Source </td><td class='bl'>       SS       df       MS   </td></tr>
+<tr class='bt'><td class='br'>       Model </td><td class='bl'>  1193.78571     2  596.892857</td></tr>
+<tr class='bb'><td class='br'>    Residual </td><td class='bl'>  1456.41429    17  85.6714286</td></tr>
+<tr class='bt'><td class='br'>       Total </td><td class='bl'>      2650.2    19  139.484211</td></tr>
+</table></td><td>           Number of obs =      20
+           F(  2,    17) =    6.97
+           Prob > F      =  0.0062
+           R-squared     =  0.4505
+           Adj R-squared =  0.3858
+           Root MSE      =  9.2559</td></tr></table>
+
+<table class='stata'>
+<tr class='bb bt'><td class='br'>      change </td><td class='bl'>      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]</td></tr>
+<tr class='bt'><td class='br'> setting_med </td><td class='bl'>   1.028571   5.419692     0.19   0.852    -10.40598    12.46312</td></tr>
+<tr><td class='br'>setting_high </td><td class='bl'>   16.17857   4.790376     3.38   0.004     6.071761    26.28538</td></tr>
+<tr class='bb'><td class='br'>       _cons </td><td class='bl'>   7.571429   3.498396     2.16   0.045     .1904579     14.9524</td></tr>
+</table></pre>
+<P>
+Fertility declined, on average, 16 percentage points more in countries 
+with high setting than in countries with low setting. 
+Can you get these estimates from the means calculated earlier?
+Compare the parameter estimates with the values in Table 2.11 and 
+the anova with Table 2.12 in the notes.
+<P>
+The <code>test</code> command can be used to generate the Wald test
+on page 32 of the notes. Stata automatically converts the criterion
+to an F-test for linear models.  The result is, of course, the same
+as in the anova table: the differences by setting are significant
+at the one-percent level.
+<pre class='stata'>
+. test setting_med setting_high
+
+ ( 1)  setting_med = 0
+ ( 2)  setting_high = 0
+
+       F(  2,    17) =    6.97
+            Prob > F =    0.0062</pre>
+<P>
+<h4>Factor Variables</h4> 
+<p> 
+We now show how one to obtain exactly the same results using Stata's 
+<i>factor variables</i>. The idea here is to use a <code>i.</code> 
+prefix in the list of regressors to tell Stata when a predictor is in 
+fact a discrete factor, which takes integer codes such as 0,1,2,...,
+and should be treated as a set of dummies rather than a linear effect.
+<P>
+Stata will then fit the model picking the lowest code as the reference
+cell.  You can change the base category using <code>ib#.</code> 
+instead of just <code>i.</code> as the prefix, where <code>#</code> 
+is the code for the reference category. Thus, <code>i.setting_g</code> 
+treats grouped setting as a factor with low as the baseline, whereas
+<code>ib3.setting_g</code> sets high as the baseline. 
+<P>
+Here's the regression with the default reference cell:
+<pre class='stata'>
+. regress change i.setting_g
+
+<table class='stata'><tr><td><table class='stata'>
+<tr class='bb'><td class='br'>      Source </td><td class='bl'>       SS       df       MS   </td></tr>
+<tr class='bt'><td class='br'>       Model </td><td class='bl'>  1193.78571     2  596.892857</td></tr>
+<tr class='bb'><td class='br'>    Residual </td><td class='bl'>  1456.41429    17  85.6714286</td></tr>
+<tr class='bt'><td class='br'>       Total </td><td class='bl'>      2650.2    19  139.484211</td></tr>
+</table></td><td>           Number of obs =      20
+           F(  2,    17) =    6.97
+           Prob > F      =  0.0062
+           R-squared     =  0.4505
+           Adj R-squared =  0.3858
+           Root MSE      =  9.2559</td></tr></table>
+
+<table class='stata'>
+<tr class='bb bt'><td class='br'>      change </td><td class='bl'>      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]</td></tr>
+<tr class='bt'><td class='br'>   setting_g </td><td class='bl'>                                                                </td></tr>
+<tr><td class='br'>     Medium  </td><td class='bl'>   1.028571   5.419692     0.19   0.852    -10.40598    12.46312</td></tr>
+<tr><td class='br'>       High  </td><td class='bl'>   16.17857   4.790376     3.38   0.004     6.071761    26.28538</td></tr>
+<tr><td class='br'>             </td><td class='bl'>                                                                </td></tr>
+<tr class='bb'><td class='br'>       _cons </td><td class='bl'>   7.571429   3.498396     2.16   0.045     .1904579     14.9524</td></tr>
+</table></pre>
+<P>
+As you can verify, the results are exactly the same as before. 
+If you are using Stata 11 or 12 you pay a small price for this convenience,
+namely you have to remember what the codes 2 and 3 stand for. 
+Here it is easy because the categories are ordered, 
+but things can get trickier with variables such as ethnicity
+or type of health care provider. 
+If you are using Stata 13, you will see that the categories are labelled
+"Medium" and "High", so you get the best of all worlds.
+<P>
+You can even do the Wald test quite easily, but there is a twist.
+You can't write <code>test i.setting_g</code>, which is what I first
+tried, because <code>i.setting_g</code> is not a term (or single
+variable) in the model. There is, however, an alternative command
+called <code>testparm</code> that lets you specify a variable list
+and then tests all the corresponding coefficients (read it as 
+"test the parameters of ..."). So the solution is
+<pre class='stata'>
+. testparm i.setting_g
+
+ ( 1)  2.setting_g = 0
+ ( 2)  3.setting_g = 0
+
+       F(  2,    17) =    6.97
+            Prob > F =    0.0062</pre>
+<P>
+As the output shows, Stata names the coefficients of a 
+factor variable using the number of the level followed by a dot 
+and the name of the factor, as in <code>2.setting_g</code>.
+You could reproduce this F-test using the command
+<code>test 2.setting_g 3.setting_g</code>, which works fine
+because these are terms (single variables) in the model.
+<P>
+On a related matter, Stata stores the coefficients in a matrix
+called <code>e(b)</code>, and you can list them using
+<code>mat list e(b)</code>. This is how I first discovered 
+the names of the coefficients representing factor variables.
+<P>
+<i>Exercise</i>: Obtain the parameter estimates and anova table
+for the model with family planning effort grouped into three
+categories: 0-4, 5-14 and 15+, labelled weak, moderate and strong.
+</p>

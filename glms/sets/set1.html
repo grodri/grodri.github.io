@@ -1,0 +1,53 @@
+---
+layout: default
+section: glms
+tab: "Problem Sets"
+---
+
+<h2 class="first">Problem Set 1: Mental Health, Stress and SES<br/>
+ <small>Due Friday, September 30, 2016</small> </h2> 
+<p>
+
+<p>Agresti and Finlay(1997) report data from a Florida study investigating the relationship between mental health and several explanatory variables using a random sample of 40 subjects. The outcome of interest is an index of mental impairment that incorporates measures of anxiety and depression. We will consider two predictors: a life-events score that combines the number and severity of various stressful life events, and an index of socio-economic status (SES).</p>
+<p>The data are available on this website as <code>https://grodri.github.io/datasets/mentalhealth.dta</code>, 
+a Stata file that can be read natively into Stata or from R using the <code>haven</code> library.</p>
+
+<h4>[1] Simple Regressions</h4>
+
+<p>(a) Draw a scatterplot matrix with the three variables of interest, and comment briefly on the relationship between each pair of variables.</p>
+
+<p>(b) Run a simple linear regression of the mental impairment index on the life events index, interpret the slope, and test its significance using a t-test.</p>
+
+<p>(c) What proportion of the variation across subjects in the index of mental health is explained by the life events index? How is this proportion related to Pearson's correlation coefficient?</p>
+
+<p>(d) Check the linearity of this relationship by adding a quadratic term on the index of life events. In general it is a good idea to center variables on their mean before squaring; this reduces collinearity and simplifies interpretation. Either way you should find that we don't really need a quadratic term.</p>
+
+<p>(e) Regress the index of mental impairment on SES, to verify the hypothesis that whether or not money buys happiness, it is certainly associated with better mental health. Calculate Pearson's correlation as a summary of the association. Interpretation of the regression coefficient is hampered by the arbitrary nature of both scales. Rerun the regression standardizing both indices and interpret the resulting slope. Compare it with Pearson's <em>r</em>.</p>
+
+<h4>[2] Multiple Regression</h4>
+
+<p>(a) Run a regression of the index of mental impairment on both SES and the index of live events and note that both slopes are highly significant. Interpret briefly the estimate of the coefficient of life events, and compare it with the estimate from the simple linear regression of 1.b.</p>
+
+<p>(b) Construct an F-test for the net effect of life events after adjusting for SES using the sums of squares you have already calculated. Verify that it coincides with the square of the t-test in 2.a.</p>
+
+<p>(c) What proportion of the variation in mental health has been 'explained' by the two variables together? What's the square root of this value?</p>
+
+<p>(d) Compute fitted values for this model and calculate Pearson's correlation between observed and fitted values. Does this number look familiar?</p>
+
+<p>(e) What proportion of the variation left unexplained by SES can be attributed to life events? How is this number related to the partial correlation between mental impairment and life events given SES?</p>
+
+<h4>[3] Added Variable Plots</h4>
+
+<p>(a) Regress the index of mental impairment on SES and save the raw residuals in a variable called mentalNetSes. Regress the index of life events on SES and save the raw residuals in a variable valled lifeNetSes.</p>
+
+<p>(b) Plot mental impairment net of SES against life events net of SES. Do we have any indication that this relationship may not be linear?</p>
+
+<p>(c) Compute the correlation between the constructed variables mental impairment net of SES and life events net of SES, and verify that it is the same as the partial correlation of 2.e.</p>
+
+<p>(d) Regress mental impairment net of SES on life events net of SES. The estimated constant should be be essentially zero. Compare the estimated slope with the regression coefficient of life events in 2.a.</p>
+
+<p>(e) Construct an added-variable plot of mental impairment net of life events versus SES net of life events, to check the linearity of that relationship after adjusting for the index of life events.</p>
+
+<p><em>Note</em>: Stata's <code>avplot</code> and R's <code>avPlot()</code> in the <code>car</code> package can do added variable plots, but here you have to do them “by hand”, using the software only to compute and plot estimates and fitted values. </p>
+
+<p class="small">Posted September 21,  2016</p>

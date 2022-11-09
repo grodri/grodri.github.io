@@ -1,0 +1,85 @@
+---
+layout: default
+section: glms
+tabs: "Problem Sets"
+---
+
+<h2 class="first"">Problem Set 4: Doctor Visits<br/>
+<small>Due Friday, November 18, 2016</small> </h2>
+<p>Cameron and Trivedi (2009) have some interesting data on the number 
+of office-based doctor visits by adults aged 25-64 based on the 2002 
+Medical Expenditure Panel Survey. We will use data for the most recent 
+wave, available in the datasets section of the website as 
+<code>docvis.dta</code>.</p>
+<h3 id="a-poisson-model">[1] A Poisson Model</h3>
+<p>(a) Fit a Poisson regression model with the number of doctor visits 
+(<code>docvis</code>), as the outcome. We will use the same predictors 
+as Cameron and Trivedi, namely health insurance status 
+(<code>private</code>), health status (<code>chronic</code>), gender 
+(<code>female</code>) and income (<code>income</code>), but will add 
+two indicators of ethnicity (<code>black</code> and 
+<code>hispanic</code>). There are many more variables one could add, 
+but we'll keep things simple.</p>
+<p>(b) Interpret the coefficient of <code>black</code> and test its 
+significance using a Wald test and a likelihood ratio test.</p>
+<p>(c) Compute a 95% confidence interval for the effect of private 
+insurance and interpret this result in terms of doctor visits.</p>
+<p>(d) Compute the deviance and Pearson chi-squared statistics for this 
+model. Does the model fit the data? Is there evidence of 
+overdispersion?</p>
+<p>(e) Predict the proportion expected to have exactly zero doctor 
+visits and compare with the observed proportion. You will find the 
+formula for Poisson probabilities in the notes. The probability of zero 
+is simply <span 
+class="math"><em>e</em><sup> − <em>μ</em></sup></span>.</p>
+<h3 id="poisson-overdispersion">[2] Poisson Overdispersion</h3>
+<p>(a) Suppose the variance is proportional to the mean rather than 
+equal to the mean. Estimate the proportionality parameter using 
+Pearson's chi-squared and use this estimate to correct the standard 
+errors.</p>
+<p>(b) What happens to the significance of the black coefficient once 
+we allow for extra-Poisson variation? Could we test this coefficient 
+using a likelihood ratio test? Explain.</p>
+<p>(c) Compare the standard errors adjusted for over-dispersion with 
+the robust or &quot;sandwich&quot; estimator of the standard errors.</p>
+<h3 id="a-negative-binomial-model">[3] A Negative Binomial Model</h3>
+<p>(a) Fit a negative binomial regression model using the same outcome 
+and predictors as in part 1.a. Comment on any remarkable changes in the 
+coefficients.</p>
+<p>(b) Interpret the coefficient of black and test its significance 
+using a Wald test and a likelihood ratio test. Compare your results 
+with parts 1.b and 2.b</p>
+<p>(c) Predict the percent of respondents with zero doctor visits 
+according to this model and compare with part 1.e. You will find a 
+formula for negative binomial probabilities in the addendum to the 
+notes. The probability of zero is given by <span class="math">
+[<em>β</em> / (<em>μ</em> + <em>β</em>)]<sup><em>α</em></sup>
+</span> where <span class="math">
+<em>α</em> = <em>β</em> = 1 / <em>σ</em><sup>2</sup></span>.</p>
+
+<p>(d) Interpret the estimate of <span 
+class="math"><em>σ</em><sup>2</sup></span> in this model and test its 
+significance, noting carefully the distribution of the criterion.</p>
+<p>(e) Use predicted values from this model to divide the sample into 
+twenty groups of about equal size, compute the mean and variance of 
+<code>docvis</code> in each group, and plot these values. Superimpose 
+curves representing the over-dispersed Poisson and negative binomial 
+variance functions and comment.</p>
+<h3 id="a-zero-inflated-poisson-model">[4] A Zero-Inflated Poisson 
+Model</h3>
+<p>(a) Try a zero-inflated Poisson model with the same predictors of 
+part 1a in both the Poisson and inflate equations.</p>
+<p>(b) Predict the proportion of respondents with zero doctor visits 
+according to this model and compare with 1.e and 3.c. (Don't forget 
+that there are two ways of having an outcome of zero in this model.)</p>
+<p>(c) Interpret the coefficients of black in the two equations. Is the 
+effect related to whether blacks visit the doctor at all? To how often 
+they visit?</p>
+<h3 id="model-selection">[5] Model Selection</h3>
+<p>Considering the results obtained so far and bearing in mind 
+parsimony and goodness of fit, which of the models used here provides 
+the best description of the data? Make sure you provide a clear 
+justification of your choice.</p>
+<p class="small">Posted November 9, 2016</p>
+</body>
+</html>

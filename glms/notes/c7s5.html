@@ -1,0 +1,350 @@
+---
+layout: default
+section: glms
+tab: "Lecture Notes"
+mathjax: true
+pager: true
+---
+
+
+<h3>7.5 Infant and Child Mortality in Colombia</h3>
+<p>We will illustrate the use of piece-wise exponential survival
+models using data from an analysis of infant and child mortality
+in Colombia done by Somoza&nbsp;(1980).  The data were collected in a
+1976 survey conducted as part of the World Fertility Survey.
+The sample consisted of women between the ages of 15 and 49.
+The questionnaire included a maternity history, recording for
+each child ever born to each respondent the sex, date of
+birth, survival status as of the interview and (if applicable)
+age at death.</p>
+
+<h4>7.5.1 Calculating Events and Exposure</h4>
+<p>As if often the case with survival data, most of the work goes
+into preparing the data for analysis. In the present case we
+started from tables in Somoza&rsquo;s article showing living children
+classified by current age, and dead children classified by age at
+death. Both tabulations reported age using the groups shown in
+Table <a href='#t_7_1'>7.1</a>, using fine categories early in life, when
+the risk if high but declines rapidly, and wider categories at later ages.
+With these two bits of information we were able to
+tabulate deaths and calculate exposure time by age groups,
+assuming that children who died or were censored in an interval
+lived on the average half the length of the interval.</p>
+
+<a name='t_7_1'></a><p class='text-center'>Table 7.1. Infant and Child Deaths and Exposure Time by<br/>Age of Child and Birth Cohort, Colombia 1976.</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al'>Exact</td><td colspan='8' align='center'>Birth Cohort</td></tr>
+<tr><td class='al'>Age</td><td colspan='2' align='center'>1941&ndash;59</td><td class='ar'></td><td colspan='2' align='center'>1960&ndash;67</td><td class='ar'></td><td colspan='2' align='center'>1968-76</td></tr>
+<tr class='bb'><td class='al'></td><td class='ar'>deaths</td><td class='ar'>exposure</td><td class='ar'></td><td class='ar'>deaths</td><td class='ar'>exposure</td><td class='ar'></td><td class='ar'>deaths</td><td class='ar'>exposure</td></tr>
+<tr class='bt'><td class='al'>0&ndash;1 m</td><td class='ar'>168</td><td class='ar'>278.4</td><td class='ar'></td><td class='ar'>197</td><td class='ar'>403.2</td><td class='ar'></td><td class='ar'>195</td><td class='ar'>495.3</td></tr>
+<tr><td class='al'>1&ndash;3 m</td><td class='ar'>48</td><td class='ar'>538.8</td><td class='ar'></td><td class='ar'>48</td><td class='ar'>786.0</td><td class='ar'></td><td class='ar'>55</td><td class='ar'>956.7</td></tr>
+<tr><td class='al'>3&ndash;6 m</td><td class='ar'>63</td><td class='ar'>794.4</td><td class='ar'></td><td class='ar'>62</td><td class='ar'>1165.3</td><td class='ar'></td><td class='ar'>58</td><td class='ar'>1381.4</td></tr>
+<tr><td class='al'>6&ndash;12 m</td><td class='ar'>89</td><td class='ar'>1550.8</td><td class='ar'></td><td class='ar'>81</td><td class='ar'>2294.8</td><td class='ar'></td><td class='ar'>85</td><td class='ar'>2604.5</td></tr>
+<tr><td class='al'>1&ndash;2 y</td><td class='ar'>102</td><td class='ar'>3006.0</td><td class='ar'></td><td class='ar'>97</td><td class='ar'>4500.5</td><td class='ar'></td><td class='ar'>87</td><td class='ar'>4618.5</td></tr>
+<tr><td class='al'>2&ndash;5 y</td><td class='ar'>81</td><td class='ar'>8743.5</td><td class='ar'></td><td class='ar'>103</td><td class='ar'>13201.5</td><td class='ar'></td><td class='ar'>70</td><td class='ar'>9814.5</td></tr>
+<tr class='bb'><td class='al'>5&ndash;10 y</td><td class='ar'>40</td><td class='ar'>14270.0</td><td class='ar'></td><td class='ar'>39</td><td class='ar'>19525.0</td><td class='ar'></td><td class='ar'>10</td><td class='ar'>5802.5</td></tr>
+</table>
+
+<p>Table <a href='#t_7_1'>7.1</a> shows the results of these calculations
+in terms of the number of deaths and the total number of person-years
+of exposure to risk between birth and age ten, by categories of
+age of child, for three groups of children (or cohorts) born in
+1941&ndash;59, 1960&ndash;67 and 1968&ndash;76.
+The purpose of our analysis will be to assess the magnitude of
+the expected decline in infant and child mortality across these
+cohorts, and to study whether mortality has declined uniformly
+at all ages or more rapidly in certain age groups.</p>
+
+<h4>7.5.2 Fitting The Poisson Models</h4>
+<p>Let \( y_{ij} \) denote the number of deaths for cohort \( i \) (with \( i=1,2,3 \))
+in age group \( j \) (for \( j=1,2,\ldots,7 \)).  In view of the results of
+the previous section, we treat the \( y_{ij} \) as realizations of
+Poisson random variables with means \( \mu_{ij} \) satisfying</p>
+
+\[ \mu_{ij} = \lambda_{ij} t_{ij}, \]
+<p>where \( \lambda_{ij} \) is the hazard rate and \( t_{ij} \) is the total
+exposure time for group \( i \) at age \( j \).  In words, the expected
+number of deaths is the product of the death rate by exposure time.</p>
+
+<p>A word of caution about units of measurement: the hazard rates must
+be interpreted in the same units of time that we have used to measure
+exposure.  In our example we measure time in years
+and therefore the \( \lambda_{ij} \) represent rates per person-year
+of exposure.  If we had measured time in months the \( \lambda_{ij} \)
+would represent rates per person-month of exposure, and would be
+exactly one twelfth the size of the rates per person-year.</p>
+
+<p>To model the rates we use a log link, so that the linear predictor
+becomes</p>
+
+\[ \eta_{ij} = \log \mu_{ij} = \log \lambda_{ij} + \log t_{ij}, \]
+<p>the sum of two parts, \( \log t_{ij} \), an <i>offset</i> or known part of the linear
+predictor, and \( \log \lambda_{ij} \), the log of the hazard rates of
+interest.</p>
+
+<p>Finally, we introduce a log-linear model for the hazard rates,
+of the usual form</p>
+
+\[ \log \lambda_{ij} = \boldsymbol{x}_{ij}'\boldsymbol{\beta}, \]
+<p>where \( \boldsymbol{x}_{ij} \) is a vector of covariates. In case you are wondering
+what happened to the baseline hazard, we have folded it into
+the vector of parameters \( \boldsymbol{\beta} \). The vector of covariates \( \boldsymbol{x}_{ij} \)
+may include a constant, a set of dummy variables representing the
+age groups (i.e. the shape of the hazard by age), a set of dummy
+variables representing the birth cohorts (i.e. the change in the
+hazard over time) and even a set of cross-product dummies representing
+combinations of ages and birth cohorts (i.e. interaction effects).</p>
+
+<a name='t_7_2'></a><p class='text-center'>Table 7.2. Deviances for Various Models Fitted to<br/>Infant and Child Mortality Data From Colombia</p>
+<table class='tex-table'>
+<tr class='bt bb'><td class='al'>Model</td><td class='al'>Name</td><td class='al'>\(\log \lambda_{ij}\)</td><td class='ar'>Deviance</td><td class='ar'>d.f.</td></tr>
+<tr class='bt'><td class='al'>\(\phi\)</td><td class='al'>Null</td><td class='al'>\(\eta\)</td><td class='ar'>4239.8</td><td class='ar'>20</td></tr>
+<tr><td class='al'>\(A\)</td><td class='al'>Age</td><td class='al'>\(\eta+\alpha_i\)</td><td class='ar'>72.7</td><td class='ar'>14</td></tr>
+<tr><td class='al'>\(C\)</td><td class='al'>Cohort</td><td class='al'>\(\eta+\beta_j\)</td><td class='ar'>4190.7</td><td class='ar'>18</td></tr>
+<tr><td class='al'>\(A+C\)</td><td class='al'>Additive</td><td class='al'>\(\eta+\alpha_i+\beta_j\)</td><td class='ar'>6.2</td><td class='ar'>12</td></tr>
+<tr class='bb'><td class='al'>\(AC\)</td><td class='al'>Saturated</td><td class='al'>\(\eta+\alpha_i+\beta_j+(\alpha\beta)_{ij}\)</td><td class='ar'>0</td><td class='ar'>0</td></tr>
+</table>
+
+<p>Table <a href='#t_7_2'>7.2</a> shows the deviance for the five possible models
+of interest, including the null model, the two one-factor models,
+the two-factor additive model, and the two-factor model with an
+interaction, which is saturated for these data.</p>
+
+<h4>7.5.3 The Equivalent Survival Models</h4>
+<p>The null model assumes that the hazard is a constant from birth
+to age ten and that this constant is the same for all cohorts.
+It therefore corresponds to an <i>exponential survival model with
+no covariates</i>.  This model obviously does not fit the data,
+the deviance of 4239.8 on 20 d.f.&nbsp;is simply astronomical.
+The m.l.e.&nbsp;of \( \eta \) is \( -3.996 \) with a standard error of
+0.0237. Exponentiating we obtain an estimated hazard rate of
+0.0184.  Thus, we expect about 18 deaths per thousand person-years
+of exposure.  You may want to verify that 0.0184 is simply the
+ratio of the total number of deaths to the total exposure time.
+Multiplying 0.0184 by the amount of exposure in each cell of
+the table we obtain the expected number of deaths. The deviance
+quoted above is simply twice the sum of observed times the log
+of observed over expected deaths.</p>
+
+<p>The age model allows the hazard to change from one age group
+to another, but assumes that the risk at any given age is the
+same for all cohorts. It is therefore equivalent to <i>a piece-wise
+exponential survival model with no covariates</i>.  The reduction
+in deviance from the null model is 4167.1 on 6 d.f., and is
+extremely significant. The risk of death varies substantially
+with age over the first few months of life.  In other words the
+hazard is clearly not constant.  Note that with a deviance of
+72.7 on 14 d.f., this model does not fit the data. Thus,
+the assumption that all cohorts are subject to the same risks
+does not seem tenable.</p>
+
+<p>Table <a href='#t_7_3'>7.3</a> shows parameter estimates for the
+one-factor models \( A \) and \( C \) and for the additive model
+\( A+C \) in a format reminiscent of multiple classification
+analysis.  Although the \( A \) model does not fit the data, it is
+instructive to comment briefly on the estimates. The
+constant, shown in parentheses, corresponds to a rate of
+\( \exp\{-0.7427\}=0.4758 \), or nearly half a death per person-year
+of exposure, in the first month of life. The estimate for
+ages 1&ndash;3 months corresponds to a multiplicative effect of
+\( \exp\{-1.973\}=0.1391 \), amounting to an 86 percent reduction
+in the hazard after surviving the first month of life.
+This downward trend continues up to ages 5&ndash;10 years, where
+the multiplicative effect is \( \exp\{-5.355\}=0.0047 \), indicating
+that the hazard at these ages is only half-a-percent what it
+was in the first month of life. You may wish to verify that
+the m.l.e.&rsquo;s of the age effects can be calculated directly
+from the total number of deaths and the total exposure time
+in each age group. Can you calculate the deviance by hand?</p>
+
+<p>Let us now consider the model involving only birth cohort,
+which assumes that the hazard is constant from birth to age
+ten, but varies from one birth cohort to another.
+This model is equivalent to <i>three exponential survival
+models</i>, one for each birth cohort. As we would expect,
+it is hopelessly inadequate, with a deviance in the thousands,
+because it fails to take into account the substantial age
+effects that we have just discussed.  It may of of interest,
+however, to note the parameter estimates in Table <a href='#t_7_3'>7.3</a>.
+As a first approximation, the overall mortality rate for
+the older cohort was \( \exp\{-3.899\} = 0.0203 \) or around 20 deaths
+per thousand person-years of exposure. The multiplicative effect
+for the cohort born in 1960&ndash;67 is \( \exp\{-0.3020\}=0.7393 \),
+indicating a 26 percent reduction in overall mortality.
+However, the multiplicative effect for the youngest cohort
+is \( \exp\{0.0742\}=1.077 \), suggesting an eight percent <i>increase</i>
+in overall mortality. Can you think of an explanation for this
+apparent anomaly? We will consider the answer after we discuss the
+next model.</p>
+
+<a name='t_7_3'></a><p class='text-center'>Table 7.3. Parameter Estimates for Age, Cohort and Age\( + \)Cohort
+Models<br/>of Infant and Child Mortality in Colombia</p>
+<table class='tex-table'>
+<tr class='bt bb'><td class='al'>Factor</td><td class='al'>Category</td><td class='ar'>Gross Effect</td><td class='ar'>Net Effect</td></tr>
+<tr class='bt'><td class='al'>Baseline</td><td class='al'></td><td class='ar'></td><td class='ar'>\(-\)0.4485</td></tr>
+<tr><td class='al'>Age</td><td class='al'>0&ndash;1 m</td><td class='ar'>(\(-\)0.7427)</td><td class='ar'>&ndash;</td></tr>
+<tr><td class='al'></td><td class='al'>1&ndash;3 m</td><td class='ar'>\(-\)1.973</td><td class='ar'>\(-\)1.973</td></tr>
+<tr><td class='al'></td><td class='al'>3&ndash;6 m</td><td class='ar'>\(-\)2.162</td><td class='ar'>\(-\)2.163</td></tr>
+<tr><td class='al'></td><td class='al'>6&ndash;12 m</td><td class='ar'>\(-\)2.488</td><td class='ar'>\(-\)2.492</td></tr>
+<tr><td class='al'></td><td class='al'>1&ndash;2 y</td><td class='ar'>\(-\)3.004</td><td class='ar'>\(-\)3.014</td></tr>
+<tr><td class='al'></td><td class='al'>2&ndash;5 y</td><td class='ar'>\(-\)4.086</td><td class='ar'>\(-\)4.115</td></tr>
+<tr><td class='al'></td><td class='al'>5&ndash;10 y</td><td class='ar'>\(-\)5.355</td><td class='ar'>\(-\)5.436</td></tr>
+<tr><td class='al'>Cohort</td><td class='al'>1941&ndash;59</td><td class='ar'>(\(-\)3.899)</td><td class='ar'>&ndash;</td></tr>
+<tr><td class='al'></td><td class='al'>1960&ndash;67</td><td class='ar'>\(-\)0.3020</td><td class='ar'>\(-\)0.3243</td></tr>
+<tr class='bb'><td class='al'></td><td class='al'>1968&ndash;76</td><td class='ar'>0.0742</td><td class='ar'>\(-\)0.4784</td></tr>
+</table>
+
+<p>Consider now the additive model with effects of both age and cohort,
+where the hazard rate is allowed to vary with age and may differ
+from one cohort to another, but the age (or cohort) effect is
+assumed to be the same for each cohort (or age).
+This model is equivalent to a <i>proportional hazards model</i>, where
+we assume a common shape of the hazard by age, and let cohort
+affect the hazard proportionately at all ages.  Comparing the
+proportional hazards model with the age model we note a reduction in
+deviance of 66.5 on two d.f., which is highly significant.
+Thus, we have strong evidence of cohort effects net of age.
+On the other hand, the attained deviance of 6.2 on 12 d.f.&nbsp;is clearly
+not significant, indicating that the proportional hazards model
+provides an adequate description of the patterns of mortality by
+age and cohort in Colombia.  In other words, the assumption of
+proportionality of hazards is quite reasonable, implying that the
+decline in mortality in Colombia has been the same at all ages.</p>
+
+<p>Let us examine the parameter estimates on the right-most column
+of Table <a href='#t_7_3'>7.3</a>. The constant is the baseline hazard at
+ages 0&ndash;1 months for the earliest cohort, those born in 1941&ndash;59.
+The age parameters representing the baseline hazard are practically
+unchanged from the model with age only, and trace the dramatic
+decline in mortality from birth to age ten, with half the
+reduction concentrated in the first year of life.  The cohort
+affects adjusted for age provide a more reasonable picture of the
+decline in mortality over time.  The multiplicative effects for the
+cohorts born in 1960&ndash;67 and 1068&ndash;76 are \( \exp\{-0.3243\}= 0.7233 \)
+and \( \exp\{-0.4784\} = 0.6120 \), corresponding
+to mortality declines of 28 and 38 percent at every age,
+compared to the cohort born in 1941&ndash;59.
+This is a remarkable decline in infant and child mortality,
+which appears to have been the same at all ages. In other words,
+neonatal, post-neonatal, infant and toddler mortality have all
+declined by approximately 38 percent across these cohorts.</p>
+
+<p>The fact that the gross effect for the youngest cohort was
+positive but the net effect is substantially negative can be
+explained as follows.
+Because the survey took place in 1976,
+children born between 1968 and 76 have been exposed mostly
+to mortality at younger ages, where the rates are
+substantially higher than at older ages.
+For example a child born in 1975 would have been exposed
+only to mortality in the first year of life.
+The gross effect ignores this fact and thus overestimates the
+mortality of this group at ages zero to ten.
+The net effect adjusts correctly for the increased risk at
+younger ages, essentially comparing the mortality of this cohort
+to the mortality of earlier cohorts when they had the same ages,
+and can therefore unmask the actual decline.</p>
+
+<p>A final caveat on interpretation: the data are based on
+retrospective reports of mothers who were between the ages of 15
+and 49 at the time of the interview. These women provide a
+representative sample of both mothers and births for recent
+periods, but a somewhat biased sample for older periods.
+The sample excludes mothers who have died before the interview,
+but also women who were older at the time of birth of the
+child. For example births from 1976, 1966 and 1956 come from
+mothers who were under 50, under 40 and under 30 at the time
+of birth of the child. A more careful analysis of the data
+would include age of mother at birth of the child as an
+additional control variable.</p>
+
+<h4>7.5.4 Estimating Survival Probabilities</h4>
+<p>So far we have focused attention on the hazard or mortality rate,
+but of course, once the hazard has been calculated it becomes an
+easy task to calculate cumulative hazards and therefore
+survival probabilities. Table <a href='#t_7_4'>7.4</a> shows the results
+of just such an exercise, using the parameter estimates for
+the proportional hazards model in Table <a href='#t_7_3'>7.3</a>.</p>
+
+<a name='t_7_4'></a><p class='text-center'>Table 7.4. Calculation of Survival Probabilities for Three Cohorts<br/>Based on the Proportional Hazards Model</p>
+<table class='tex-table'>
+<tr class='bt'><td class='al'>Age</td><td class='al'>Width</td><td colspan='3' align='center'>Baseline</td><td class='ar'></td><td colspan='3' align='center'>Survival for Cohort</td></tr>
+<tr><td class='al'>Group</td><td class='al'></td><td class='ar'>Log-haz</td><td class='ar'>Hazard</td><td class='ar'>Cum.Haz</td><td class='ar'></td><td class='ar'>\(<\)1960</td><td class='ar'>1960&ndash;67</td><td class='ar'>1968&ndash;76</td></tr>
+<tr class='bb'><td class='al'>(1)</td><td class='al'>(2)</td><td class='ar'>(3)</td><td class='ar'>(4)</td><td class='ar'>(5)</td><td class='ar'></td><td class='ar'>(6)</td><td class='ar'>(7)</td><td class='ar'>(8)</td></tr>
+<tr class='bt'><td class='al'>0&ndash;1 m</td><td class='al'><small> 1/12</small></td><td class='ar'>\(-\)0.4485</td><td class='ar'>0.6386</td><td class='ar'>0.0532</td><td class='ar'></td><td class='ar'>0.9482</td><td class='ar'>0.9623</td><td class='ar'>0.9676</td></tr>
+<tr><td class='al'>1&ndash;3 m</td><td class='al'><small> 2/12</small></td><td class='ar'>\(-\)2.4215</td><td class='ar'>0.0888</td><td class='ar'>0.0680</td><td class='ar'></td><td class='ar'>0.9342</td><td class='ar'>0.9520</td><td class='ar'>0.9587</td></tr>
+<tr><td class='al'>3&ndash;6 m</td><td class='al'><small> 3/12</small></td><td class='ar'>\(-\)2.6115</td><td class='ar'>0.0734</td><td class='ar'>0.0864</td><td class='ar'></td><td class='ar'>0.9173</td><td class='ar'>0.9395</td><td class='ar'>0.9479</td></tr>
+<tr><td class='al'>6&ndash;12 m</td><td class='al'><small> 1/2</small></td><td class='ar'>\(-\)2.9405</td><td class='ar'>0.0528</td><td class='ar'>0.1128</td><td class='ar'></td><td class='ar'>0.8933</td><td class='ar'>0.9217</td><td class='ar'>0.9325</td></tr>
+<tr><td class='al'>1&ndash;2 y</td><td class='al'><small> 1</small></td><td class='ar'>\(-\)3.4625</td><td class='ar'>0.0314</td><td class='ar'>0.1441</td><td class='ar'></td><td class='ar'>0.8658</td><td class='ar'>0.9010</td><td class='ar'>0.9145</td></tr>
+<tr><td class='al'>2&ndash;5 y</td><td class='al'><small> 3</small></td><td class='ar'>\(-\)4.5635</td><td class='ar'>0.0104</td><td class='ar'>0.1754</td><td class='ar'></td><td class='ar'>0.8391</td><td class='ar'>0.8809</td><td class='ar'>0.8970</td></tr>
+<tr class='bb'><td class='al'>5&ndash;10 y</td><td class='al'><small> 5</small></td><td class='ar'>\(-\)5.8845</td><td class='ar'>0.0028</td><td class='ar'>0.1893</td><td class='ar'></td><td class='ar'>0.8275</td><td class='ar'>0.8721</td><td class='ar'>0.8893</td></tr>
+</table>
+
+<p>Consider first the baseline group, namely the cohort of children
+born before 1960.  To obtain the log-hazard for each age group
+we must add the constant and the age effect, for example the log-hazard
+for ages 1&ndash;3 months is \( -0.4485-1.973=-2.4215 \). This gives the
+numbers in column (3) of Table <a href='#t_7_3'>7.3</a>.  Next we exponentiate
+to obtain the hazard rates in column (4), for example the rate
+for ages 1&ndash;3 months is \( \exp\{-2.4215\}=0.0888 \).
+Next we calculate the cumulative hazard, multiply the hazard
+by the width of the interval and summing across intervals.
+In this step it is crucial to express the width of the interval
+in the same units used to calculate exposure, in this case years.
+Thus, the cumulative hazard at then end of ages 1&ndash;3 months
+is \( 0.6386\times1/12 + 0.0888\times2/12 = 0.0680 \). Finally,
+we change sign and exponentiate to calculate the survival function.
+For example the baseline survival function at 3 months is
+\( \exp\{-0.0680\} = 0.9342 \).</p>
+
+<p>To calculate the survival functions shown in columns (7) and (8)
+for the other two cohorts we could multiply the baseline hazards by
+\( \exp\{-0.3242\} \) and \( \exp\{-0.4874\} \) to obtain the hazards
+for cohorts 1960&ndash;67 and 1968&ndash;76, respectively, and then repeat
+the steps described above to obtain the survival functions.
+This approach would be necessary if we had time-varying effects,
+but in the present case we can take advantage of a simplification
+that obtains for proportional hazard models. Namely, the survival
+functions for the two younger cohorts can be calculated as the
+baseline survival function <i>raised</i> to the relative risks
+\( \exp\{-0.3242\} \) and \( \exp\{-0.4874\} \), respectively.
+For example the probability of surviving to age three months
+was calculated as 0.9342 for the baseline group, and turns out
+to be \( 0.9342^{\exp\{-0.3242\}}=0.9520 \) for the cohort born in
+1960&ndash;67, and \( 0.9342^{\exp\{-0.4874\}}=0.9587 \) for the cohort
+born in 1968&ndash;76.</p>
+
+<p>Note that the probability of dying in the first year of life has
+declined from 106.7 per thousand for children born before 1960
+to 78.3 per thousand for children born in 1960&ndash;67 and finally
+to 67.5 per thousand for the most recent cohort. Results presented
+in terms of probabilities are often more accessible to a wider
+audience than results presented in terms of hazard rates.
+(Unfortunately, demographers are used to calling the probability
+of dying in the first year of life the &lsquo;infant mortality rate&rsquo;.
+This is incorrect because the quantity quoted is a probability,
+not a rate. In our example the rate varies substantially within
+the first year of life. If the probability of dying in the first
+year of life is \( q \), say, then the average rate is approximately
+\( -\log(1-q) \), which is not too different from \( q \) for small \( q \).)</p>
+
+<p>By focusing on events and exposure, we have been able to combine
+infant and child mortality in the same analysis and use all
+available information.
+An alternative approach could focus on infant mortality (deaths in
+the first year of life), and solve the censoring problem by looking
+only at children born at least one year before the survey,
+for whom the survival status at age one is know. One could then
+analyze the probability of surviving to age one using ordinary
+logit models.
+A complementary analysis could then look at survival from age one
+to five, say, working with children born at least five years
+before the survey who survived to age one, and then analyzing whether
+or not they further survive to age five, using again a logit model.
+While simple, this approach does not make full use of the
+information, relying on cases with complete (uncensored) data.
+Cox and Oakes&nbsp;(1980) show that this so-called reduced sample approach
+can lead to inconsistencies. Another disadvantage of this approach
+is that it focuses on survival to key ages, but cannot examine
+the shape of the hazard in the intervening period.</p>
+
