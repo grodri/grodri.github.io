@@ -1,0 +1,147 @@
+---
+layout: default
+section: research
+---
+
+<h2 class="first">Simulated Datasets</h2>
+<p> 
+Our <a href="JavaScript:toggle('jrss1');">1995 paper</a> relied on simulations of three-level
+variance-components models with moderate and large random effects
+at levels 2 and 3 using the same nested structure as the
+actual survey data from Guatemala.
+</p>
+<div id="jrss1"  style="display:none;border:2px solid #3366cc; padding:12px">
+<button type="button" class="close pull-right" aria-label="Close" onclick="toggle('jrss1')"><span aria-hidden="true">&times;</span></button>
+Rodr&iacute;guez, Germ&aacute;n and Goldman, Noreen (1995).
+<span class="em">An Assessment of Estimation Procedures for Multilevel Models with Binary Responses.</span>
+<I>Journal of the Royal Statistical Society. Series A (Statistics in Society)</I>, 
+Vol. 158, No. 1., pp. 73-89. 
+[This article is available in 
+<a href="https://www.jstor.org/stable/2983404">JSTOR</a>.]
+<p class="abstract" style="display:block; font-size:90%">
+We evaluate two software packages that are available for fitting multilevel models to binary response data, namely VARCL and ML3, by using a Monte Carlo study designed to represent quite closely the actual structure of a data set used in an analysis of health care utilization in Guatemala. We find that the estimates of fixed effects and variance components produced by the software packages are subject to very substantial downward bias when the random effects are sufficiently large to be interesting. In fact, the fixed effect estimates are no better than the estimates obtained by using standard logit models that ignore the hierarchical structure of the data. The estimates of standard errors appear to be reasonably accurate and superior to those obtained by ignoring clustering, although one might question their utility in the presence of large biases. We conclude that alternative estimation procedures need to be developed and implemented for the binary response case.
+</p>
+</div>
+<p> 
+The datasets available here represent 100 simulations of the
+structure with large (<font face="symbol">s</font><sup>2</sup>=1)
+random effects at both levels 2 (family) and 3 (community). 
+</p>
+<h3>Variables</h3>
+<p>
+Each dataset has 8 variables on 2449 cases. The variables are</p>
+
+<table class="table-framed">
+<tbody>
+<tr>
+<th>Column</th>
+<th>Variable</th>
+<th>Notes</th>
+</tr>
+<tr>
+<td>1</td>
+<td>child id</td>
+<td>2449 kids, ids in 1..14684</td>
+</tr>
+<tr>
+<td>2</td>
+<td>family id</td>
+<td>1558 families, ids in 3..2782</td>
+</tr>
+<tr>
+<td>3</td>
+<td>community id</td>
+<td>161 communities, ids in 1..242</td>
+</tr>
+<tr>
+<td>4</td>
+<td>binary dependent variable</td>
+<td>0,1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>corresponding latent variable</td>
+<td>logistic</td>
+</tr>
+<tr>
+<td>6</td>
+<td>child-level covariate</td>
+<td>mean .0955621, range -.452557 .541957</td>
+</tr>
+<tr>
+<td>7</td>
+<td>family-level covariate</td>
+<td>mean -.083816 , range -1.485043 to 2.284106</td>
+</tr>
+<tr>
+<td>8</td>
+<td>community-level covariate</td>
+<td>mean -.6857591, range -1.818267 to -.0097808</td>
+</tr>
+</tbody>
+
+</table>
+<p>
+All datasets were generated using true parameter values equal to 0.665267 for the constant and equal to 1 for each of the three covariates, and using normal variates with variance 1 for the family and community effect.
+</p>
+<h3>Packages</h3>
+<p>The 100 simulated datasets are named <code>s3bb1.dat</code> to <code>s3bb100.dat </code> 
+and are available in plain text ASCII format, zipped into four archives with 25 datasets each:</p>
+
+<table class="table-framed">
+<tbody>
+<tr>
+<th>File</th>
+<th>Simulations</th>
+<th>Size</th>
+</tr>
+<tr>
+<td>
+<a href="rgs3bb1.zip">rgs3bb1.zip</a>
+</td>
+<td align="right">1-25</td>
+<td>916 KB</td>
+</tr>
+<tr>
+<td>
+<a href="rgs3bb2.zip">rgs3bb2.zip</a>
+</td>
+<td align="right">26-50</td>
+<td>917 KB</td>
+</tr>
+<tr>
+<td>
+<a href="rgs3bb3.zip">rgs3bb3.zip</a>
+</td>
+<td align="right">51-75</td>
+<td>917 KB</td>
+</tr>
+<tr>
+<td>
+<a href="rgs3bb4.zip">rgs3bb4.zip</a>
+</td>
+<td align="right">76-100</td>
+<td>917 KB</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+Note that only variables 4 and 5 vary across datasets. 
+In view of this, we are also making the data available in a much more compact format, a single zipped file <a href="rg3bbpack.zip">rg3bbpack.zip</a> that 
+includes five files:</p>
+<ul>
+<li> <p>
+File <code>s3bbx.dat</code> has variables 1,2,3,6,7 and 8;
+in other words, the variables that are constant accros simulations.</p></li>
+<li><p>
+Files <code>s3bby1.dat</code> to <code>s3bby4.dat</code> have
+25 columns each, representing the outcomes of simulations
+1-25, 26-50, 51-75 and 76-100, respectively, for all 2449 cases</p></li>
+</ul>
+<p>You may find this format more suitable for some applications.</p>
+<script>
+function toggle(id) {
+    $("#"+id).toggle();
+}
+</script>

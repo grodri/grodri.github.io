@@ -1,0 +1,335 @@
+---
+layout: default
+section: research
+---
+  
+<h2 class="first">Guatemalan Data</h2>
+<p> 
+This page makes available the two datasets used in our
+<a href="Javascript:toggle('jrss2')"> 
+2001 JRSS</a> paper. 
+These data are also part of the analysis in our
+<a href="JavaScript:toggle('dem');">1996 Demography</a> paper.
+</p>
+<!-- [1] -->
+<div id="jrss2"  style="display:none;border:2px solid #3366cc; padding:12px">
+<button type="button" class="close pull-right" aria-label="Close" onclick="toggle('jrss2')"><span aria-hidden="true">&times;</span></button>
+<p>
+Rodríguez, Germán and Goldman, Noreen (2001).
+<span class="em"> 
+Improved Estimation Procedures for Multilevel Models with Binary Response: A Case Study.
+</span><i>Journal of the Royal Statistical Society. Series A (Statistics in Society)</i> 
+Vol. 164, No. 2.
+[This article is available in
+<a href="https://www.jstor.org/stable/2680556">JSTOR</a>.]
+</p> 
+		<div class="abstract" style="display:block; font-size:90%"> 
+During recent years, analysts have been relying on approximate methods of inference to estimate multilevel models for binary or count data.  In an earlier study of random-intercept models for binary data we used simulated data to demonstrate that one such approximation, known as marginal quasi-likelihood, leads to a substantial attenuation bias in the estimates of both fixed and random effects whenever the random effects are non-trivial.  In this paper, we fit three-level random-intercept models to actual data for two binary outcomes, to assess whether refined approximation procedures, namely penalized quadi-likelihood and second-order improvements to marginal and penalized quasi-likelihood, also underestimate the underlying parameters.  The extent of the bias is assessed by two standards of comparison: exact maximum likelihood estimates, based on a Gauss-Hermite numerical quadrature procedure, and a set of Bayesian estimates, obtained from Gibbs sampling with diffuse priors. We also examine the effectiveness of a parametric bootstrap procedure for reducing the bias.  The results indicate that second-order penalized quasi-likelihood estimates provide a considerable improvement over the other approximations, but all the methods of approximate inference results in substantial underestimation of the fixed and random effects when the random effects are sizable.  We also find that the parametric bootstrap can eliminate the bias but is computationally very intensive.
+</div></div>
+<!-- [2] -->
+<div id="dem"  style="display:none;border:2px solid #3366cc; padding:12px">
+<button type="button" class="close pull-right" aria-label="Close" onclick="toggle('dem')"><span aria-hidden="true">&times;</span></button>
+<p>Pebley, Anne; Goldman, Noreen, and Rodríguez, Germán (1996).
+<span class="em">Prenatal and Delivery Care and Childhood Immunization in Guatemala: Do Family and Community Matter?</span><i>Demography</i>, Vol. 33, No. 2, pp. 231-247.
+[This article is available in 
+<a href="https://www.jstor.org/stable/2061874">JSTOR</a>.]
+</p> 
+		<div class="abstract"  style="display:block; font-size:90%"> 
+In this paper we investigate family choices about pregnancy-related care and the use of childhood immunization. Estimates obtained from a multilevel logistic model indicate that use of formal (or "modern") health services differs substantially by ethnicity, by social and economic factors, and by availability of health services. The results also show that family and community membership are very important determinants of the use of health care, even in the presence of controls for a large number of observed characteristics of individuals, families, and communities.
+</div> 
+<!-- / -->
+<p>
+</div>
+<p>
+The data on immunization have been used as an example in  Rabe-Hesketh and Skrondal (2008), <i> Multilevel and Longitudinal Modeling Using Stata</i>, 2nd edition, Stata Press, Texas. (see Section 10.5 and following.)
+</p>		<p> 
+The datasets are available in a zipped archive
+<a href="rggudat.zip">rggudat.zip</a> (40 KB).
+They are also available individually in uncompressed form as 
+<a href="guImmun.dat">guImmun.dat</a> (115 KB) and 
+<a href="guPrenat.dat">guPrenat.dat</a> (160 KB).
+Descriptions of these datasets follow:
+</p>
+		<h3>Immunization</h3>
+		<p> 
+The first dataset (<code>guImmun.dat</code>) refers to complete immunization among children 
+receiving any immunization. It has 2159 observations on 19 variables. 
+The very first line is a header with variable names, so the file can be read 
+into R or S-Plus using <code>read.table(<i>filename</i>,header=T)</code>,
+and into Stata using <code>insheet using <i>filename</i>, delim(" ") case</code>. 
+The variables include 
+child, family and community id numbers, the outcome coded 0-1, and a set of 
+individual, family and community variables used as predictors. These appear
+in exactly the same order as Table 2 in the JRSS-A paper:</p>
+</p>
+				<table class="table-condensed table-framed">
+						<tbody>
+								<tr>
+										<th>Column</th>
+										<th>Variable</th>
+										<th>Notes</th>
+								</tr>
+								<tr>
+										<td>  1</td>
+										<td> kid</td>
+										<td> child id (2159 kids)</td>
+								</tr>
+								<tr>
+										<td>  2</td>
+										<td> mom</td>
+										<td> family id (1595 families)</td>
+								</tr>
+								<tr>
+										<td>  3</td>
+										<td> cluster</td>
+										<td> cluster id (161 communities)</td>
+								</tr>
+								<tr>
+										<td>  4</td>
+										<td> immun</td>
+										<td> whether fully immunized (1=yes, 0=no)</td>
+								</tr>
+								<tr>
+										<td>  5</td>
+										<td> kid2p</td>
+										<td> child aged 2+ years</td>
+								</tr>
+								<tr>
+										<td>  6</td>
+										<td> mom25p</td>
+										<td> mother aged 25+ years</td>
+								</tr>
+								<tr>
+										<td>  7</td>
+										<td> order23</td>
+										<td> birth order 2-3</td>
+								</tr>
+								<tr>
+										<td>  8</td>
+										<td> order46</td>
+										<td> birth order 4-6</td>
+								</tr>
+								<tr>
+										<td>  9</td>
+										<td> order7p</td>
+										<td> birth order 7+</td>
+								</tr>
+								<tr>
+										<td> 10</td>
+										<td> indNoSpa</td>
+										<td> indigenous, speaks no spanish</td>
+								</tr>
+								<tr>
+										<td> 11</td>
+										<td> indSpa</td>
+										<td> indigenous, speaks spanish</td>
+								</tr>
+								<tr>
+										<td> 12</td>
+										<td> momEdPri</td>
+										<td> mother's education primary</td>
+								</tr>
+								<tr>
+										<td> 13</td>
+										<td> momEdSec</td>
+										<td> mother's education secondary+</td>
+								</tr>
+								<tr>
+										<td> 14</td>
+										<td> husEdPri</td>
+										<td> husband's education primary</td>
+								</tr>
+								<tr>
+										<td> 15</td>
+										<td> husEdSec</td>
+										<td> husband's education secondary+</td>
+								</tr>
+								<tr>
+										<td> 16</td>
+										<td> husEdDK</td>
+										<td> husband's education missing</td>
+								</tr>
+								<tr>
+										<td> 17</td>
+										<td> momWork</td>
+										<td> mother ever worked</td>
+								</tr>
+								<tr>
+										<td> 18</td>
+										<td> rural</td>
+										<td> rural residence</td>
+								</tr>
+								<tr>
+										<td> 19</td>
+										<td> pcInd81</td>
+										<td> proportion indigenous in 1981</td>
+								</tr>
+						</tbody>
+				</table>
+		<p> 
+The last predictor is a continuous variable.  All others are 0-1 dummy
+variables, representing discrete factors coded using the reference cell
+method. The omitted categories are child aged 1 year, mother's age less 
+than 25, birth order 1, ladino, mother with no education, husband with
+no education, mother never worked, and urban residence.
+</p>
+		<h3>Prenatal Care</h3>
+		<p> 
+The second dataset (<code>guPrenat.dat</code>) 
+refers to use of modern prenatal care among 
+women using some form of prenatal care.  It has 2449 observations on 25 
+variables. The first line is a header with variable names, so the file can be read
+into R or S-Plus using <code>read.table(<i>filename</i>,header=T)</code>,
+and into Stata using <code>insheet using <i>filename</i>, delim(" ") case</code>. 
+The variables include level ids, the outcome, and individual, family and community-level 
+predictors. These appear in the same order as Table 3 in the JRSS-A paper.
+</p>
+
+				<table class="table-condensed table-framed">
+						<tbody>
+								<tr>
+										<th>Column</th>
+										<th>Variable</th>
+										<th>Notes</th>
+								</tr>
+								<tr>
+										<td>  1</td>
+										<td>kid</td>
+										<td>child id (2449 kids)</td>
+								</tr>
+								<tr>
+										<td>  2</td>
+										<td>mom</td>
+										<td>family id (1558 families)</td>
+								</tr>
+								<tr>
+										<td>  3</td>
+										<td>cluster</td>
+										<td>cluster id (161 communities)</td>
+								</tr>
+								<tr>
+										<td>  4</td>
+										<td>prenat</td>
+										<td>used modern prenatal care (1=yes, 0=no)</td>
+								</tr>
+								<tr>
+										<td>  5</td>
+										<td>kid3p</td>
+										<td>child aged 3-4 years</td>
+								</tr>
+								<tr>
+										<td>  6</td>
+										<td>mom25p</td>
+										<td>mother aged 25+ years</td>
+								</tr>
+								<tr>
+										<td>  7</td>
+										<td>order23</td>
+										<td>birth order 2-3</td>
+								</tr>
+								<tr>
+										<td>  8</td>
+										<td>order46</td>
+										<td>birth order 4-6</td>
+								</tr>
+								<tr>
+										<td>  9</td>
+										<td>order7p</td>
+										<td>birth order 7+</td>
+								</tr>
+								<tr>
+										<td> 10</td>
+										<td>indNoSpa</td>
+										<td>indigenous, speaks no spanish</td>
+								</tr>
+								<tr>
+										<td> 11</td>
+										<td>inSpa</td>
+										<td>indigenous, speaks spanish</td>
+								</tr>
+								<tr>
+										<td> 12</td>
+										<td>momEdPri</td>
+										<td>mother's education primary</td>
+								</tr>
+								<tr>
+										<td> 13</td>
+										<td>momEdSec</td>
+										<td>mother's education secondary+</td>
+								</tr>
+								<tr>
+										<td> 14</td>
+										<td>husEdPri</td>
+										<td>husband's education primary</td>
+								</tr>
+								<tr>
+										<td> 15</td>
+										<td>husEdSec</td>
+										<td>husband's education secondary+</td>
+								</tr>
+								<tr>
+										<td> 16</td>
+										<td>husEdDK</td>
+										<td>husband's education missing</td>
+								</tr>
+								<tr>
+										<td> 17</td>
+										<td>husProf</td>
+										<td>husband professional, sales, clerical</td>
+								</tr>
+								<tr>
+										<td> 18</td>
+										<td>husAgrSelf</td>
+										<td>husband agricultural self-employed</td>
+								</tr>
+								<tr>
+										<td> 19</td>
+										<td>husAgrEmp</td>
+										<td>husband agricultural employee</td>
+								</tr>
+								<tr>
+										<td> 20</td>
+										<td>husSkilled</td>
+										<td>husband skilled service</td>
+								</tr>
+								<tr>
+										<td> 21</td>
+										<td>toilet</td>
+										<td>modern toilet in household</td>
+								</tr>
+								<tr>
+										<td> 22</td>
+										<td>tvNotDaily</td>
+										<td>television not watched daily</td>
+								</tr>
+								<tr>
+										<td> 23</td>
+										<td>tvDaily</td>
+										<td>television watched daily</td>
+								</tr>
+								<tr>
+										<td> 24</td>
+										<td>pcInd81</td>
+										<td>proportion indigenous in 1981</td>
+								</tr>
+								<tr>
+										<td> 25</td>
+										<td>ssDist</td>
+										<td>distance to nearest clinic</td>
+								</tr>
+						</tbody>
+				</table>
+
+		<p> 
+All predictors are either continuous variables (numbers 24 and 25) or 
+0-1 dummy variables (all others) representing discrete factors coded 
+using the reference cell method. Omitted categories are child aged 0-2, 
+mother aged &lt;25, birth order 1, ladino, mother with no education, 
+husband with no education, husband not working or in unskilled occupation, 
+no modern toilet in household, and no television in the household.</p>
+<script>
+function toggle(id) {
+    $("#"+id).toggle();
+}
+</script>
+
