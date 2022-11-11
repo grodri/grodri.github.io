@@ -1,8 +1,8 @@
 ---
 layout: default
-title: "Stata Tutorial"
 section: stata
 tab: "Graphics"
+git: true
 ---
 
 <h1 class="first" id="s4">4 Stata Graphics</h1>
@@ -21,7 +21,7 @@ of all the steps in your research.</p>
 <p>All the graphs in this section (except where noted) use a custom
 scheme with blue titles and a white background, but otherwise should
 look the same as your own graphs. I discuss schemes in Section
-3.2.5.</p>
+4.2.5.</p>
 <h2 id="s41">4.1 Scatterplots</h2>
 <p>In this section I will illustrate a few plots using the data on
 fertility decline first used in Section 2.1. To read the data from
@@ -127,7 +127,6 @@ Our complete command is then</p>
 >          legend(ring(0) pos(5) order(2 "linear fit" 1 "95% CI")) 
 
 . graph export fig31.png, width(500) replace             
-(file fig31.png not found)
 file fig31.png saved as PNG format
 </pre>
 <p>The result is the graph shown at the beginning of this section.</p>
@@ -255,7 +254,6 @@ section.</p>
 <pre class='stata'>. graph display, scheme(economist)
 
 . graph export fig32.png, width(400) replace
-(file fig32.png not found)
 file fig32.png saved as PNG format
 </pre>
 <h2 id="s43">4.3 Other Graphs</h2>
@@ -289,7 +287,6 @@ nicer.</p>
 >     title(Mean Temperature) legend(order(1 "January" 2 "July")) 
 
 . graph export bar.png, width(500) replace
-(file bar.png not found)
 file bar.png saved as PNG format
 </pre>
 <p><img src="bar.png" class="img-responsive center-block" /></p>
@@ -316,7 +313,6 @@ in a scale of 0 to 255:</p>
 >     title(Box Plots of January Temperature by Region)
 
 . graph export boxplot.png, width(500) replace
-(file boxplot.png not found)
 file boxplot.png saved as PNG format
 </pre>
 <p><img src="boxplot.png" class="img-responsive center-block" /></p>
@@ -357,7 +353,6 @@ in the top right corner of the plot.</p>
 >        legend(ring(0) pos(2) col(1) order(2 "NC" 1 "NE" 3 "S" 4 "W"))     
 
 . graph export kernel.png, width(500) replace
-(file kernel.png not found)
 file kernel.png saved as PNG format
 </pre>
 <p><img src="kernel.png" class="img-responsive center-block" /></p>
@@ -404,5 +399,5 @@ modern web browsers.</p>
 and paste it into a document using the Windows clipboard; to do this
 right click on the window containing the graph and then select copy from
 the context menu.</p>
-
 <p class="pull-right">Continue with <a href="programming" class="btn btn-default">Programming</a></p>
+

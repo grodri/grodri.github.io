@@ -1,10 +1,16 @@
 ---
 layout: default
-title: "Stata Tutorial"
 section: stata
 tab: "Introduction"
+git: true
 ---
 
+<div class="lead"><small>
+This tutorial is an introduction to Stata emphasizing data management, tables and 
+graphics.  A PDF version is available <a href="tutorial.pdf">here</a>. The web 
+pages and PDF file were all  generated using the <code>markstat</code> command 
+to combine Markdown and Stata, as described <a href="/markstat">here</a>. See
+also the computing logs for the statistics courses on this site.</small></div>
 <h1 class="first" id="s1">1 Introduction</h1>
 <p>Stata is a powerful statistical package with smart data-management
 facilities, a wide array of up-to-date statistical techniques, and an
@@ -151,10 +157,10 @@ Contains data from C:\Program Files\Stata17\ado\base/l/lifeexp.dta
  Observations:            68                  Life expectancy, 1998
     Variables:             6                  26 Mar 2020 09:40
                                               (_dta has notes)
-───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────────
 Variable      Storage   Display    Value
     name         type    format    label      Variable label
-───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────────
 region          byte    %16.0g     region     Region
 country         str28   %28s                  Country
 popgrowth       float   %9.0g               * Avg. annual % growth
@@ -162,7 +168,7 @@ lexp            byte    %9.0g               * Life expectancy at birth
 gnppc           float   %9.0g               * GNP per capita
 safewater       byte    %9.0g               * Safe water
                                             * indicated variables have notes
-───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────────
 Sorted by: 
 </pre>
 <p>We see that we have six variables. The dataset has notes that you can
@@ -707,6 +713,5 @@ Brian Poi. Readers interested in programming Stata will find Christopher
 F. Baum’s <em>An Introduction to Stata Programming</em> (2nd edition)
 and William Gould’s <em>The Mata Book: A Book for Serious Programmers
 and Those Who Want to Be</em> both invaluable.</p>
-
 <p class="pull-right">Continue with <a href="dataManagement" class="btn btn-default">Data Management</a></p>
 
