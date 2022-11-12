@@ -5,38 +5,40 @@ tab: "R Logs"
 pager: true
 ---
 
+<style>
+pre {background-color: white;}    
+pre.r {background-color: #f5f5f5;}
+</style>
 
-<h3>2.4 Simple Linear Regression</h3>
-<p>
-Let us start with the simplest possible model, the <i>null</i> model, 
-which fits just a constant
-</p>
-<pre class='r'>
-> m0 <- lm(change~1, data=fpe)
-> m0
+<div id="c2s4" class="section level3 first">
+<h3 class="first">2.4 Simple Linear Regression</h3>
+<p>First we read the data again, so this script can be run independently
+of the previous one.</p>
+<p>We will start with the simplest possible model, the <em>null</em>
+model, which fits just a constant</p>
+<p>The average fertility decline in these countries between 1965 and
+1975 was 14.3%.</p>
+<pre class="r"><code>&gt;   fpe &lt;- read.table(&quot;https://grodri.github.io/datasets/effort.dat&quot;)
+&gt;   m0 &lt;- lm(change ~ 1, data=fpe)
+&gt;   m0</code></pre>
+<pre><code>
 Call:
 lm(formula = change ~ 1, data = fpe)
 
 Coefficients:
 (Intercept)  
-       14.3  
-</pre>
-<p>
-The first argument to the <code>lm()</code> function is a <i>model
-formula</i>, which defines the response, followed by a tilde and a list 
-of terms. In this case the only term is <code>1</code>,  representing the
-constant. The <code>data</code> argument specifies the data frame to
-be used. This can be omitted if the data are attached.
-</p>
-<p>
-The function returns an "lm" (or linear model) object. As you can see,
-its print method simply lists the formula and the estimated coefficients.
-Here we see that the average fertility decline in these countries between
-1965 and 1975 was 14.3%.  To obtain more information we need to use the
-<code>summary()</code> function
-</p>
-<pre class='r'>
-> summary(m0)
+       14.3  </code></pre>
+<div class="r">
+<p>The first argument to <code>lm()</code> is a <em>model formula</em>,
+which defines the response, followed by a tilde and a list of terms. In
+this case the only term is <code>1</code>, representing the constant.
+The <code>data</code> argument specifies the data frame to be used. The
+function returns a linear model (“lm”) object which we called
+<code>m0</code>. Typing this name invokes the <code>print()</code>
+method, which simply lists the formula and the estimated coefficients.
+For more information we use the <code>summary()</code> method:</p>
+<pre class="r"><code>&gt;   summary(m0)</code></pre>
+<pre><code>
 Call:
 lm(formula = change ~ 1, data = fpe)
 
@@ -45,170 +47,141 @@ Residuals:
 -14.30  -8.80  -3.80   8.45  25.70 
 
 Coefficients:
-            Estimate Std. Error t value Pr(>|t|)    
+            Estimate Std. Error t value Pr(&gt;|t|)    
 (Intercept)   14.300      2.641   5.415 3.17e-05 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
-Residual standard error: 11.81 on 19 degrees of freedom
-</pre>
-<p>
-We now get standard errors and a t-test of significance. If you want
-a confidence interval as well you need to call the function
-<code>confint()</code>.
-</p>
-<p>
-If you are wondering what these statistics mean when the 20 countries at 
-hand are not really a random sample of the countries of the world, see the 
-discussion of model-based inference in the notes. Briefly, we view the data 
-as a sample from the universe of all the outcomes we could have observed 
-in these countries in the period 1965-1970.
-</p>
+Residual standard error: 11.81 on 19 degrees of freedom</code></pre>
+<p>We now get standard errors and a t-test of significance. If you want
+a confidence interval just call the function <code>confint()</code>.</p>
+</div>
+<p>If you are wondering what these statistics mean when the 20 countries
+at hand are not really a random sample of the countries of the world,
+see the discussion of model-based inference in the notes. Briefly, we
+view the data as a sample from the universe of all the outcomes we could
+have observed in these countries in the period 1965-1970.</p>
+<div id="fitting-a-linear-term" class="section level4">
 <h4>Fitting a Linear Term</h4>
-<p>
-The next step is to try a linear regression of change on setting:
-</p>
-<pre class='r'>
-> attach(fpe)
-> m1 <- lm(change ~ setting)
-</pre>
-<p>
-The first line attaches the data frame, so we don't need to specify it
-every time. The model formula on the next line specifies a linear
-regression on setting. We don't need to specify an intercept because
-this is always included by default, unless removed using <code>-1</code>
-We were explicit last time because the constant was the only term.
-The term on setting is linear because R recognizes it as a continuous
-variable. (We will learn about categorical variables in 2.6.)
-To obtain more detailed results we use again the <code>summary()</code>
-function
-</p>
-<pre class='r'>
-> summary(m1)
+<p>The next step is to try a linear regression of change on setting. We
+do not need to specify a constant because it is always included, unless
+we use <code>-1</code> to exclude it. Last time we were explicit because
+the constant was the only term.</p>
+<pre class="r"><code>&gt;   m1 &lt;- lm(change ~ setting, data=fpe)
+&gt;   m1</code></pre>
+<pre><code>
 Call:
-lm(formula = change ~ setting)
+lm(formula = change ~ setting, data = fpe)
+
+Coefficients:
+(Intercept)      setting  
+   -22.1254       0.5052  </code></pre>
+<p>Each point in the social setting scale is associated with a fertility
+decline of half a percent. Compare the parameter estimates with those in
+table 2.3 in the lecture notes.</p>
+<div class="r">
+<p>To obtain more detailed results we use again the
+<code>summary()</code> function.</p>
+<pre class="r"><code>&gt;   summary(m1)</code></pre>
+<pre><code>
+Call:
+lm(formula = change ~ setting, data = fpe)
 
 Residuals:
     Min      1Q  Median      3Q     Max 
 -13.239  -6.260   0.787   6.678  17.162 
 
 Coefficients:
-            Estimate Std. Error t value Pr(>|t|)   
+            Estimate Std. Error t value Pr(&gt;|t|)   
 (Intercept) -22.1254     9.6416  -2.295  0.03398 * 
 setting       0.5052     0.1308   3.863  0.00114 **
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
 Residual standard error: 8.973 on 18 degrees of freedom
-Multiple R-squared:  0.4532,	Adjusted R-squared:  0.4228 
-F-statistic: 14.92 on 1 and 18 DF,  p-value: 0.001141
-</pre>
-<p>
-Each point in the social setting scale is associated with a fertility decline
-of half a percent. Compare the parameter estimates with Table 2.3 in the notes.
-We can also obtain the analysis of variance in Table 2.4 using the 
-<code>anova()</code> function
-</p>
-<pre class='r'>
-> anova(m1)
-Analysis of Variance Table
+Multiple R-squared:  0.4532,    Adjusted R-squared:  0.4228 
+F-statistic: 14.92 on 1 and 18 DF,  p-value: 0.001141</code></pre>
+<p>We can also obtain the analysis of variance in Table 2.4 using
+<code>anova()</code></p>
+<pre class="r"><code>&gt;   anova(m1)</code></pre>
+<pre><code>Analysis of Variance Table
 
 Response: change
-          Df Sum Sq Mean Sq F value   Pr(>F)   
+          Df Sum Sq Mean Sq F value   Pr(&gt;F)   
 setting    1 1201.1 1201.08  14.919 0.001141 **
 Residuals 18 1449.1   80.51                    
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-</pre>
-<p>
-The total sum of squares of 2650.2 has been decomposed into 1201.1
-that can be attributed to social setting and 1449.1 that remains unexplained.
-</p>
-<h4>Computing R-Squared</h4>
-<p>
-Let us calculate R-squared "by hand" as the proportion of variance explained
-as we introduce setting. There are a number of functions that can be used to
-access elements of a linear model, for example <code>coef()</code> returns
-the coefficients, <code>fitted()</code> returns the fitted values, and
-<code>resid()</code> returns the residuals, or differences between observed
-and fitted values. We will add our own function to compute the
-<u>r</u>esidual <u>s</u>um of <u>s</u>quares:
-</p>
-<pre class='r'>
-> rss <- function(lmfit) {
-+   sum(resid(lmfit)^2)
-+ }
-</pre>
-<p>
-We can now use this function to compute R-squared as follows:
-</p>
-<pre class='r'>
-> 1 - rss(m1)/rss(m0)
-[1] 0.4532026
-</pre>
-<p>
-Almost half the variation in fertility decline can be expressed as a linear
-effect of social setting.
-</p>
-<h4>Plotting Observed and Fitted Values</h4>
-<p>
-Let us try to reproduce Figure 2.3. We want to plot fertility change versus 
-setting labelling the points with the country names and superimposing the 
-regression line. We use R's <code>plot()</code> function to draw a
-scatterplot of change by setting. (Note that the first argument is the
-x-axis and the second the y-axis.) To superimpose
-a regression line we  use the function <code>abline()</code>, which
-takes as argument an intercept and a slope, which is exactly what 
-<code>coef()</code> returns in this case. 
-</p>
-<p>
-We can add the country names using the <code>text()</code> function,
-but here things get interesting because we get some overprinting. 
-To solve this problem we specify the position of the labels using the
-values 1 to 4 for below, left, above and right. We'll put everyone on 
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>The total sum of squares of 2650.2 has been decomposed into 1201.1
+that can be attributed to social setting and 1449.1 that remains
+unexplained.</p>
+</div>
+</div>
+<div id="computing-r-squared." class="section level4">
+<h4>Computing R-Squared.</h4>
+<div class="r">
+<p>There are a number of functions that can be used to acess elements of
+a linear model, for example <code>coef()</code> returns the
+coefficients, <code>fitted()</code> returns the fitted values, and
+<code>resid()</code> returns the residuals, or differences between
+observed and fitted values. We will add our own function to compute the
+residual sum of squares.</p>
+</div>
+<pre class="r"><code>&gt;   rss &lt;- function(lmfit) {
++       sum(resid(lmfit)^2)
++   }
+&gt;   1 - rss(m1)/rss(m0)</code></pre>
+<pre><code>[1] 0.4532026</code></pre>
+<p>Almost half the variation in fertility decline can be expressed as a
+linear effect of social setting.</p>
+</div>
+<div id="plotting-observed-and-fitted-values." class="section level4">
+<h4>Plotting Observed and Fitted Values.</h4>
+<p>Let us try to reproduce Figure 2.3. We want to plot fertility change
+versus setting labeling the points with the country names and
+superimposing the regression line.</p>
+<div class="r">
+<p>To draw a graph we first open a graphics device, in this case
+<code>png</code> to produce portable network graphics. We then use R’s
+<code>plot()</code> function to draw a scatterplot of
+<code>change</code> by <code>setting</code>. Note that the first
+argument is the x-axis and the second the y-axis. To superimpose a
+regression line we use the function <code>abline()</code>, which takes
+as argument an intercept and a slope, which is exactly what
+<code>coef()</code>’ returns in this case.</p>
+<p>We can add the country names using the <code>text()</code> function,
+but here things get interesting because we get some overprinting. To
+solve this problem we specify the position of the labels using the
+values 1 to 4 for below, left, above and right. We’ll put everyone on
 the right, but move Costa Rica and Trinidad Tobago to the left. In
-addition, we'll use a small adjustment to move the labels a bit up for 
-Costa Rica and down for Trinidad Tobago. We also set <code>cex=0.75</code> 
-to reduce the size of the labels by 25%. The final touch is to provide a 
-bit  more room for the text labels on the plot, using <code>xlim</code>
-to specify the range of the x-axis as 35 to 100.
-</p>
-<pre class='r'>
-> plot(setting,change,xlim=c(35,100))
-> abline(coef(m1))
-> adj <- data.frame( pos=rep(4,nrow(fpe)), jit=0, row.names=row.names(fpe))
-> adj[c("CostaRica","TrinidadTobago"),"pos"] <- 2
-> adj[c("CostaRica","TrinidadTobago"),"jit"] <- c(1,-1)
-> text(setting, change+adj$jit, row.names(fpe), pos=adj$pos, cex=0.75)
-> dev.print(png,"fig23.png",width=600,height=480)
-RStudioGD 
-        2 
-</pre>
-<img src="fig23.png" class="img-responsive center-block"/>
-<p class="em text-center">Figure 2.3. Fertility Change by Social Setting</span></p>
-<p>
-This example also illustrates the use of character subscripts in R.
-We already used variable names as column subscripts, and not
-surprinsigly, we can also use row names as row subscripts.
-This let us write code such as  <code>fpe["CostaRica",]</code>,
-which is clearer than <code>fpe[5,]</code>,
-and will still work if the data frame has been reordered. 
-That's why I put the adjustments in a data frame and gave it the 
-same row names as  <code>fpe</code>.  
-</p>
-<p>
-<i>Note:</i> The <code>plot()</code> method for linear
-model fits produces four plots: residuals versus fitted values,
-a Q-Q plot for normality, a scale-location plot, and a plot
-of residuals versus leverages. We will learn about these 
-statistics in section 2.9. If you are curious try typing
-<code>par(mfrow=c(2,2))</code> and <code>plot(m1)</code>.
-The first function changes the graphics device layout to
-show four plots in two rows and two columns. If you try this
-you may want to restore the original layout using 
-<code>par(mfrow=c(1,1))</code>.
-</p>
-<p>
-<i>Exercise:</i> Run the simple linear regression model for 
-fertility change as a function of program effort and plot the results.
-</p>
+addition, we’ll use a small adjustment to move the labels a bit up for
+Costa Rica and down for Trinidad Tobago. We also set
+<code>cex=0.75</code> to reduce the size of the labels by 25%. The final
+touch is to provide a bit more room for the text labels on the plot,
+using <code>xlim</code>’ to specify the range of the x-axis as 35 to
+100.</p>
+<pre class="r"><code>&gt;   png(filename = &quot;fig23r.png&quot;, width=500, height=400)
+&gt;   plot(fpe$setting, fpe$change,xlim=c(35,100))
+&gt;   abline(coef(m1))
+&gt;   adj &lt;- data.frame( pos=rep(4,nrow(fpe)), jit=0, row.names=row.names(fpe))
+&gt;   adj[c(&quot;CostaRica&quot;,&quot;TrinidadTobago&quot;),&quot;pos&quot;] &lt;- 2
+&gt;   adj[c(&quot;CostaRica&quot;,&quot;TrinidadTobago&quot;),&quot;jit&quot;] &lt;- c(1,-1)
+&gt;   text(fpe$setting, fpe$change+adj$jit, row.names(fpe), pos=adj$pos, cex=0.75)
+&gt;   dev.off()</code></pre>
+<pre><code>RStudioGD 
+        2 </code></pre>
+<p><img src="data:image/png;base64,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" class="img-responsive center-block r" /></p>
+<p><em>Note:</em> The <code>plot()</code> method for linear model fits
+produces four plots: residuals versus fitted values, a Q-Q plot for
+normality, a scale-location plot, and a plot of residuals versus
+leverages. We will learn about these statistics in <a href="c2s9">section 2.9</a>. If you are curious try typing
+<code>par(mfrow=c(2,2))</code> and <code>plot(m1)</code>. The first call
+changes the graphics device layout to show four plots in two rows and
+two columns. When you are done type <code>par(mfrow=c(1,1)</code> to
+restore the default.</p>
+</div>
+<p><em>Exercise</em>: Run the simple linear regression model for
+fertility change as a function of program effort and plot the
+results.</p>
+</div>
+</div>
