@@ -5,9 +5,9 @@ tab: "R Logs"
 ---
 
 <h2 id="robust-standard-errors-in-r">Robust Standard Errors in R</h2>
-<p>Stata makes the calculation of robust standard errors easy via the
-<code>vce(robust)</code> option. Replicating the results in R is not
-exactly trivial, but Stack Exchange provides a solution, see <a
+<p><img src="/images/stata14.png" align="left">Stata makes the calculation of robust 
+standard errors easy via the <code>vce(robust)</code> option. Replicating the 
+results in R is not exactly trivial, but Stack Exchange provides a solution, see <a
 href="https://stats.stackexchange.com/questions/117052/replicating-statas-robust-option-in-r">replicating
 Stata’s robust option in R</a>.</p>
 <p>So here’s our final model for the program effort data using the
@@ -39,9 +39,9 @@ Linear regression                               Number of obs     =         20
        _cons │  -5.954036   2.707697    -2.20   0.043     -11.6941   -.2139743
 ─────────────┴────────────────────────────────────────────────────────────────
 </pre>
-<p>Here’s how to get the same result in R. Basically you need the
-<code>sandwich</code> package, which computes robust covariance matrix
-estimators. You also need some way to use the variance estimator in a
+<p><img src="/images/r.png" align="left">Here’s how to get the same result in R. 
+Basically you need the <code>sandwich</code> package, which computes robust covariance 
+matrix estimators. You also need some way to use the variance estimator in a
 linear model, and the <code>lmtest</code> package is the solution. You
 will not get the same results as Stata, however, unless you use the
 <code>HC1</code> estimator; the default is <code>HC3</code>, for reasons
