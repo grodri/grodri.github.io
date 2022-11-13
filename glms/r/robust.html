@@ -1,15 +1,18 @@
 ---
 layout: default
 section: glms
-tabs: "R Logs"
-pager: true
+tab: "R Logs"
 ---
 
 <h2 id="robust-standard-errors-in-r">Robust Standard Errors in R</h2>
-<p>Stata makes the calculation of robust standard errors easy via the <code>vce(robust)</code> option. Replicating the results in R is not exactly trivial, but Stack Exchange provides a solution, see 
-<a href="https://stats.stackexchange.com/questions/117052/replicating-statas-robust-option-in-r">replicating Stata’s robust option in R</a>. </p>
-<p><img src="/images/stata14.png" align="left">&nbsp;  So here’s our final model for the program effort data using the robust option in Stata</p>
-<pre class='stata'>. use https://data.princeton.edu/wws509/datasets/effort, clear
+<p>Stata makes the calculation of robust standard errors easy via the
+<code>vce(robust)</code> option. Replicating the results in R is not
+exactly trivial, but Stack Exchange provides a solution, see <a
+href="https://stats.stackexchange.com/questions/117052/replicating-statas-robust-option-in-r">replicating
+Stata’s robust option in R</a>.</p>
+<p>So here’s our final model for the program effort data using the
+<code>vce(robust)</code> option in Stata:</p>
+<pre class='stata'>. use https://grodri.github.io/datasets/effort, clear
 (Family Planning Effort Data)
 
 . recode effort (min/4=1 "Weak") (5/14=2 "Moderate") (15/max=3 "Strong"), gen(effortg)
@@ -25,7 +28,7 @@ Linear regression                               Number of obs     =         20
 
 ─────────────┬────────────────────────────────────────────────────────────────
              │               Robust
-      change │      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+      change │ Coefficient  std. err.      t    P>|t|     [95% conf. interval]
 ─────────────┼────────────────────────────────────────────────────────────────
      setting │   .1692677   .0454318     3.73   0.002     .0729565    .2655788
              │
@@ -36,11 +39,17 @@ Linear regression                               Number of obs     =         20
        _cons │  -5.954036   2.707697    -2.20   0.043     -11.6941   -.2139743
 ─────────────┴────────────────────────────────────────────────────────────────
 </pre>
-<p><img src="/images/r.png" align="left">&nbsp;  Here’s how to get the same result in R. Basically you need the <code>sandwich</code> package, which computes robust covariance matrix estimators. You also need some way to use the variance estimator in a linear model, and the <code>lmtest</code> package is the solution. You will not get the same results as Stata, however, unless you use the <code>HC1</code> estimator; the default is <code>HC3</code>, for reasons explained in <code>?vcovHC</code>.</p>
-<pre class='r'>> library(foreign)
-> fpe &lt;- read.dta("https://data.princeton.edu/wws509/datasets/effort.dta")
+<p>Here’s how to get the same result in R. Basically you need the
+<code>sandwich</code> package, which computes robust covariance matrix
+estimators. You also need some way to use the variance estimator in a
+linear model, and the <code>lmtest</code> package is the solution. You
+will not get the same results as Stata, however, unless you use the
+<code>HC1</code> estimator; the default is <code>HC3</code>, for reasons
+explained in <code>?vcovHC</code>.</p>
+<pre class='r'>> library(haven)
+> fpe &lt;- read_dta("https://grodri.github.io/datasets/effort.dta")
 > fpe$effortg = cut(fpe$effort,  breaks=c(min(fpe$effort),5,15,max(fpe$effort)), 
-+     right=FALSE, include.lowest=TRUE, labels=c("Weak","Moderate","Strong"))
++   right=FALSE, include.lowest=TRUE, labels=c("Weak","Moderate","Strong"))
 > m &lt;- lm(change ~ setting + effortg, data = fpe)
 > library(lmtest)
 > library(sandwich)
@@ -56,5 +65,6 @@ effortgStrong   19.447609   2.567472  7.5746 1.118e-06 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 </pre>
-<p>The main point is that the results are <em>exactly</em> the same. Interestingly, some of the robust standard errors are smaller than the model-based errors, and the effect of setting is now significant</p>
-
+<p>The main point is that the results are exactly the same.
+Interestingly, some of the robust standard errors are smaller than the
+model-based errors, and the effect of setting is now significant.</p>
