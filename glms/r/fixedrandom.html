@@ -5,50 +5,46 @@ tab: "R Logs"
 pager: true
 ---
 
+<style>
+pre {background-color: white;}  
+pre.r {background-color: #f5f5f5;}  
+</style>
 
-<h2>Models for Clustered and Panel Data</h2>
-<p>We will illustrate the analysis of clustered or panel data using three examples, two dealing with linear models
-and one with logits models. The linear model examples use clustered school data on IQ and language ability,
-and longitudinal state-level data on Aid to Families with Dependent Children (AFDC).</p>
+<div id="c8s1" class="section level2 first">
+<h2 class="first">8. Models for Clustered and Panel Data</h2>
+<p>We will illustrate the analysis of clustered or panel data using
+three examples, two dealing with linear models and one with logits
+models. The linear model examples use clustered school data on IQ and
+language ability, and longitudinal state-level data on Aid to Families
+with Dependent Children (AFDC).</p>
+<div id="clustered-linear-model" class="section level3">
 <h3>8.1 Clustered Linear Model</h3>
-<p>Snijders and Boskers (1999), Multilevel Analysis, have data for 2287 8-th grade children in 131 schools in
-The Netherlands. The data are available from http://stat.gamma.rug.nl/snijders, follow the link to the ML book.
-The data are in the file MLBOOK1.DAT, which includes variable names as well as the data. I split that into two
-separate files and made all variable names lowercase. The data needed here are available in a Stata file.</p>
-
-
-<pre class='r weave-r'>
-> library(foreign)
-
-> sn <- read.dta("http://data.princeton.edu/wws509/datasets/snijders.dta")
-</pre>
-
+<p>Snijders and Boskers (1999), <em>Multilevel Analysis</em>, have data
+for 2287 8-th grade children in 131 schools in The Netherlands. The data
+are available in the datasets section in a Stata file and can be read
+directly from Stata or R.</p>
+<pre class="r"><code>&gt;   library(haven)
+&gt;   sn &lt;- read_dta(&quot;https://grodri.github.io/datasets/snijders.dta&quot;)</code></pre>
+<div id="ols" class="section level4">
 <h4>OLS</h4>
-<p>We are interested in the relationship between verbal IQ and the score in a language test.
-OLS gives a highly significant coefficient of 2.65 with a standard error of 0.072:</p>
-
-
-<pre class='r weave-r'>
-> ols <- lm(langpost ~ iq_verb, data=sn)
-
-> coef(summary(ols))
-            Estimate Std. Error  t value      Pr(>|t|)
+<p>We are interested in the relationship between verbal IQ and the score
+in a language test. OLS gives a highly significant coefficient of 2.65
+with a standard error of 0.072:</p>
+<pre class="r"><code>&gt;   ols &lt;- lm(langpost ~ iq_verb, data=sn)
+&gt;   coef(summary(ols))</code></pre>
+<pre><code>            Estimate Std. Error  t value      Pr(&gt;|t|)
 (Intercept) 9.528484 0.86682065 10.99245  1.995001e-27
-iq_verb     2.653896 0.07215406 36.78096 5.020594e-233
-</pre>
-
+iq_verb     2.653896 0.07215406 36.78096 5.020594e-233</code></pre>
+</div>
+<div id="random-effects" class="section level4">
 <h4>Random Effects</h4>
-<p>We consider the fact that the observations are probably correlated within each school because of
-unobserved school characteristics that affect language scores (such as a good language teacher).</p>
-
-
-<pre class='r weave-r'>
-> library(lme4)
-
-> re <- lmer(langpost ~ iq_verb + (1 | schoolnr), data = sn, REML = FALSE)
-
-> summary(re)
-Linear mixed model fit by maximum likelihood  ['lmerMod']
+<p>We consider the fact that the observations are probably correlated
+within each school because of unobserved school characteristics that
+affect language scores (such as a good language teacher).</p>
+<pre class="r"><code>&gt;   library(lme4)
+&gt;   re &lt;- lmer(langpost ~ iq_verb + (1 | schoolnr), data=sn, REML = FALSE)
+&gt;   summary(re)</code></pre>
+<pre><code>Linear mixed model fit by maximum likelihood  [&#39;lmerMod&#39;]
 Formula: langpost ~ iq_verb + (1 | schoolnr)
    Data: sn
 
@@ -72,67 +68,70 @@ iq_verb      2.48809    0.07005   35.52
 
 Correlation of Fixed Effects:
         (Intr)
-iq_verb -0.937
-</pre>
-
-<p>The coefficient of verbal IQ is 2.49 with a standard error of 0.07 and is still highly significant.
-We have also learned that the language scores are correlated within schools, in fact 18.3% of the
-variation in language scores net of verbal IQ can be attributed to the schools (the rest is due to
-the pupils). The intra-class correlation is highly significant, as shown by a test statistic of 225.9
+iq_verb -0.937</code></pre>
+<pre class="r"><code>&gt;   v = as.numeric(VarCorr(re)) # variance of random effects
+&gt;   v/(v + sigma(re)^2)         # intra-class correlation</code></pre>
+<pre><code>[1] 0.1836084</code></pre>
+<pre class="r"><code>&gt;   -2*(logLik(ols)-logLik(re)) # LR test</code></pre>
+<pre><code>&#39;log Lik.&#39; 225.9154 (df=3)</code></pre>
+<p>The coefficient of verbal IQ is 2.49 with a standard error of 0.071
+and is still highly significant. We have also learned that the language
+scores <em>are</em> correlated within schools; in fact, 18.3% of the
+variation in language scores net of verbal IQ can be attributed to the
+schools (the rest is due to the pupils). The intra-class correlation is
+highly significant, as shown by a test statistic of 225.9
 (conservatively a chi-squared with 1 d.f.)</p>
-<h4>Fixed Effects (Within)</h4>
-<p>The best way to estimate fixed-effect models in R is using the <code>plm</code> package.</p>
-
-
-<pre class='r weave-r'>
-> library(plm)
-
-> fe <- plm(langpost ~ iq_verb, data = sn, model = "within", index = "schoolnr")
-
-> summary(fe)
-Oneway (individual) effect Within Model
+</div>
+<div id="fixed-effects-within" class="section level4">
+<h4>Fixed-Effects (Within)</h4>
+<p>We now consider a fixed-effects model that allows for the possibility
+of a correlation between unobserved school characteristics and verbal IQ
+(the school with the good teacher attracts brighter students):</p>
+<p>To estimate a fixed-effects model in R we use the <code>plm</code>
+package.</p>
+<pre class="r"><code>&gt;   library(plm)
+&gt;   fe &lt;- plm(langpost ~ iq_verb, data = sn, model = &quot;within&quot;, index = &quot;schoolnr&quot;)
+&gt;   summary(fe)</code></pre>
+<pre><code>Oneway (individual) effect Within Model
 
 Call:
-plm(formula = langpost ~ iq_verb, data = sn, model = "within", 
-    index = "schoolnr")
+plm(formula = langpost ~ iq_verb, data = sn, model = &quot;within&quot;, 
+    index = &quot;schoolnr&quot;)
 
-Unbalanced Panel: n=131, T=4-35, N=2287
+Unbalanced Panel: n = 131, T = 4-35, N = 2287
 
-Residuals :
-   Min. 1st Qu.  Median 3rd Qu.    Max. 
--25.800  -4.140   0.352   4.550  19.400 
+Residuals:
+     Min.   1st Qu.    Median   3rd Qu.      Max. 
+-25.76294  -4.13643   0.35211   4.55354  19.42749 
 
-Coefficients :
-        Estimate Std. Error t-value  Pr(>|t|)    
-iq_verb 2.414772   0.071647  33.704 < 2.2e-16 ***
+Coefficients:
+        Estimate Std. Error t-value  Pr(&gt;|t|)    
+iq_verb 2.414772   0.071647  33.704 &lt; 2.2e-16 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
 Total Sum of Squares:    138670
 Residual Sum of Squares: 90806
 R-Squared:      0.34517
-Adj. R-Squared: 0.32525
-F-statistic: 1135.95 on 1 and 2155 DF, p-value: < 2.22e-16
-</pre>
-
-<p>Our results are very robust, the coefficient of verbal IQ is 2.41 with a standard error of 0.071.
-We feel pretty confident on our conclusions.</p>
+Adj. R-Squared: 0.30537
+F-statistic: 1135.95 on 1 and 2155 DF, p-value: &lt; 2.22e-16</code></pre>
+<p>Our results are very robust, the coefficient of verbal IQ is 2.41
+with a standard error of 0.071. We feel pretty confident on our
+conclusions. Note that we get an F-test for school effects, which are
+highly significant.</p>
+</div>
+<div id="group-means-between" class="section level4">
 <h4>Group Means (Between)</h4>
-<p>If you are not deterred by the ecological fallacy you could have analyzed group means.
-COpmuting means and sample size is easy with the <code>dplyr</code> library. (The <code>plm</code> makes it even
-easier with the &quot;between&quot; model, but uses unweighted means.)</p>
-
-
-<pre class='r weave-r'>
-> library(dplyr)
-
->  msn <- summarize(group_by(sn, schoolnr), 
-+ 	langpost=mean(langpost), iq_verb=mean(iq_verb), w =n())
-
-> be <- lm(langpost ~ iq_verb, data = msn, weight = w)
-
-> summary(be)
-
+<p>If you are not deterred by the ecological fallacy you could have
+analyzed group means. Stata makes this easy with the <code>be</code>
+option. We also use <code>wls</code> to weight schools in proportion to
+the number of students (not that it makes a huge difference):</p>
+<pre class="r"><code>&gt;   library(dplyr)
+&gt;   msn &lt;- summarize(group_by(sn, schoolnr), 
++     langpost=mean(langpost), iq_verb=mean(iq_verb), w=n())
+&gt;   be &lt;- lm(langpost ~ iq_verb, data=msn, weight = w)
+&gt;   summary(be)</code></pre>
+<pre><code>
 Call:
 lm(formula = langpost ~ iq_verb, data = msn, weights = w)
 
@@ -141,26 +140,49 @@ Weighted Residuals:
 -37.879  -8.088  -1.064   7.022  28.485 
 
 Coefficients:
-            Estimate Std. Error t value Pr(>|t|)    
+            Estimate Std. Error t value Pr(&gt;|t|)    
 (Intercept)   -5.210      3.962  -1.315    0.191    
-iq_verb        3.899      0.334  11.674   <2e-16 ***
+iq_verb        3.899      0.334  11.674   &lt;2e-16 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
 Residual standard error: 13.26 on 129 degrees of freedom
-Multiple R-squared:  0.5137,	Adjusted R-squared:   0.51 
-F-statistic: 136.3 on 1 and 129 DF,  p-value: < 2.2e-16
-</pre>
-
-<p>This gives a much larger coefficient of 3.90, albeit with a larger standard error of 0.334.
-Clearly working with aggregate data would overestimate the relationship between verbal IQ
-and language scores. Note that the random-effects estimate is between the within and between
+Multiple R-squared:  0.5137,    Adjusted R-squared:   0.51 
+F-statistic: 136.3 on 1 and 129 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>This gives a much larger coefficient of 3.90, albeit with a larger
+standard error of 0.334. Clearly working with aggregate data would
+overestimate the relationship between verbal IQ and language scores.
+Note that the random-effects estimate is between the within and between
 estimates (it always is).</p>
-<p>The following figure shows the data, separate regression fits for each of the 131 schools,
-and the between, within, and random-effects estimates.</p>
-<img src="snijders.png" style="display:block;margin:auto">
-<p style="text-align:center">Language Scores and Verbal IQ</a></p>
-<p>The red line is the between-groups estimate, which overstates the relationship between IQ
-and language scores. The blue line is the within-groups or fixed-effects estimator.
-The green line is the random-effects estimator, which is always an average of the within
-and between, and in this case comes very close to the within-groups regressions.</p>
+</div>
+<div id="comparison-of-estimates" class="section level4">
+<h4>Comparison of Estimates</h4>
+<p>The following figure shows the data, separate regression fits for
+each of the 131 schools, and the between, within, and random-effects
+estimates. First we run the school regressions</p>
+<pre class="r"><code>&gt;   fits &lt;- group_by(sn, schoolnr) |&gt; do(lf = lm(langpost ~ iq_verb, data = .))
+&gt;   sr &lt;- data.frame(id = fits[[1]], t(sapply(fits[[2]], coef)))
+&gt;   names(sr) &lt;- c(&quot;schoolnr&quot;, &quot;sa&quot;, &quot;sb&quot;)
+&gt;   snp &lt;- left_join(sn, sr, by= &quot;schoolnr&quot;) |&gt; mutate(fv = sa + sb * iq_verb)</code></pre>
+<p>And then we do the combined plot</p>
+<pre class="r"><code>&gt;   library(ggplot2)
+&gt;   png(&quot;snijders.png&quot;, width=500)
+&gt;   fei &lt;- mean(sn$langpost - coef(fe)*sn$iq_verb) # intercept for fixed effects estimate
+&gt;   ggplot(snp, aes(iq_verb, langpost)) + geom_point(color=&quot;#c0c0c0&quot;) +
++     geom_line( aes(iq_verb, fv, group=schoolnr), color=&quot;#c0c0c0&quot;) +
++     geom_abline(intercept=fixef(re)[1], slope=fixef(re)[2], color=&quot;green&quot;, size=1) +
++     geom_abline(intercept=coef(be)[1], slope=coef(be)[2], color=&quot;red&quot;, size=1) +
++     geom_abline(intercept=fei, slope=coef(fe), color=&quot;blue&quot;, size=1)
+&gt;   dev.off()</code></pre>
+<pre><code>png 
+  2 </code></pre>
+<p><img src="snijdersr.png" class="r" /></p>
+<p>The red line is the between-groups estimate, which overstates the
+relationship between IQ and language scores. The blue line is the
+within-groups or fixed-effects estimator. The green line is the
+random-effects estimator, which is always an average of the within and
+between, and in this case comes very close to the within-group
+estimator.</p>
+</div>
+</div>
+</div>

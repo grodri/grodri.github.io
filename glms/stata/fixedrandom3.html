@@ -5,205 +5,185 @@ tab: "Stata Logs"
 pager: true
 ---
 
-
-<h3>8.3 Longitudinal Logits</h3> 
-
-<P> 
-This is a dataset on union membership used in the Stata manuals and in my own 
-paper on intra-class correlation for binary data. This is a subsample of the
-National Longitudinal Survey of Youth (NLSY) and has union membership
-information from 1970-88 for 4,434 women aged 14-26 in 1968. The
-data are available in the Stata and OPR websites
-<P> 
-<pre class='stata'>
-. clear
- 
-. use http://data.princeton.edu/wws509/datasets/union
+<h3 id="longitudinal-logits">8.3 Longitudinal Logits</h3>
+<p>We will work with a dataset on union membership used in the Stata
+manuals and in my own paper on intra-class correlation for binary data.
+This is a subsample of the National Longitudinal Survey of Youth (NLSY)
+and has union membership information from 1970-88 for 4,434 women aged
+14-26 in 1968. The data are available in the Stata website</p>
+<pre class='stata'>. use https://www.stata-press.com/data/r14/union, clear
 (NLS Women 14-24 in 1968)
-</pre> 
-<P> 
-<h4>Logits</h4> 
-<p>
-Here is a logit model
-<P> 
-<pre class='stata'>
-. logit union age grade not_smsa south southXt
- 
-Iteration 0:   log likelihood =  -13864.23
-Iteration 1:   log likelihood = -13550.511
-Iteration 2:   log likelihood =  -13545.74
-Iteration 3:   log likelihood = -13545.736
- 
-Logit estimates                                   Number of obs   =      26200
-                                                  LR chi2(5)      =     636.99
-                                                  Prob &gt; chi2     =     0.0000
-Log likelihood = -13545.736                       Pseudo R2       =     0.0230
- 
-------------------------------------------------------------------------------
-       union |      Coef.   Std. Err.      z    P&gt;|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-         age |   .0099931   .0026737     3.74   0.000     .0047527    .0152335
-       grade |   .0483487   .0064259     7.52   0.000     .0357541    .0609432
-    not_smsa |  -.2214908   .0355831    -6.22   0.000    -.2912324   -.1517493
-       south |  -.7144461   .0612145   -11.67   0.000    -.8344244   -.5944678
-     southXt |   .0068356   .0052258     1.31   0.191    -.0034067    .0170779
-       _cons |  -1.888256    .113141   -16.69   0.000    -2.110009   -1.666504
-------------------------------------------------------------------------------
- 
+</pre>
+<h4 id="logits">Logits</h4>
+<p>Here is a logit model</p>
+<pre class='stata'>. gen southXt = south*year
+
+. logit union age grade not_smsa south##c.year
+
+Iteration 0:   log likelihood =  -13864.23  
+Iteration 1:   log likelihood = -13547.326  
+Iteration 2:   log likelihood = -13542.493  
+Iteration 3:   log likelihood =  -13542.49  
+Iteration 4:   log likelihood =  -13542.49  
+
+Logistic regression                                     Number of obs = 26,200
+                                                        LR chi2(6)    = 643.48
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -13542.49                              Pseudo R2     = 0.0232
+
+─────────────┬────────────────────────────────────────────────────────────────
+       union │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+         age │   .0207656   .0050001     4.15   0.000     .0109655    .0305658
+       grade │   .0489121   .0064308     7.61   0.000      .036308    .0615162
+    not_smsa │  -.2195163   .0355977    -6.17   0.000    -.2892865   -.1497461
+     1.south │  -1.530743   .4387964    -3.49   0.000    -2.390768   -.6707176
+        year │  -.0145607   .0057128    -2.55   0.011    -.0257576   -.0033638
+             │
+south#c.year │
+          1  │   .0110577   .0054775     2.02   0.044      .000322    .0217933
+             │
+       _cons │  -1.066526   .3414275    -3.12   0.002    -1.735711   -.3973401
+─────────────┴────────────────────────────────────────────────────────────────
+
 . estimates store logit
-</pre> 
-<P> 
-<h4>Fixed-Effects</h4>
-<p>
-Let us try a fixed-effects model first
-<P> 
-<pre class='stata'>
-. xtlogit union age grade not_smsa south southXt, i(id) fe
- 
+</pre>
+<h4 id="fixed-effects">Fixed-Effects</h4>
+<p>Let us try a fixed-effects model first.</p>
+<pre class='stata'>. xtlogit union age grade not_smsa south##c.year, i(id) fe
 note: multiple positive outcomes within groups encountered.
-note: 2744 groups (14165 obs) dropped due to all positive or
+note: 2,744 groups (14,165 obs) omitted because of all positive or
       all negative outcomes.
-Iteration 0:   log likelihood = -4541.9044
-Iteration 1:   log likelihood = -4511.1353
-Iteration 2:   log likelihood = -4511.1042
- 
-Conditional fixed-effects logistic regression   Number of obs      =     12035
-Group variable (i): idcode                      Number of groups   =      1690
- 
-                                                Obs per group: min =         2
-                                                               avg =       7.1
-                                                               max =        12
- 
-                                                LR chi2(5)         =     78.16
-Log likelihood  = -4511.1042                    Prob &gt; chi2        =    0.0000
- 
-------------------------------------------------------------------------------
-       union |      Coef.   Std. Err.      z    P&gt;|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-         age |   .0079706   .0050283     1.59   0.113    -.0018848    .0178259
-       grade |   .0811808   .0419137     1.94   0.053    -.0009686    .1633302
-    not_smsa |   .0210368    .113154     0.19   0.853    -.2007411    .2428146
-       south |  -1.007318   .1500491    -6.71   0.000    -1.301409   -.7132271
-     southXt |   .0263495   .0083244     3.17   0.002      .010034    .0426649
-------------------------------------------------------------------------------
- 
+
+Iteration 0:   log likelihood = -4516.5881  
+Iteration 1:   log likelihood = -4510.8906  
+Iteration 2:   log likelihood =  -4510.888  
+Iteration 3:   log likelihood =  -4510.888  
+
+Conditional fixed-effects logistic regression        Number of obs    = 12,035
+Group variable: idcode                               Number of groups =  1,690
+
+                                                     Obs per group:
+                                                                  min =      2
+                                                                  avg =    7.1
+                                                                  max =     12
+
+                                                     LR chi2(6)       =  78.60
+Log likelihood = -4510.888                           Prob > chi2      = 0.0000
+
+─────────────┬────────────────────────────────────────────────────────────────
+       union │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+         age │   .0710973   .0960536     0.74   0.459    -.1171643    .2593589
+       grade │   .0816111   .0419074     1.95   0.051    -.0005259     .163748
+    not_smsa │   .0224809   .1131786     0.20   0.843     -.199345    .2443069
+     1.south │  -2.856488   .6765694    -4.22   0.000    -4.182539   -1.530436
+        year │  -.0636853   .0967747    -0.66   0.510    -.2533602    .1259896
+             │
+south#c.year │
+          1  │   .0264136   .0083216     3.17   0.002     .0101036    .0427235
+─────────────┴────────────────────────────────────────────────────────────────
+
 . estimates store fixed
-</pre> 
-<P> 
-Note how we lost 63% of our sample (2744 out of 4434). These are
-women who didn't have variation in union membership.
-We will compare the estimates later.
-<P> 
-<h4>Random-Effects</h4>
-<p>
-Now we fit a random-effects model:
-<P> 
-<pre class='stata'>
-. xtlogit union age grade not_smsa south southXt, i(id)
- 
-Fitting comparison model:
- 
-Iteration 0:   log likelihood =  -13864.23
-Iteration 1:   log likelihood = -13550.511
-Iteration 2:   log likelihood =  -13545.74
-Iteration 3:   log likelihood = -13545.736
- 
-Fitting full model:
- 
-tau =  0.0     log likelihood = -13545.736
-tau =  0.1     log likelihood = -12926.225
-tau =  0.2     log likelihood = -12419.526
-tau =  0.3     log likelihood = -12003.162
-tau =  0.4     log likelihood = -11656.844
-tau =  0.5     log likelihood =  -11367.53
-tau =  0.6     log likelihood = -11129.716
-tau =  0.7     log likelihood = -10947.266
-tau =  0.8     log likelihood = -10845.532
-Iteration 0:   log likelihood = -10947.266
-Iteration 1:   log likelihood = -10604.628
-Iteration 2:   log likelihood = -10557.905
-Iteration 3:   log likelihood = -10556.297
-Iteration 4:   log likelihood = -10556.294
- 
-Random-effects logistic regression              Number of obs      =     26200
-Group variable (i): idcode                      Number of groups   =      4434
- 
-Random effects u_i ~ Gaussian                   Obs per group: min =         1
-                                                               avg =       5.9
-                                                               max =        12
- 
-                                                Wald chi2(5)       =    221.95
-Log likelihood  = -10556.294                    Prob &gt; chi2        =    0.0000
- 
-------------------------------------------------------------------------------
-       union |      Coef.   Std. Err.      z    P&gt;|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-         age |   .0092401   .0044368     2.08   0.037     .0005441    .0179361
-       grade |   .0840066   .0181622     4.63   0.000     .0484094    .1196038
-    not_smsa |  -.2574574   .0844771    -3.05   0.002    -.4230294   -.0918854
-       south |  -1.152854   .1108294   -10.40   0.000    -1.370075   -.9356323
-     southXt |   .0237933   .0078548     3.03   0.002     .0083982    .0391884
-       _cons |   -3.25016   .2622898   -12.39   0.000    -3.764238   -2.736081
--------------+----------------------------------------------------------------
-    /lnsig2u |   1.669888   .0430016                      1.585607     1.75417
--------------+----------------------------------------------------------------
-     sigma_u |   2.304685   .0495526                      2.209582    2.403882
-         rho |   .6175213   .0101565                      .5974278    .6372209
-------------------------------------------------------------------------------
-Likelihood-ratio test of rho=0: chibar2(01) =  5978.89 Prob &gt;= chibar2 = 0.000
- 
+</pre>
+<p>Note how we lost 62% of our sample, down from 4434 to 1690 women. The
+2744 drop outs are women who didn’t have variation in union membership
+over time. We will compare the estimates later.</p>
+<h4 id="random-effects">Random-Effects</h4>
+<p>Now we fit a random-effects model:</p>
+<pre class='stata'>. xtlogit union age grade not_smsa south##c.year, i(id) re nolog
+
+Random-effects logistic regression                   Number of obs    = 26,200
+Group variable: idcode                               Number of groups =  4,434
+
+Random effects u_i ~ Gaussian                        Obs per group:
+                                                                  min =      1
+                                                                  avg =    5.9
+                                                                  max =     12
+
+Integration method: mvaghermite                      Integration pts. =     12
+
+                                                     Wald chi2(6)     = 227.46
+Log likelihood = -10540.274                          Prob > chi2      = 0.0000
+
+─────────────┬────────────────────────────────────────────────────────────────
+       union │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+         age │   .0156732   .0149895     1.05   0.296    -.0137056     .045052
+       grade │   .0870851   .0176476     4.93   0.000     .0524965    .1216738
+    not_smsa │  -.2511884   .0823508    -3.05   0.002    -.4125929   -.0897839
+     1.south │  -2.839112   .6413116    -4.43   0.000    -4.096059   -1.582164
+        year │  -.0068604   .0156575    -0.44   0.661    -.0375486    .0238277
+             │
+south#c.year │
+          1  │   .0238506   .0079732     2.99   0.003     .0082235    .0394777
+             │
+       _cons │  -3.009365   .8414963    -3.58   0.000    -4.658667   -1.360062
+─────────────┼────────────────────────────────────────────────────────────────
+    /lnsig2u │   1.749366   .0470017                      1.657245    1.841488
+─────────────┼────────────────────────────────────────────────────────────────
+     sigma_u │   2.398116   .0563577                      2.290162    2.511158
+         rho │   .6361098   .0108797                      .6145307    .6571548
+─────────────┴────────────────────────────────────────────────────────────────
+LR test of rho=0: chibar2(01) = 6004.43                Prob >= chibar2 = 0.000
+
 . estimates store random
-</pre> 
-<P> 
-<h4>Comparisons</h4> 
-<p>
-Here's a table comparing the estimates (we use the
-<code>equation</code> option so Stata can find the correct estimates).
-<P> 
-<pre class='stata'>
-. estimates table logit random fixed, equation(1)
- 
------------------------------------------------------
-    Variable |   logit        random       fixed     
--------------+---------------------------------------
-#1           |                                       
-         age |  .00999311    .00924011    .00797058  
-       grade |  .04834865    .08400659    .08118077  
-    not_smsa | -.22149081   -.25745741    .02103677  
-       south | -.71444608   -1.1528539   -1.0073178  
-     southXt |   .0068356    .02379331    .02634948  
-       _cons | -1.8882564   -3.2501596               
--------------+---------------------------------------
-lnsig2u      |                                       
-       _cons |               1.6698883               
------------------------------------------------------
-</pre> 
-<P> 
-The main change is in the coefficient of <code>not_smsa</code>.
-You might think this indicates something wrong with the logit and
-random-effects models, but note that only women who have <i>moved</i> 
-between standard metropolitan statistical areas and other places contribute 
-to the fixed-effects estimate. It seems reasonable to believe that these
-women differ from the rest.
-<P> 
-The random-effect coefficients are larger in magnitude than the ordinary
-logit coefficients. This is almost always the case. Omission of the random
-effect biases the coefficients towards zero.
-<P> 
-<h4>Intra-class correlation</h4>
-<p>
-The random-effects estimate shows an intra-class correlation of 0.6175,
-indicating a high correlation between a woman's propensity to be a union
-member in different years after controlling for education and residence.
-<P> 
-My paper with Elo in the Stata journal, 2003, shows how this can be
-interpreted in terms of an odds ratio and translated into measures of
-manifest correlation using <code>xtrho</code>. The command is available from
-the Stata journal website; in Stata type <code>findit xtrho</code>, or 
+</pre>
+<h4 id="comparisons">Comparisons</h4>
+<p>Here’s a table comparing the estimates for logit, fixed and
+random-effects models. We use the <code>equation</code> option so Stata
+can find the correct estimates.</p>
+<pre class='stata'>. estimates table logit random fixed, equation(1)
+
+─────────────┬───────────────────────────────────────
+    Variable │   logit        random       fixed     
+─────────────┼───────────────────────────────────────
+#1           │
+         age │  .02076564    .01567318    .07109727  
+       grade │   .0489121    .08708515    .08161106  
+    not_smsa │ -.21951628   -.25118839    .02248093  
+             │
+       south │
+          1  │ -1.5307427   -2.8391118   -2.8564878  
+             │
+        year │ -.01456067   -.00686044   -.06368531  
+             │
+south#c.year │
+          1  │  .01105767    .02385056    .02641356  
+             │
+       _cons │ -1.0665258   -3.0093648               
+─────────────┼───────────────────────────────────────
+    /lnsig2u │               1.7493664               
+─────────────┴───────────────────────────────────────
+</pre>
+<p>The main change is in the coefficient of <code>not_smsa</code>. You
+might think this indicates something wrong with the logit and
+random-effects models, but note that only women who have <em>moved</em>
+between standard metropolitan statistical areas and other places
+contribute to the fixed-effects estimate. It seems reasonable to believe
+that these women differ from the rest.</p>
+<p>The random-effect coefficients are larger in magnitude than the
+ordinary logit coefficients. This is almost always the case. Omission of
+the random effect biases the coefficients towards zero.</p>
+<h4 id="intra-class-correlation">Intra-class Correlation</h4>
+<p>The intra-class correlation of 0.636 in the random-effects model
+indicates a high correlation between a woman’s propensity to be a union
+member in different years, after controlling for education and
+residence.</p>
+<p>My paper with Elo in the Stata journal shows how this coefficient can
+be interpreted in terms of an odds ratio, and translated into measures
+of manifest correlation such as Pearson’s r and Yule’s Q.</p>
+<div class="stata">
+<p>These measures can be calculated using <code>xtrho</code>, a
+post-estimation command available from the Stata journal website. In
+Stata type <code>search xtrho</code>, or
 <code>net describe st0031, from(http://www.stata-journal.com/software/sj3-1)</code>.
-<!--
-the OPR website (type <code>net from http://opr.princeton.edu/stata</code>).
--->
 For the average woman the correlation between actual union membership in
-any two years is 0.408 using Pearson's r and 0.769 using Yule's Q.
-</p>
+any two years is 0.42 using Pearson’s r and 0.78 using Yule’s Q.</p>
+</div>
+<h3 id="reference">Reference</h3>
+<p>Rodríguez, G. and Elo, I. (2003). “Intra-class correlation in
+random-effects models for binary data”. <em>The Stata
+Journal</em>,<strong>3</strong>(1):32-46. <a
+href="https://journals.sagepub.com/doi/pdf/10.1177/1536867X0300300102"
+class="uri">https://journals.sagepub.com/doi/pdf/10.1177/1536867X0300300102</a></p>
