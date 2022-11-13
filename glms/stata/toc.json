@@ -26,7 +26,7 @@
 {"url":"c7s1","title":"7. Survival Models", "sections":[
 {"url":"c7s1","title":"7.5. Infant and Child Mortality in Colombia"}, 
 {"url":"recidivism","title":"7.A Piecewise Exponential Models"}]},
-{"url":"fixedRandom","title":"8. Clustered and Panel Data","sections":[
-{"url":"fixedRandom","title":"8.1 Clustered Linear Model"},
-{"url":"fixedRandom2","title":"8.2 Longitudinal Linear Model"},
-{"url":"fixedRandom3","title":"8.3 Longitudinal Logit Model"}]}]
+{"url":"c8s1","title":"8. Clustered and Panel Data","sections":[
+{"url":"c8s1","title":"8.1 Clustered Linear Model"},
+{"url":"c8s2","title":"8.2 Longitudinal Linear Model"},
+{"url":"c8s3","title":"8.3 Longitudinal Logit Model"}]}]
