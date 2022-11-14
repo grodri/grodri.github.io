@@ -5,59 +5,70 @@ tab: "R Logs"
 pager: true
 ---
 
+{% include r.css %}
 
-<h3>4.A Models for Over-Dispersed Count Data</h3>
-<p>
-We use data from Long (1990) on the number of publications produced 
-by Ph.D. biochemists to illustrate the application of Poisson, 
-over-dispersed Poisson, negative binomial and zero-inflated Poisson 
-models.
-</p>
-<p>
-The variables in the dataset are
-</p>
-<table class="table table-condensed table-framed">
-<tr><th>Variable</th><th>Description</th></tr>
-<tr><td><code>art</code></td><td>articles in last three years of Ph.D.</td></tr>
-<tr><td><code>fem</code></td><td>coded one for females</td></tr>
-<tr><td><code>mar</code></td><td>coded one if married</td></tr>
-<tr><td><code>kid5</code></td><td>number of children under age six</td></tr>
-<tr><td><code>phd</code></td><td>prestige of Ph.D. program</td></tr>
-<tr><td><code>ment</code></td><td>articles by mentor in last three years</td></tr>
+
+<div id="a-models-for-over-dispersed-count-data" class="section level1">
+<h1>4.A Models for Over-Dispersed Count Data</h1>
+<p>We use data from Long (1990) on the number of publications produced
+by Ph.D. biochemists to illustrate the application of Poisson,
+over-dispersed Poisson, negative binomial and zero-inflated Poisson
+models.</p>
+<p>The variables in the dataset are</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Variable</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><code>art</code></td>
+<td align="left">articles in last three years of Ph.D.</td>
+</tr>
+<tr class="even">
+<td align="left"><code>fem</code></td>
+<td align="left">coded one for females</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>mar</code></td>
+<td align="left">coded one if married</td>
+</tr>
+<tr class="even">
+<td align="left"><code>kid5</code></td>
+<td align="left">number of children under age six</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>phd</code></td>
+<td align="left">prestige of Ph.D. program</td>
+</tr>
+<tr class="even">
+<td align="left"><code>ment</code></td>
+<td align="left">articles by mentor in last three years</td>
+</tr>
+</tbody>
 </table>
-<p>
-These data have also been analyzed by Long and Freese (2001), and 
-are available from the Stata website:
-</p>
-<pre class='r'>
-> library(foreign)
-
-> ab <- read.dta("http://www.stata-press.com/data/lf2/couart2.dta")
-
-> names(ab)
-[1] "art"  "fem"  "mar"  "kid5" "phd"  "ment"
-
-> r <- c(mean(ab$art), var(ab$art))
-
-> c(mean=r[1], var=r[2], ratio=r[2]/r[1])
-    mean      var    ratio 
-1.692896 3.709742 2.191358 
-</pre>
-<p>
-The mean number of articles is 1.69 and the variance is 3.71, a bit 
-more than twice the mean. The data are over-dispersed, but of course 
-we haven't considered any covariates yet.
-</p>
-<h4>A Poisson Model</h4>
-<p>
-Let us fit the model used by Long and Freese(2001), a simple additive 
-model using all five predictors.  
-</p>
-<pre class='r'>
-> mp <- glm(art~fem+mar+kid5+phd+ment, family=poisson, data=ab)
-
-> summary(mp)
-
+<p>These data have also been analyzed by Long and Freese (2006), and are
+available from the Stata website:</p>
+<pre class="r"><code>&gt; library(haven)
+&gt; ab &lt;- read_dta(&quot;https://www.stata-press.com/data/lf2/couart2.dta&quot;)
+&gt; names(ab)</code></pre>
+<pre><code>[1] &quot;art&quot;  &quot;fem&quot;  &quot;mar&quot;  &quot;kid5&quot; &quot;phd&quot;  &quot;ment&quot;</code></pre>
+<pre class="r"><code>&gt; r &lt;- c(mean(ab$art), var(ab$art))
+&gt; c(mean=r[1], var=r[2], ratio=r[2]/r[1])</code></pre>
+<pre><code>    mean      var    ratio 
+1.692896 3.709742 2.191358 </code></pre>
+<p>The mean number of articles is 1.69 and the variance is 3.71, a bit
+more than twice the mean. The data are over-dispersed, but of course we
+haven’t considered any covariates yet.</p>
+<div id="poi" class="section level2">
+<h2>A Poisson Model</h2>
+<p>Let us fit the model used by Long and Freese (2006), a simple
+additive model using all five predictors.</p>
+<pre class="r"><code>&gt; mp &lt;- glm(art~fem+mar+kid5+phd+ment, family=poisson, data=ab)
+&gt; summary(mp)</code></pre>
+<pre><code>
 Call:
 glm(formula = art ~ fem + mar + kid5 + phd + ment, family = poisson, 
     data = ab)
@@ -67,15 +78,15 @@ Deviance Residuals:
 -3.5672  -1.5398  -0.3660   0.5722   5.4467  
 
 Coefficients:
-             Estimate Std. Error z value Pr(>|z|)    
+             Estimate Std. Error z value Pr(&gt;|z|)    
 (Intercept)  0.304617   0.102981   2.958   0.0031 ** 
-femWomen    -0.224594   0.054613  -4.112 3.92e-05 ***
-marMarried   0.155243   0.061374   2.529   0.0114 *  
+fem         -0.224594   0.054613  -4.112 3.92e-05 ***
+mar          0.155243   0.061374   2.529   0.0114 *  
 kid5        -0.184883   0.040127  -4.607 4.08e-06 ***
 phd          0.012823   0.026397   0.486   0.6271    
-ment         0.025543   0.002006  12.733  < 2e-16 ***
+ment         0.025543   0.002006  12.733  &lt; 2e-16 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
 (Dispersion parameter for poisson family taken to be 1)
 
@@ -83,53 +94,34 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 Residual deviance: 1634.4  on 909  degrees of freedom
 AIC: 3314.1
 
-Number of Fisher Scoring iterations: 5
-</pre>
-<p>
-We see that the model obviously doesn't fit the data. 
-The five-percent critical value for a chi-squared with 909 d.f. is
-</p>
-<pre class='r'>
->qchisq(0.95, df.residual(mp))
-[1] 980.2518
-
-> deviance(mp)
-[1] 1634.371
-
-> pr <- residuals(mp,"pearson")
-
-> sum(pr^2)
-[1] 1662.547
-</pre>
-<p>
-and the deviance and Pearson's chi-squared are both in the 1600s.
-</p>
-<h4><a name="x2"></a>4.A.1. Extra-Poisson Variation</h4>
-<p>
-We now assume that the variance is <i>proportional</i> rather than 
-equal to the mean, and estimate the scale parameter &phi; dividing 
-Pearson's chi-squared by its d.f.:
-</p>
-<pre class='r'>
-> phi <- sum(pr^2)/df.residual(mp)
-
-> round(c(phi,sqrt(phi)),4)
-[1] 1.8290 1.3524
-</pre>
-<p>
-We see that the variance is about 83% larger than the mean. This 
-means that we should adjust the standard errors multiplying by 1.35, 
-the square root of 1.83.
-</p>
-<p>
-R can do this calculation for us if we use the <code>quasipoisson</code>
-family:
-</p>
-<pre class='r'>
-> mq <- glm(art~fem+mar+kid5+phd+ment, family=quasipoisson, data=ab)
-
-> summary(mq)
-
+Number of Fisher Scoring iterations: 5</code></pre>
+<p>We see that the model obviously doesn’t fit the data. The
+five-percent critical value for a chi-squared with 909 d.f. is</p>
+<pre class="r"><code>&gt; qchisq(0.95, df.residual(mp))</code></pre>
+<pre><code>[1] 980.2518</code></pre>
+<pre class="r"><code>&gt; deviance(mp)</code></pre>
+<pre><code>[1] 1634.371</code></pre>
+<pre class="r"><code>&gt; pr &lt;- residuals(mp, &quot;pearson&quot;)
+&gt; sum(pr^2)</code></pre>
+<pre><code>[1] 1662.547</code></pre>
+<p>and the deviance and Pearson’s chi-squared are both in the 1600s.</p>
+</div>
+<div id="overdisp" class="section level2">
+<h2>Extra-Poisson Variation</h2>
+<p>We now assume that the variance is <em>proportional</em> rather than
+equal to the mean, and estimate the scale parameter φ dividing Pearson’s
+chi-squared by its d.f.:</p>
+<pre class="r"><code>&gt; phi &lt;- sum(pr^2)/df.residual(mp)
+&gt; round(c(phi, sqrt(phi)), 4)</code></pre>
+<pre><code>[1] 1.8290 1.3524</code></pre>
+<p>We see that the variance is about 83% larger than the mean. This
+means that we should adjust the standard errors multiplying by 1.35, the
+square root of 1.83.</p>
+<p>R can do this calculation for us if we use the
+<code>quasipoisson</code> family:</p>
+<pre class="r"><code>&gt; mq &lt;- glm(art~fem+mar+kid5+phd+ment, family=quasipoisson, data=ab)
+&gt; summary(mq)</code></pre>
+<pre><code>
 Call:
 glm(formula = art ~ fem + mar + kid5 + phd + ment, family = quasipoisson, 
     data = ab)
@@ -139,15 +131,15 @@ Deviance Residuals:
 -3.5672  -1.5398  -0.3660   0.5722   5.4467  
 
 Coefficients:
-             Estimate Std. Error t value Pr(>|t|)    
+             Estimate Std. Error t value Pr(&gt;|t|)    
 (Intercept)  0.304617   0.139273   2.187 0.028983 *  
-femWomen    -0.224594   0.073860  -3.041 0.002427 ** 
-marMarried   0.155243   0.083003   1.870 0.061759 .  
+fem         -0.224594   0.073860  -3.041 0.002427 ** 
+mar          0.155243   0.083003   1.870 0.061759 .  
 kid5        -0.184883   0.054268  -3.407 0.000686 ***
 phd          0.012823   0.035700   0.359 0.719544    
-ment         0.025543   0.002713   9.415  < 2e-16 ***
+ment         0.025543   0.002713   9.415  &lt; 2e-16 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
 (Dispersion parameter for quasipoisson family taken to be 1.829006)
 
@@ -155,45 +147,34 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 Residual deviance: 1634.4  on 909  degrees of freedom
 AIC: NA
 
-Number of Fisher Scoring iterations: 5
-</pre>
-<p>
-The estimates are exactly the same as before, but the standard errors
-are about 35% larger. We can verify this fact easily. First we write
-a useful function to extract standard errors and then use it on
-our fits:
-</p>
-<pre class='r'>
-> se <- function(model) sqrt(diag(vcov(model)))
-
-> round(data.frame(p=coef(mp), q=coef(mq),
-+   se.p=se(mp), se.q=se(mq), ratio=se(mq)/se(mp)), 4)
-                  p       q   se.p   se.q  ratio
+Number of Fisher Scoring iterations: 5</code></pre>
+<p>The estimates are exactly the same as before, but the standard errors
+are about 35% larger. We have essentially attributed all lack of fit to
+pure error. We can verify this fact easily. First we write a useful
+function to extract standard errors and then use it on our fits:</p>
+<pre class="r"><code>&gt; se &lt;- function(model) sqrt(diag(vcov(model)))
+&gt; round(data.frame(p=coef(mp), q=coef(mq), 
++   se.p=se(mp), se.q=se(mq), ratio=se(mq)/se(mp)), 4)</code></pre>
+<pre><code>                  p       q   se.p   se.q  ratio
 (Intercept)  0.3046  0.3046 0.1030 0.1393 1.3524
-femWomen    -0.2246 -0.2246 0.0546 0.0739 1.3524
-marMarried   0.1552  0.1552 0.0614 0.0830 1.3524
+fem         -0.2246 -0.2246 0.0546 0.0739 1.3524
+mar          0.1552  0.1552 0.0614 0.0830 1.3524
 kid5        -0.1849 -0.1849 0.0401 0.0543 1.3524
 phd          0.0128  0.0128 0.0264 0.0357 1.3524
-ment         0.0255  0.0255 0.0020 0.0027 1.3524
-</pre>
-<p>
-An alternative approach is to fit a Poisson model and use the
-robust or sandwich estimator of the standard errors. This usually
-gives results very similar to the over-dispersed Poisson model.
-</p>
-<h4><a name="nb"></a>4.A.2 Negative Binomial Regression</h4>
-<p>
-We now fit a negative binomial model with the same predictors.
-To do this we need the <code>glm.nb()</code> function in the
-<code>MASS</code> package.
-</p>
-<pre class='r'>
-> library(MASS)
-
-> mnb <- glm.nb(art~fem+mar+kid5+phd+ment, data=ab)
-
-> summary(mnb)
-
+ment         0.0255  0.0255 0.0020 0.0027 1.3524</code></pre>
+<p>An alternative approach is to fit a Poisson model and use the robust
+or sandwich estimator of the standard errors. This usually gives results
+very similar to the over-dispersed Poisson model.</p>
+</div>
+<div id="nb" class="section level2">
+<h2>Negative Binomial Regression</h2>
+<p>We now fit a negative binomial model with the same predictors. To do
+this we need the <code>glm.nb()</code> function in the <code>MASS</code>
+package.</p>
+<pre class="r"><code>&gt; library(MASS)
+&gt; mnb &lt;- glm.nb(art ~ fem + mar + kid5 + phd + ment, data = ab)   
+&gt; summary(mnb)</code></pre>
+<pre><code>
 Call:
 glm.nb(formula = art ~ fem + mar + kid5 + phd + ment, data = ab, 
     init.theta = 2.264387695, link = log)
@@ -203,15 +184,15 @@ Deviance Residuals:
 -2.1678  -1.3617  -0.2806   0.4476   3.4524  
 
 Coefficients:
-             Estimate Std. Error z value Pr(>|z|)    
+             Estimate Std. Error z value Pr(&gt;|z|)    
 (Intercept)  0.256144   0.137348   1.865 0.062191 .  
-femWomen    -0.216418   0.072636  -2.979 0.002887 ** 
-marMarried   0.150489   0.082097   1.833 0.066791 .  
+fem         -0.216418   0.072636  -2.979 0.002887 ** 
+mar          0.150489   0.082097   1.833 0.066791 .  
 kid5        -0.176415   0.052813  -3.340 0.000837 ***
 phd          0.015271   0.035873   0.426 0.670326    
-ment         0.029082   0.003214   9.048  < 2e-16 ***
+ment         0.029082   0.003214   9.048  &lt; 2e-16 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
 (Dispersion parameter for Negative Binomial(2.2644) family taken to be 1)
 
@@ -224,250 +205,187 @@ Number of Fisher Scoring iterations: 1
               Theta:  2.264 
           Std. Err.:  0.271 
 
- 2 x log-likelihood:  -3121.917 
-
-> 1/mnb$theta
-[1] 0.4416205
-
-> -2*(logLik(mp)-logLik(mnb))
-'log Lik.' 180.196 (df=6)
-</pre>
-<p>
-R's <code>theta</code> is the precision of the multiplicative
-random effect, and corresponds to 1/&sigma;<sup>2</sup> in the
-notes. The estimate corresponds to an estimated variance of
-0.44 and is highly significant.
-</p>
-<p>
-To test the significance of this parameter you may think of computing
-twice the difference in log-likelihoods between this model and the 
-Poisson model, 180.2, and treating it as a chi-squared with one d.f. 
-The usual asymptotics do not apply, however, because the null 
-hypothesis is on a boundary of the parameter space.
-</p>
-<p>
-There is some work showing that a better approximation is to treat 
-the statistic as as 50:50 mixture of zero and a chi-squared with 
-one d.f. Alternatively, treating the statistic as a chi-squared with
-one d.f. gives a conservative test. Either way, we have overwhelming 
-evidence of overdispersion.
-</p>
-<p>
-For testing hypotheses about the regression coefficients we can use 
-either Wald tests or likelihood ratio tests, which are possible 
-because we have made full distributional assumptions.
-</p>
-<p>
-There's also a <code>negative.binomial</code> family for 
-<code>glm</code> and this can be used provided the parameters
-<code>theta</code> is given. (This is based on the result that
-the negative binomial is in the glm family for fixed variance.) 
-Here's a quick check:
-</p>
-<pre class='r'>
-> mnbg <- glm(art~fem+mar+kid5+phd+ment, 
+ 2 x log-likelihood:  -3121.917 </code></pre>
+<pre class="r"><code>&gt; 1/mnb$theta</code></pre>
+<pre><code>[1] 0.4416205</code></pre>
+<pre class="r"><code>&gt; -2*(logLik(mp) - logLik(mnb))</code></pre>
+<pre><code>&#39;log Lik.&#39; 180.196 (df=6)</code></pre>
+<p>R’s <code>theta</code> is the precision of the multiplicative random
+effect, and corresponds to 1/σ<sup>2</sup> in the notes. The estimate
+corresponds to an estimated variance of 0.44 and is highly
+significant.</p>
+<p>To test the significance of this parameter you may think of computing
+twice the difference in log-likelihoods between this model and the
+Poisson model, 180.2, and treating it as a chi-squared with one d.f. The
+usual asymptotics do not apply, however, because the null hypothesis is
+on a boundary of the parameter space.</p>
+<p>There is some work showing that a better approximation is to treat
+the statistic as as 50:50 mixture of zero and a chi-squared with one
+d.f. Alternatively, treating the statistic as a chi-squared with one
+d.f. gives a conservative test. Either way, we have overwhelming
+evidence of overdispersion.</p>
+<p>For testing hypotheses about the regression coefficients we can use
+either Wald tests or likelihood ratio tests, which are possible because
+we have made full distributional assumptions.</p>
+<div class="r">
+<p>There’s also a <code>negative.binomial</code> family for
+<code>glm</code> and this can be used provided the parameter
+<code>theta</code> is given. (This is based on the result that the
+negative binomial is in the glm family for fixed variance.) Here’s a
+quick check:</p>
+<pre class="r"><code>&gt; mnbg &lt;- glm(art~fem+mar+kid5+phd+ment, 
 +   family=negative.binomial(mnb$theta), data=ab)
-
-> all(abs(coef(mnb)==coef(mnbg)) < 1e-12)
-[1] TRUE
-</pre>
-<p>
-The standard errors would differ, however, because 
-<code>glm.nb</code> allows for the fact that <code>theta</code>
-was estimated, whereas <code>glm</code> does not.
-</p>
-<h4>Unobserved Heterogeneity</h4>
-<p>
-R has a function <code>dgamma(x, shape, rate = 1, scale = 1/rate)</code>
- to compute the density of a gamma distribution with given shape and scale 
-(or its reciprocal the rate). In particular, when the random effect has
-variance <code>v</code> the density is
-<code>dgamma(x, shape = 1/v, scale = v)</code>. This can be
-used to draw the density.</p>
-<pre class="r">
-> v = 1/mnb$theta
-> gd = data.frame(x = seq(0.0, 3, 0.1), g = dgamma(x, shape = 1/v, scale = v))
-> ggplot(gd, aes(x, g)) + geom_line()
-> ggsave("gamdenr.png", width=500/72, height=400/72, dpi=72)
-</pre>
-<img src="gamdenr.png"/>
+&gt; all(abs(coef(mnb)-coef(mnbg)) &lt; 1e-5)</code></pre>
+<pre><code>[1] TRUE</code></pre>
+<p>The standard errors would differ, however, because
+<code>glm.nb</code> allows for the fact that <code>theta</code> was
+estimated, whereas <code>glm</code> does not.</p>
+</div>
+<div id="het" class="section level3">
+<h3>Unobserved Heterogeneity</h3>
+<p>Let us draw the density of the parameter representing unobserved
+heterogeneity. R has a function
+<code>dgamma(x, shape, rate = 1, scale = 1/rate)</code> to compute the
+density of a gamma distribution with given shape and scale (or its
+reciprocal the rate). In particular, when the random effect has variance
+<code>v</code> the density is
+<code>dgamma(x, shape = 1/v, scale = v)</code>.</p>
+<pre class="r"><code>&gt; library(ggplot2)
+&gt; v = 1/mnb$theta
+&gt; x  = seq(0, 3, 0.1)
+&gt; gd = data.frame(x, g = dgamma(x, shape = 1/v, scale = v))
+&gt;   png(&quot;gamdenr.png&quot;, width=500, height=400)
+&gt; ggplot(gd, aes(x, g)) + geom_line()
+&gt; dev.off()</code></pre>
+<pre><code>RStudioGD 
+        2 </code></pre>
+<p><img src="gamdenr.png" class="r" /></p>
 <p>We can also compute quantiles using
 <code>qgamma(p, shape, rate = 1, scale = 1/rate, lower.tail = TRUE)</code>.
- In particular, when the random effect has variance <code>v</code>
-the quartiles are <code>qgamma((1:3)/4, shap e= 1/v, scale = v)</code>.</p>
-<pre class="r">
-> qgamma((1:3)/4, shape = 1/v, scale = v)
-[1] 0.5114167 0.8572697 1.3347651
-</pre>
-<p>
-Biochemists at Q1 of the distribution of unobserved heterogeneity publish 49% fewer papers than expected from their observed characteristics, while those at the median publish 14% fewer and those at Q3 publish 33% more than expected.</p>
-
-<h4>Comparing Estimates and Standard Errors</h4>
-<p>
-Let us compare parameter estimates and standard errors under
-the Poisson, over-dispersed Poisson and negative binomial models:
-</p>
-<pre class='r'>
-> round(data.frame(
+In our case the shape is <code>1/v</code> and the scale is
+<code>v</code>.</p>
+<pre class="r"><code>&gt; qgamma((1:3)/4, shape = 1/v, scale = v)</code></pre>
+<pre><code>[1] 0.5114167 0.8572697 1.3347651</code></pre>
+<p>Biochemists at Q1 of the distribution of unobserved heterogeneity
+publish 49% fewer papers than expected from their observed
+characteristics, while those at the median publish 14% fewer and those
+at Q3 publish 33% more than expected.</p>
+</div>
+<div id="se" class="section level3">
+<h3>Comparing Estimates and Standard Errors</h3>
+<p>Let us compare parameter estimates and standard errors under the
+Poisson, over-dispersed Poisson and negative binomial models:</p>
+<pre class="r"><code>&gt; round(data.frame(
 +   p=coef(mp),q=coef(mq),nb=coef(mnb),
-+   se.p=se(mp),se.q=se(mq),se.nb=se(mnb)),4)
-                  p       q      nb   se.p   se.q  se.nb
++ se.p=se(mp),se.q=se(mq),se.nb=se(mnb)),4)</code></pre>
+<pre><code>                  p       q      nb   se.p   se.q  se.nb
 (Intercept)  0.3046  0.3046  0.2561 0.1030 0.1393 0.1373
-femWomen    -0.2246 -0.2246 -0.2164 0.0546 0.0739 0.0726
-marMarried   0.1552  0.1552  0.1505 0.0614 0.0830 0.0821
+fem         -0.2246 -0.2246 -0.2164 0.0546 0.0739 0.0726
+mar          0.1552  0.1552  0.1505 0.0614 0.0830 0.0821
 kid5        -0.1849 -0.1849 -0.1764 0.0401 0.0543 0.0528
 phd          0.0128  0.0128  0.0153 0.0264 0.0357 0.0359
-ment         0.0255  0.0255  0.0291 0.0020 0.0027 0.0032
-</pre>
-<p>
-The negative binomial estimates are not very different from those
+ment         0.0255  0.0255  0.0291 0.0020 0.0027 0.0032</code></pre>
+<p>The negative binomial estimates are not very different from those
 based on the Poisson model, and both sets would led to the same
-conclusions.  
-</p>
-<p>
-Looking at the standard errors, we see that both approaches to 
-over-dispersion lead to very similar estimated standard errors,
-and that ordinary Poisson regression underestimates the standard 
-errors.
-</p>
-<h4>Goodness of Fit</h4>
-<p>
-We can assess the goodness of fit of the negative binomial model
-using the deviance
-</p>
-<pre class='r'>
-> deviance(mnbg)
-[1] 1004.281
-</pre>
-<p>
-The negative binomial model fits better than the Poisson, but
-still has a deviance above the five percent critical value of
-980.25.
-</p>
-<h4>The Variance Function</h4>
-<p>
-The over-dispersed Poisson and negative binomial models have 
-different variance functions. One way to check which one may be more 
-appropriate is to create groups based on the linear predictor, 
-compute the mean and variance for each group, and finally plot the 
-mean-variance relationship.
-</p>
-<p>
-Here are groups based on the negative binomial linear predictor, 
-created using <code>cut</code> with breaks at the 5(5)95 percentiles
-to produce twenty groups of approximately equal size. 
-Note that <code>predict()</code> computes a linear predictor,
-unless otherwise specified. To predict in the scale of the response
-add the option <code>type="response"</code>. 
-</p>
-<pre class='r'>
-> xb <- predict(mnb) 
-
-> g <- cut(xb, breaks=quantile(xb,seq(0,100,5)/100))
-
-> m <- tapply(ab$art, g, mean)
-
-> v <- tapply(ab$art, g, var)
-
-> png("c4afig1.png",width=500,height=400)
-
-> plot(m, v, xlab="Mean", ylab="Variance", 
-+   main="Mean-Variance Relationship")
-
-> mtext("Articles Published by Ph.D. Biochemists",padj=-0.5)
-
-> x <- seq(0.63,3.37,0.02)
-
-> lines(x, x*phi, lty="dashed")
-
-> lines(x, x*(1+x/mnb$theta))
-
-> legend("topleft", lty=c("dashed","solid"), 
-+   legend=c("Q. Poisson","Neg. Binom."), inset=0.05)
-
-> dev.off();
-null device 
-          1 
-</pre>
-
-<img src="c4afig1.png"  class="img-responsive center-block" />
-
-<p>
-The graph plots the mean versus the variance and overlays the
-curves corresponding to the over-dispersed Poisson model,
-where the variance is &phi;&mu;, and the negative binomial
-model, where the variance is &mu;(1+&mu;&sigma;<sup>2</sup>).
-</p>
-<p>
-The Poisson variance function does a pretty good job for the bulk 
-of the data, but fails to capture the high variances of the most 
-productive scholars. The negative binomial variance function is not 
-too different but, being a quadratic, can rise faster and does a 
-better job at the high end. We conclude that the negative binomial 
-model provides a better description of the data than the 
-over-dispersed Poisson model.
-</p>
-<h4><a name="zip"></a>4.A.3 Zero-Inflated Poisson Models</h4>
-<p>
-  A frequent occurrence with count data is an excess of zeroes compared 
-to what's expected under a Poisson model. This is actually a problem 
-with our data:  
-</p>
-<pre class='r'>
-> zobs <- ab$art == 0
-
-> zpoi <- exp(-exp(predict(mp))) # or dpois(0,exp(predict(mp)))
-
-> c(obs=mean(zobs), poi=mean(zpoi))
-      obs       poi 
-0.3005464 0.2092071 
-</pre>
-<p>
-We see that 30.0% of the scientists in the sample published no 
-articles in the last three years of their Ph.D., but the Poisson 
-model predicts that only 20.9% would have no publications. 
-Clearly the model underestimates the probability of zero counts.
-</p>
-<p>
-One way to model this type of situation is to assume that the data 
-come from a mixture of two populations, one where the counts is 
-always zero, and another where the count has a Poisson distribution 
-with mean &mu;. In this model zero counts can come from either 
-population, while positive counts come only from the second one.
-</p>
-<p>
-In the context of publications by Ph.D. biochemists, we can imagine 
-that some had in mind jobs where publications wouldn't be important, 
-while others were aiming for academic jobs where a record of 
-publications was expected. Members of the first group would publish 
-zero articles, whereas members of the second group would publish 
-0,1,2,..., a count that may be assumed to have a Poisson distribution.
-</p>
-<p>
-The distribution of the outcome can then be modeled in terms of 
-two parameters, &pi; the probability of 'always zero', and &mu;, 
-the mean number of publications for those not in the 'always zero' 
-group. A natural way to introduce covariates is to model the logit 
-of the probability &pi; of always zero and the log of the mean &mu; 
-for those not in the always zero class.
-</p>
-<p>
-This type of model can be fit in R using the <code>zeroinfl()</code>
-function in the <code>pscl</code> package. The model formula can
-be specified as usual if the same variables are to be included in
-both equations. Otherwise one can provide two sets of predictors
-separated by a vertical bar, type ?zeroinfl to learn more.
-</p>
-<p>
-Here's a zero-inflated model with all covariates in both equations:
-</p>
-<pre class='r'>
-> library(pscl)
-
-> mzip <- zeroinfl(art~fem+mar+kid5+phd+ment, data=ab)
-
-> summary(mzip)
-
+conclusions.</p>
+<p>Looking at the standard errors, we see that both approaches to
+over-dispersion lead to very similar estimated standard errors, and that
+ordinary Poisson regression underestimates the standard errors.</p>
+</div>
+<div id="gof" class="section level3">
+<h3>Goodness of Fit</h3>
+<p>We can assess the goodness of fit of the negative binomial model by
+using the deviance.</p>
+<pre class="r"><code>&gt; deviance(mnbg)</code></pre>
+<pre><code>[1] 1004.281</code></pre>
+<p>The negative binomial model fits better than the Poisson, but still
+has a deviance above the five percent critical value of 980.25.</p>
+</div>
+<div id="var" class="section level3">
+<h3>The Variance Function</h3>
+<p>The over-dispersed Poisson and negative binomial models have
+different variance functions. One way to check which one may be more
+appropriate is to create groups based on the linear predictor, compute
+the mean and variance for each group, and finally plot the mean-variance
+relationship.</p>
+<p>Here are groups based on the negative binomial linear predictor,
+created using <code>cut()</code> with <code>breaks</code> at the (5(5)95
+percentiles to produce twenty groups of approximately equal size. Note
+that <code>predict()</code> computes a linear predictor, unless
+otherwise specified. To predict in the scale of the response add the
+option <code>type="response"</code>.</p>
+<pre class="r"><code>&gt; library(dplyr)
+&gt;   xb &lt;- predict(mnb)
+&gt; q &lt;- c(min(xb)-0.1, quantile(xb, seq(5,95,5)/100), max(xb)+0.1)
+&gt; ab &lt;- mutate(ab, group=cut(xb, breaks=q))
+&gt; mv &lt;- group_by(ab,group) |&gt; summarize(mean=mean(art), variance=var(art), n=n())
+&gt; x &lt;- seq(0.63, 3.37, 0.02)
+&gt; g  &lt;- data.frame( mean = x, poisson = x * phi, negbin = x * (1 + x/mnb$theta))
+&gt; png(&quot;c4afig1r.png&quot;, width=500, height=400)
+&gt; ggplot(mv, aes(x=mean, y=variance)) + geom_point()  + xlim(0.5, 3.8) + 
++   geom_line(data=g, aes(x=mean, y=poisson) , linetype=&quot;dashed&quot;) +
++   geom_line(data=g, aes(x=mean, y=negbin), linetype=&quot;solid&quot;) +
++   ggtitle(&quot;Mean-Variance Relationship&quot;, 
++     subtitle = &quot;Articles Published by Ph.D. biochemists&quot;) +
++   geom_text(x=3.6, y=6.2, label=&quot;P&quot;) + geom_text(x=3.6, y=8.5, label=&quot;NB&quot;) 
+&gt; dev.off()</code></pre>
+<pre><code>RStudioGD 
+        2 </code></pre>
+<p><img src="c4afig1r.png" class="img-responsive center-block r" /></p>
+<p>The graph plots the mean versus the variance and overlays the curves
+corresponding to the over-dispersed Poisson model, where the variance is
+φμ, and the negative binomial model, where the variance is
+μ(1+μσ<sup>2</sup>).</p>
+<p>The Poisson variance function does a pretty good job for the bulk of
+the data, but fails to capture the high variances of the most productive
+scholars. The negative binomial variance function is not too different
+but, being a quadratic, can rise faster and does a better job at the
+high end. We conclude that the negative binomial model provides a better
+description of the data than the over-dispersed Poisson model.</p>
+</div>
+</div>
+<div id="zip" class="section level2">
+<h2>Zero-Inflated Poisson Models</h2>
+<p>A frequent occurrence with count data is an excess of zeroes compared
+to what’s expected under a Poisson model. This is actually a problem
+with our data:</p>
+<pre class="r"><code>&gt; zobs &lt;- ab$art == 0
+&gt; zpoi &lt;- exp(-exp(predict(mp))) # or dpois(0,exp(predict(mp)))
+&gt; c(obs=mean(zobs), poi=mean(zpoi))</code></pre>
+<pre><code>      obs       poi 
+0.3005464 0.2092071 </code></pre>
+<p>We see that 30.0% of the scientists in the sample published no
+articles in the last three years of their Ph.D., but the Poisson model
+predicts that only 20.9% would have no publications. Clearly the model
+underestimates the probability of zero counts.</p>
+<p>One way to model this type of situation is to assume that the data
+come from a mixture of two populations, one where the counts is always
+zero, and another where the count has a Poisson distribution with mean
+μ. In this model zero counts can come from either population, while
+positive counts come only from the second one.</p>
+<p>In the context of publications by Ph.D. biochemists, we can imagine
+that some had in mind jobs where publications wouldn’t be important,
+while others were aiming for academic jobs where a record of
+publications was expected. Members of the first group would publish zero
+articles, whereas members of the second group would publish 0,1,2,…, a
+count that may be assumed to have a Poisson distribution.</p>
+<p>The distribution of the outcome can then be modeled in terms of two
+parameters, π the probability of “always zero”, and μ, the mean number
+of publications for those not in the “always zero” group. A natural way
+to introduce covariates is to model the logit of the probability π of
+always zero and the log of the mean μ for those not in the always zero
+class.</p>
+<p>This type of model can be fit in R using the <code>zeroinfl()</code>
+function in the <code>pscl</code> package. The model formula can be
+specified as usual if the same variables are to be included in both
+equations. Otherwise one can provide two sets of predictors separated by
+a vertical bar, type <code>?zeroinfl</code> to learn more.</p>
+<p>Here’s a zero-inflated model with all covariates in both
+equations:</p>
+<pre class="r"><code>&gt; library(pscl)
+&gt; mzip &lt;- zeroinfl(art ~ fem + mar + kid5 + phd + ment, data=ab)
+&gt; summary(mzip)</code></pre>
+<pre><code>
 Call:
 zeroinfl(formula = art ~ fem + mar + kid5 + phd + ment, data = ab)
 
@@ -476,167 +394,137 @@ Pearson residuals:
 -2.3253 -0.8652 -0.2826  0.5404  7.2976 
 
 Count model coefficients (poisson with log link):
-             Estimate Std. Error z value Pr(>|z|)    
-(Intercept)  0.640838   0.121307   5.283 1.27e-07 ***
-femWomen    -0.209145   0.063405  -3.299 0.000972 ***
-marMarried   0.103751   0.071111   1.459 0.144565    
+             Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)  0.640839   0.121307   5.283 1.27e-07 ***
+fem         -0.209144   0.063405  -3.299 0.000972 ***
+mar          0.103750   0.071111   1.459 0.144567    
 kid5        -0.143320   0.047429  -3.022 0.002513 ** 
-phd         -0.006166   0.031008  -0.199 0.842378    
+phd         -0.006166   0.031008  -0.199 0.842376    
 ment         0.018098   0.002294   7.888 3.07e-15 ***
 
 Zero-inflation model coefficients (binomial with logit link):
-             Estimate Std. Error z value Pr(>|z|)   
-(Intercept) -0.577059   0.509386  -1.133  0.25728   
-femWomen     0.109746   0.280082   0.392  0.69518   
-marMarried  -0.354014   0.317611  -1.115  0.26502   
-kid5         0.217097   0.196482   1.105  0.26919   
-phd          0.001274   0.145263   0.009  0.99300   
+             Estimate Std. Error z value Pr(&gt;|z|)   
+(Intercept) -0.577060   0.509386  -1.133  0.25728   
+fem          0.109752   0.280082   0.392  0.69517   
+mar         -0.354018   0.317611  -1.115  0.26501   
+kid5         0.217095   0.196483   1.105  0.26920   
+phd          0.001275   0.145263   0.009  0.99300   
 ment        -0.134114   0.045243  -2.964  0.00303 **
 ---
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1 
 
-Number of iterations in BFGS optimization: 21 
-Log-likelihood: -1605 on 12 Df
-</pre>
-<p>
-Looking at the inflate equation we see that the only significant 
-predictor of being in the 'always zero' class is the number of 
-articles published by the mentor, with each article by the mentor 
-associated with 12.6% lower odds of never publishing.
-</p>
-<p>
-Looking at the equation for the mean number or articles among those 
-not in the always zero class, we find significant disadvantages for 
-females and scientists with children under five, and a large positive 
-effect of the number of publications by the mentor, with each 
-article  associated with a 1.8% increase in the expected number of 
-publications.
-</p>
-<p>
-To verify that the model solves the problem of excess zeroes we 
-predict &pi; and &mu;, and calculate the combined probability of 
-no publications. There are options in the <code>predict()</code>
-function called <code>"zero"</code> and <code>"count"</code> to 
-obtain these. There's also an option <code>"prob"</code> to compute
-the predicted density, but this is overkill as we only want the
-probability of zero.
-</p>
-<pre class='r'>
-> pr <- predict(mzip,type="zero")  # &pi;
-
-> mu <- predict(mzip,type="count") # &mu;
-
-> zip <- pr + (1-pr)*exp(-mu) # also predict(mzip,type="prob")[,1]
-
-> mean(zip)
-[1] 0.2985679
-</pre>
-<p>
-So the model solves the problem of excess zeroes, 
-predicting that 29.9% of the biochemists will publish no articles, 
-much closer to the observed value of 30.0%.
-</p>
-<p>
-There's also a zero-inflated negative binomial model, which uses
-a negative binomial for the count in the 'not always zero' class. 
-This model can be fit using <code>zeroinfl()</code> with the 
-<code>dist="negbin"</code> parameter. 
-Alternative links for the inflate equation include the probit,
-which can be specified using <code>link="probit"</code>. 
-</p>
-<h4>Model Comparison with AIC</h4>
-<p>
-As it happens, for this data the negative binomial solves the 
-problem too! Here's the probablity of zero articles in the negative 
-binomial. We proceed from first principles but one could also use
-the built-in negative binomial density
-</p>
-<pre class='r'>
-> munb <- exp(predict(mnb))
-
-> theta <- mnb$theta
-
-> znb <- (theta/(munb+theta))^theta
-
-> # also dnbinom(0, mu=munb, size=theta)
-> mean(znb)
-[1] 0.3035957
-</pre>
-<p>
-The model predicts that 30.4% of the biochemists would publish no 
-articles in the last three years of their Ph.D., very close to the 
-observed value of 30.0%.
-</p>
-<p>
-To choose between the negative binomial and zero inflated models 
-we need to resort to other criteria. A very simple way to compare 
-models with different numbers of parameters is to compute Akaike's 
-Information Criterion (AIC), which we define as
-</p>
-<p class="text-center">AIC = -2logL + 2p</p>
-<p>
-where p is the number of parameters in the model. The first term is 
-essentially the deviance and the second a penalty for the number of 
-parameters, and it can be computed for most models using the 
-<code>AIC</code> function. I also obtain it "by hand" so we
-can verify the calculation. For our data
-</p>
-<pre class='r'>
-> c(nb=AIC(mnb), zip=AIC(mzip))
-      nb      zip 
-3135.917 3233.546 
-
-> mzip$rank <- length(coef(mzip)) # add a rank component
-
-> aic <- function(model) -2*logLik(model) + 2*model$rank
-
-> sapply(list(mnb,mzip), aic)
-[1] 3133.917 3233.546
-</pre>
-<p>
-  For this dataset the negative binomial model is a clear winner in 
-terms of parsimony and goodness of fit. 
-</p>
-<p>
-Other diagnostic criteria we could look at are the marginal 
-distribution of predicted and observed counts and the variance 
-functions.  
-</p>
-<h4>Zero-Truncated and Hurdle Models</h4>
-<p>
-Other models we haven't covered are the zero-truncated Poisson and 
-negative binomial, designed for data that do not include zeroes. 
-A common example is length of stay in a hospital, which is at least 
-one day. A sensible approach is to fit a Poisson or negative binomial 
-model that excludes zero and rescales the other probabilities to sum 
-to one. One should be careful interpreting these models because &mu; 
-is not the expected outcome, but the mean of an underlying 
-distribution that includes the zeros. 
-These models are implemented  in the <code>vglm()</code> function 
-in the <code>VGAM</code> package, using the families 
-<code>pospoisson</code> and <code>posnegbinomial</code>.
-</p>
-<p>
-An alternative approach to excess (or a dearth) of zeroes is to use 
-a two-stage process, with a logit model to distinguish between zero 
-and positive counts and then a zero-truncated Poisson or negative 
-binomial model for the positive counts. In our example we could use 
-a logit model to differentiate those who publish from those who 
-don't, and then a truncated Poisson or negative binomial model for 
-the number of articles of those who publish at least one. 
-These models are often called hurdle models. 
-They can be fitted in R using the separate logit and zero-truncated
-Poisson or negative binomial models and simply adding the 
-log-likelihoods, or using the <code>hurdle()</code> function in
-the <code>pscl</code> package.
-</p>
-<p>
-Comparing hurdle and zero-inflated models, I find the distinction 
-between zero and one or more to be clearer with hurdle models, but 
-the interpretation of the mean is clearer with zero-inflated models.
-</p>
-<p>
-The following JSS paper has a useful discussion of all of these 
-models: <a href="http://www.jstatsoft.org/v27/i08/paper">
-Regression Models for Count Data in R</a>.
-</p>
+Number of iterations in BFGS optimization: 19 
+Log-likelihood: -1605 on 12 Df</code></pre>
+<p>Looking at the inflate equation we see that the only significant
+predictor of being in the “always zero” class is the number of articles
+published by the mentor, with each article by the mentor associated with
+12.6% lower odds of never publishing.</p>
+<p>Looking at the equation for the mean number or articles among those
+not in the always zero class, we find significant disadvantages for
+females and scientists with children under five, and a large positive
+effect of the number of publications by the mentor, with each article
+associated with a 1.8% increase in the expected number of
+publications.</p>
+<p>To verify that the model solves the problem of excess zeroes we
+predict π and μ, and calculate the combined probability of no
+publications. There are options in the <code>predict()</code> function
+called <code>"zero"</code> and <code>"count"</code> to obtain these.
+There’s also an option <code>"prob"</code> to compute the predicted
+density, but this is overkill, as we only want the probability of
+zero.</p>
+<pre class="r"><code>&gt; pr &lt;- predict(mzip,type=&quot;zero&quot;)  # π
+&gt; mu &lt;- predict(mzip,type=&quot;count&quot;) # μ
+&gt; zip &lt;- pr + (1-pr)*exp(-mu) # also predict(mzip,type=&quot;prob&quot;)[,1]
+&gt; mean(zip)</code></pre>
+<pre><code>[1] 0.2985679</code></pre>
+<p>So the model solves the problem of excess zeroes, predicting that
+29.9% of the biochemists will publish no articles, extremely close to
+the observed value of 30.0%.</p>
+<p>There’s also a zero-inflated negative binomial model, which uses a
+negative binomial for the count in the “not always zero” class. This
+model can be fit using <code>zeroinfl()</code> with the
+<code>dist="negbin"</code> parameter. Alternative links for the inflate
+equation include the probit, which can be specified using
+<code>link="probit"</code>.</p>
+<div id="aic" class="section level3">
+<h3>Model Comparison with AIC</h3>
+<p>As it happens, for this data the negative binomial solves the problem
+of zeroes too! Here’s the probability of zero articles in the negative
+binomial. We proceed from first principles, but one could also use the
+built-in negative binomial density</p>
+<pre class="r"><code>&gt; munb &lt;- exp(predict(mnb))
+&gt; theta &lt;- mnb$theta
+&gt; znb &lt;- (theta/(munb+theta))^theta
+&gt; # also dnbinom(0, mu=munb, size=theta)
+&gt; mean(znb)</code></pre>
+<pre><code>[1] 0.3035957</code></pre>
+<p>The model predicts that 30.4% of the biochemists would publish no
+articles in the last three years of their Ph.D., very close to the
+observed value of 30.0%.</p>
+<p>To choose between the negative binomial and zero inflated models we
+need to resort to other criteria. A very simple way to compare models
+with different numbers of parameters is to compute Akaike’s Information
+Criterion (AIC), which we define as</p>
+<p>AIC = -2logL + 2p</p>
+<p>where p is the number of parameters in the model. The first term is
+essentially the deviance and the second a penalty for the number of
+parameters. I will obtain it “by hand” so we see exactly what’s going
+on. AIC may also be calculated using the <code>AIC()</code>
+function.</p>
+<pre class="r"><code>&gt; c(nb = AIC(mnb), zip = AIC(mzip))</code></pre>
+<pre><code>      nb      zip 
+3135.917 3233.546 </code></pre>
+<pre class="r"><code>&gt; mzip$rank &lt;- length(coef(mzip)) # add a rank component
+&gt; aic &lt;- function(model) -2*logLik(model) + 2*model$rank
+&gt; sapply(list(mnb, mzip), aic)</code></pre>
+<pre><code>[1] 3133.917 3233.546</code></pre>
+<p>For this dataset the negative binomial model is a clear winner in
+terms of parsimony and goodness of fit.</p>
+<p>Additional diagnostic criteria we could look at are the marginal
+distribution of predicted and observed counts, and the variance
+functions.</p>
+</div>
+</div>
+<div id="zth" class="section level2">
+<h2>Zero-Truncated and Hurdle Models</h2>
+<p>Other models we haven’t covered are the zero-truncated Poisson and
+negative binomial, designed for data that do not include zeroes. A
+common example is length of stay in a hospital, which is at least one
+day. A sensible approach is to fit a Poisson or negative binomial model
+that excludes zero and rescales the other probabilities to sum to
+one.</p>
+<p>One should be careful interpreting these models because μ is not the
+expected outcome, but the mean of an underlying distribution that
+includes the zeros. These models are implemented in the
+<code>vglm()</code> function in the <code>VGAM</code> package, using the
+families <code>pospoisson</code> and <code>posnegbinomial</code>.</p>
+<p>An alternative approach to excess (or a dearth) of zeroes is to use a
+two-stage process, with a logit model to distinguish between zero and
+positive counts and then a zero-truncated Poisson or negative binomial
+model for the positive counts. In our example, we could use a logit
+model to differentiate those who publish from those who don’t, and then
+a truncated Poisson or negative binomial model for the number of
+articles of those who publish at least one. These models are often
+called <em>hurdle</em> models. They can be fitted in Stata or R using
+the separate logit and zero-truncated Poisson or negative binomial
+models, and simply adding the log-likelihoods. They can also be fit in R
+using the <code>hurdle()</code> function in the <code>pscl</code>
+package.</p>
+<p>Comparing hurdle and zero-inflated models, I find the distinction
+between zero and one or more to be clearer with hurdle models, but the
+interpretation of the mean is clearer with zero-inflated models.</p>
+<div id="references" class="section level3">
+<h3>References</h3>
+<p>Long, J.S. (1990). The Origins of Sex Differences in Science.
+<em>Social Forces</em>, <strong>68</strong>:1297-1315.</p>
+<p>Long, J.S. and Freese, J. (2006) <em>Regression Models for
+Categorical Dependent Variables Using Stata</em>. Second Edition.
+College Station, Texas: Stata Press.</p>
+<p>Zeileis, A, Kleiber, C and Jackman, S. (2008). Regression Models for
+Count Data in R. <em>Journal of Statistical Software</em>,
+<strong>27</strong>(8):1-25. URL <a
+href="https://www.jstatsoft.org/article/view/v027i08"
+class="uri">https://www.jstatsoft.org/article/view/v027i08</a>.</p>
+</div>
+</div>
+</div>
