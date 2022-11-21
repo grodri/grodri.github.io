@@ -1,0 +1,744 @@
+---
+layout: default
+section: glms
+tab: "Problem Sets"
+---
+
+<h2 id="solutions-to-problem-set-3">Solutions to Problem Set 3
+<br/></h2>
+<p>Cameron and Trivedi (2010) have an interesting dataset based on wave
+5 of the Health and Retirement Study (HRS), a survey conducted in 2002
+as part of a panel sponsored by NIH. The sample consists of Medicare
+beneficiaries and the question of interest is whether or not they
+purchase supplemental insurance (<code>ins</code>). The explanatory
+variables include socio-economic and demographic factors and an
+indicator of health status. The data are available from the Stata
+website, but for your convenience you will find
+<code>mus14data.dta</code> in the datasets section.</p>
+
+{% include srtabs.html %}
+
+<p>We start by reading the data</p>
+<pre class='stata'>. use https://grodri.github.io/datasets/mus14data, clear
+(Data from Cameron and Trivedi's (2009) Microeconometrics Using Stata )
+</pre>
+<pre class='r'>> library(haven)
+> ct &lt;- read_dta("https://grodri.github.io/datasets/mus14data.dta")
+</pre>
+<h3 id="probabilities-odds-and-logits">[1] Probabilities, Odds and
+Logits</h3>
+<p>(a) What’s the proportion of respondents who have supplemental
+insurance? What are the odds of having insurance? What’s the logit?
+Construct a 95% confidence interval for the logit and translate it back
+into corresponding intervals for the odds and probability.</p>
+<pre class='stata'>. sum ins
+
+    Variable │        Obs        Mean    Std. dev.       Min        Max
+─────────────┼─────────────────────────────────────────────────────────
+         ins │      3,206    .3870867    .4871597          0          1
+
+. di r(mean)/(1-r(mean))
+.63155216
+
+. di log(r(mean)/(1-r(mean)))
+-.45957474
+
+. scalar opri = r(mean) // save for later use
+</pre>
+<pre class='r'>> library(dplyr)
+> p &lt;- summarize(ct, mean(ins)); p
+# A tibble: 1 × 1
+  `mean(ins)`
+        &lt;dbl>
+1       0.387
+> p/(1 - p)
+  mean(ins)
+1 0.6315522
+> log(p/(1 - p))
+   mean(ins)
+1 -0.4595747
+</pre>
+<p>The respondents with insurance are 38.7%. The odds of insurance are
+0.63 to one, roughly two persons with insurance for every three without.
+The logit is -0.46. I gave a formula for the variance in class, but we
+can use the null model to do the calculations</p>
+<pre class='stata'>. logit ins
+
+Iteration 0:   log likelihood = -2139.7712  
+Iteration 1:   log likelihood = -2139.7712  
+
+Logistic regression                                     Number of obs =  3,206
+                                                        LR chi2(0)    =   0.00
+                                                        Prob > chi2   =      .
+Log likelihood = -2139.7712                             Pseudo R2     = 0.0000
+
+─────────────┬────────────────────────────────────────────────────────────────
+         ins │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+       _cons │  -.4595747   .0362589   -12.67   0.000    -.5306409   -.3885086
+─────────────┴────────────────────────────────────────────────────────────────
+
+. scalar z = invnormal(0.975)
+
+. di exp(_b[_cons] - z * _se[_cons]), exp(_b[_cons] - z * _se[_cons])
+.58822787 .58822787
+
+. di invlogit(_b[_cons] - z * _se[_cons]), invlogit(_b[_cons] + z * _se[_cons])
+.37036743 .40407637
+</pre>
+<pre class='r'>> m1 &lt;- glm(ins ~ 1, family=binomial, data = ct)
+> summary(m1)
+
+Call:
+glm(formula = ins ~ 1, family = binomial, data = ct)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-0.9895  -0.9895  -0.9895   1.3778   1.3778  
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -0.45957    0.03626  -12.68   &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 4279.5  on 3205  degrees of freedom
+Residual deviance: 4279.5  on 3205  degrees of freedom
+AIC: 4281.5
+
+Number of Fisher Scoring iterations: 4
+
+> delta &lt;- qnorm(0.975) * sqrt(vcov(m1))
+> ci &lt;-c(coef(m1) - delta, coef(m1) + delta)
+> exp(ci)
+[1] 0.5882279 0.6780674
+> plogis(ci)
+[1] 0.3703674 0.4040764
+</pre>
+<p>The odds are between 0.588 and 0.678 with 95% confidence. The
+probability is between 37.0 and 40.4% with 95% confidence.</p>
+<p>(b) Hispanics are less likely to have supplemental insurance than
+others. Estimate the proportions with insurance among hispanics and
+others and calculate the difference. Estimate and interpret the odds
+ratio, and test its significance using a Wald test and a likelihood
+ratio test.</p>
+<pre class='stata'>. tabstat ins, by(hisp)
+
+Summary for variables: ins
+Group variable: hisp 
+
+    hisp │      Mean
+─────────┼──────────
+       0 │  .4056509
+       1 │  .1502146
+─────────┼──────────
+   Total │  .3870867
+─────────┴──────────
+
+. logit ins hisp
+
+Iteration 0:   log likelihood = -2139.7712  
+Iteration 1:   log likelihood =  -2106.442  
+Iteration 2:   log likelihood = -2106.0567  
+Iteration 3:   log likelihood = -2106.0559  
+Iteration 4:   log likelihood = -2106.0559  
+
+Logistic regression                                     Number of obs =  3,206
+                                                        LR chi2(1)    =  67.43
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -2106.0559                             Pseudo R2     = 0.0158
+
+─────────────┬────────────────────────────────────────────────────────────────
+         ins │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+        hisp │  -1.350945   .1871284    -7.22   0.000     -1.71771   -.9841799
+       _cons │  -.3819741   .0373513   -10.23   0.000    -.4551813   -.3087669
+─────────────┴────────────────────────────────────────────────────────────────
+
+. di exp(_b[hisp])
+.25899543
+
+. di (_b[hisp]/_se[hisp])^2    
+52.118952
+
+. di e(chi2)
+67.4306
+</pre>
+<pre class='r'>> group_by(ct, hisp) %>% summarize(mean(ins))
+# A tibble: 2 × 2
+   hisp `mean(ins)`
+  &lt;dbl>       &lt;dbl>
+1     0       0.406
+2     1       0.150
+> m2 &lt;-  glm(ins ~ hisp, family=binomial, data = ct)
+> exp(coef(m2)["hisp"])
+     hisp 
+0.2589954 
+> deviance(m1) - deviance(m2)
+[1] 67.4306
+</pre>
+<p>The proportion with insurance is 15.0% among hispanics and 40.6%
+among others. The difference is 25.6 percentage points. The odds ratio
+is 0.259 (by hand from the proportions or exponentiating the coefficient
+of hispanic), so the odds of having insurance among hispanics are just
+about a quarter the odds of non-hispanics. The Wald test given in the
+output as z = -7.22 is equivalent to a chi-squared of 52.12 on one d.f.
+The likelihood ratio test us 67.43, also on one d.f.</p>
+<p>(c) Let us jump directly to the model used by Cameron and Trivedi.
+Fit a logit model using retirement status (<code>retire</code>),
+<code>age</code>, health status (<code>hstatusg</code>, coded 1 for
+good, very good or excellent and 0 otherwise), household income
+(<code>hhincome</code>), education in years (<code>educyear</code>), the
+indicator for <code>married</code>, and the indicator of hispanic
+ethnicity (<code>hisp</code>). You should find that all but age have
+significant effects at the five percent level.</p>
+<pre class='stata'>. logit ins retire age hstatusg hhincome educyear married hisp
+
+Iteration 0:   log likelihood = -2139.7712  
+Iteration 1:   log likelihood = -1996.7434  
+Iteration 2:   log likelihood = -1994.8864  
+Iteration 3:   log likelihood = -1994.8784  
+Iteration 4:   log likelihood = -1994.8784  
+
+Logistic regression                                     Number of obs =  3,206
+                                                        LR chi2(7)    = 289.79
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -1994.8784                             Pseudo R2     = 0.0677
+
+─────────────┬────────────────────────────────────────────────────────────────
+         ins │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+      retire │   .1969297   .0842067     2.34   0.019     .0318875    .3619718
+         age │  -.0145955   .0112871    -1.29   0.196    -.0367178    .0075267
+    hstatusg │   .3122654   .0916739     3.41   0.001     .1325878     .491943
+    hhincome │   .0023036    .000762     3.02   0.003       .00081    .0037972
+    educyear │   .1142626   .0142012     8.05   0.000     .0864288    .1420963
+     married │    .578636   .0933198     6.20   0.000     .3957327    .7615394
+        hisp │  -.8103059   .1957522    -4.14   0.000    -1.193973   -.4266387
+       _cons │  -1.715578   .7486219    -2.29   0.022     -3.18285   -.2483064
+─────────────┴────────────────────────────────────────────────────────────────
+
+. 
+</pre>
+<pre class='r'>> m3 &lt;- glm(ins ~ retire + age + hstatusg + hhincome + educyear + married + hisp,
++   family = binomial, data = ct)
+> summary(m3)
+
+Call:
+glm(formula = ins ~ retire + age + hstatusg + hhincome + educyear + 
+    married + hisp, family = binomial, data = ct)
+
+Deviance Residuals: 
+   Min      1Q  Median      3Q     Max  
+-2.456  -1.009  -0.703   1.224   2.373  
+
+Coefficients:
+             Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -1.715578   0.748622  -2.292 0.021926 *  
+retire       0.196930   0.084207   2.339 0.019354 *  
+age         -0.014596   0.011287  -1.293 0.195969    
+hstatusg     0.312265   0.091674   3.406 0.000659 ***
+hhincome     0.002304   0.000762   3.023 0.002503 ** 
+educyear     0.114263   0.014201   8.046 8.55e-16 ***
+married      0.578636   0.093320   6.201 5.63e-10 ***
+hisp        -0.810306   0.195751  -4.139 3.48e-05 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 4279.5  on 3205  degrees of freedom
+Residual deviance: 3989.8  on 3198  degrees of freedom
+AIC: 4005.8
+
+Number of Fisher Scoring iterations: 4
+</pre>
+<p>All coefficients other than age are indeed significant at the 5%
+level, as indicated by the z-statistics.</p>
+<p>(d) Interpret carefully the odds ratio for hispanics, comparing it
+with the result of part (b). Test the significance of the ethnicity
+effect using a Wald test and a likelihood ratio test.</p>
+<pre class='stata'>. di exp(_b[hisp])
+.44472199
+
+. di (_b[hisp]/_se[hisp])^2
+17.135029
+
+. estimates store ct
+
+. quietly logit ins retire age hstatusg hhincome educyear married 
+
+. lrtest . ct
+
+Likelihood-ratio test
+Assumption: . nested within ct
+
+ LR chi2(1) =  19.46
+Prob > chi2 = 0.0000
+</pre>
+<pre class='r'>> b &lt;- coef(m3)
+> exp(b["hisp"])
+    hisp 
+0.444722 
+> se = sqrt(vcov(m3)["hisp","hisp"])
+> (b["hisp"]/se)^2
+    hisp 
+17.13528 
+> deviance(update(m3, ~. - hisp)) - deviance(m3)
+[1] 19.46244
+</pre>
+<p>The odds ratio for hispanics adjusted for the other variables is
+0.445. That means that the odds of hispanics having insurance are 45%
+(or a bit below half) the odds of non-hispanics with the same retirement
+status, age, heath status, household income, education and marital
+status. Clearly hispanics are somewhat disadvantaged on at least some of
+these variables, so adjustment reduces the observed disparity, which
+nevertheless remains substantial. The ratio is significantly different
+from one, with a Wald chi-squared of 17.14 and a likelihood ratio
+chi-squared of 19.46 on one d.f.</p>
+<p>(e) Turns out these estimates are sensitive to the specification of
+household income. An obvious alternative is log-income, but some
+households have no income. Instead we will group this variable into
+quartiles, which has been done in <code>qhhinc</code>. Refit the model
+using this alternative specification and comment on the odds ratio for
+hispanics. Use this alternative specification in what follows.</p>
+<pre class='stata'>. logit ins retire age hstatusg i.qhhinc educyear married hisp
+
+Iteration 0:   log likelihood = -2139.7712  
+Iteration 1:   log likelihood = -1910.9252  
+Iteration 2:   log likelihood = -1903.6387  
+Iteration 3:   log likelihood = -1903.6075  
+Iteration 4:   log likelihood = -1903.6075  
+
+Logistic regression                                     Number of obs =  3,206
+                                                        LR chi2(9)    = 472.33
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -1903.6075                             Pseudo R2     = 0.1104
+
+─────────────┬────────────────────────────────────────────────────────────────
+         ins │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+      retire │   .1809582    .086045     2.10   0.035     .0123131    .3496033
+         age │   -.021298   .0117381    -1.81   0.070    -.0443042    .0017082
+    hstatusg │   .1046211   .0963592     1.09   0.278    -.0842394    .2934815
+             │
+      qhhinc │
+         Q2  │   1.304387   .1399469     9.32   0.000     1.030096    1.578678
+         Q3  │   1.814432   .1472722    12.32   0.000     1.525784    2.103081
+         Q4  │   1.837259   .1550189    11.85   0.000     1.533428     2.14109
+             │
+    educyear │   .0637015     .01502     4.24   0.000     .0342628    .0931402
+     married │   .0174329   .1060881     0.16   0.869    -.1904959    .2253617
+        hisp │  -.6294994   .2024917    -3.11   0.002    -1.026376   -.2326229
+       _cons │  -1.317642    .777195    -1.70   0.090    -2.840916    .2056324
+─────────────┴────────────────────────────────────────────────────────────────
+
+. di exp(_b[hisp])
+.53285848
+</pre>
+<pre class='r'>> ct &lt;- mutate(ct, qhhinc = factor(qhhinc))
+> m4 &lt;- glm(ins ~ retire + age + hstatusg + qhhinc + educyear + married + hisp,
++  family = binomial, data = ct)
+> summary(m4)
+
+Call:
+glm(formula = ins ~ retire + age + hstatusg + qhhinc + educyear + 
+    married + hisp, family = binomial, data = ct)
+
+Deviance Residuals: 
+   Min      1Q  Median      3Q     Max  
+-1.462  -1.041  -0.515   1.115   2.443  
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept) -1.31764    0.77719  -1.695  0.09000 .  
+retire       0.18096    0.08604   2.103  0.03546 *  
+age         -0.02130    0.01174  -1.814  0.06961 .  
+hstatusg     0.10462    0.09636   1.086  0.27759    
+qhhinc2      1.30439    0.13994   9.321  &lt; 2e-16 ***
+qhhinc3      1.81443    0.14727  12.321  &lt; 2e-16 ***
+qhhinc4      1.83726    0.15502  11.852  &lt; 2e-16 ***
+educyear     0.06370    0.01502   4.241 2.22e-05 ***
+married      0.01743    0.10609   0.164  0.86947    
+hisp        -0.62950    0.20248  -3.109  0.00188 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 4279.5  on 3205  degrees of freedom
+Residual deviance: 3807.2  on 3196  degrees of freedom
+AIC: 3827.2
+
+Number of Fisher Scoring iterations: 4
+
+> b = coef(m4)
+> exp(b["hisp"])
+     hisp 
+0.5328585 
+</pre>
+<p>The alternative specification results in an adjusted odds ratio of
+0.533, further reducing the disparity between hispanics and others. It
+appears that the adjustment is somewhat sensitive to the specification
+of income. (As I remarked on class, the model based on quartiles of
+household income seems to fit a bit better than the original. Using log
+income leads to a similar estimate.)</p>
+<h3 id="marginal-and-adjusted-effects">[2] Marginal and Adjusted
+Effects</h3>
+<p>We will estimate several types of marginal effects. I will refer to
+the calculation based on the derivative as “continuous” and to the unit
+change as “discrete”.</p>
+<p>(a) Estimate the marginal effect of hispanic using the continuous
+formula at the mean of all covariates. Try a quick approximation using
+the formula evaluated at the overall probability. This is known as the
+marginal effect at the mean.</p>
+<pre class='stata'>. quietly sum ins
+
+. di opri * (1 - opri) * _b[hisp]
+-.14934911
+</pre>
+<pre class='r'>> p * (1 - p) * b["hisp"]
+   mean(ins)
+1 -0.1493491
+</pre>
+<p>We estimate the difference between hispanics and non-hispanics, at
+the overall probability of 38.7%, to be 14.9% percentage points. This is
+much lower than the original (unadjusted) difference of 25.6 points.</p>
+<p>(b) Predict insurance for hispanics and others with the other
+covariates set to their means, and calculate the difference. This is the
+unit change version of the marginal effect at the mean.</p>
+<pre class='stata'>. forvalues q = 2/4 {
+  2.   gen hhincq`q' = qhhinc == `q'
+  3. }
+
+. quietly logit ins retire age hstatusg hhincq2-hhincq4 educyear married hisp
+
+. preserve
+
+. collapse retire age hstatusg hhincq2-hhincq4 educyear married hisp
+
+. quietly replace hisp = 0
+
+. predict pr0, pr
+
+. quietly replace hisp = 1
+
+. predict pr1, pr
+
+. di pr1, pr0, pr1 - pr0
+.23580998 .36672541 -.13091543
+
+. restore
+</pre>
+<pre class='r'>> X = model.matrix(m4)
+> Xbar = colMeans(X)
+> Xbar["hisp"] &lt;- 1
+> pr1 &lt;- plogis( Xbar %*% b )
+> Xbar["hisp"] &lt;- 0
+> pr0 &lt;- plogis( Xbar %*% b )
+> c(pr1, pr0, pr1 - pr0)
+[1]  0.2358100  0.3667254 -0.1309154
+</pre>
+<p>We find predicted probabilities of 23.6% for hispanics and 36.7% for
+others, a difference of 13.1 percentage points. A bit smaller than the
+quick approximation of (a) but in the same ballpark.</p>
+<p>(c) Predict insurance for everyone with all variables as they are,
+and compute the marginal effect of hispanic for each respondent using
+the continuous approximation. This is known as the average marginal
+effect.</p>
+<pre class='stata'>. predict pr, pr
+
+. gen mec = pr * (1-pr) * _b[hisp]
+
+. sum mec
+
+    Variable │        Obs        Mean    Std. dev.       Min        Max
+─────────────┼─────────────────────────────────────────────────────────
+         mec │      3,206   -.1295251    .0391199  -.1573748  -.0189168
+</pre>
+<pre class='r'>> pri &lt;- plogis( X %*% b )
+> mec &lt;- pri * (1 - pri) * b["hisp"]
+> mean(mec)
+[1] -0.1295251
+</pre>
+<p>The average marginal effect is 12.9 percentage points using the
+continuous approximation.</p>
+<p>(d) Make a copy of <code>hisp</code> for safekeeping. Now set
+<code>hisp</code> to 1 for everyone, predict the probability of having
+insurance and average. Next set <code>hisp</code> to 0 for everyone,
+predict again and average. The difference between these two means is the
+discrete version of the average marginal effect. Don’t forget to set
+<code>hisp</code> back to its true value.</p>
+<pre class='stata'>. preserve
+
+. quietly replace hisp = 0
+
+. predict pr0, pr
+
+. quietly replace hisp = 1
+
+. predict pr1, pr
+
+. gen med = pr1 - pr0
+
+. sum med
+
+    Variable │        Obs        Mean    Std. dev.       Min        Max
+─────────────┼─────────────────────────────────────────────────────────
+         med │      3,206   -.1233619    .0414112  -.1560881  -.0246634
+
+. restore
+</pre>
+<pre class='r'>> X[, "hisp"] &lt;- 1
+> pr1 &lt;- plogis( X %*% b )
+> X[, "hisp"] &lt;- 0
+> pr0 &lt;- plogis( X %*% b )
+> colMeans(cbind(pr1, pr0, pr1 - pr0))
+[1]  0.2698466  0.3932085 -0.1233619
+</pre>
+<p>The average marginal effect is 12.3 percentage points using the unit
+change. (Of all calculations, this is probably the one that makes the
+most sense. Many analysts use (c) for continuous variables and (d) for
+discrete factors.</p>
+<p>(e) The last two approaches avoid setting variables such as
+<code>married</code> to its mean of 0.773, which is not meaningful.
+Another approach is to select a combination of predictors of interest
+and predict for that case. Cameron and Trivedi use a 75-year old married
+person with good health status, 12 years of education and an income in
+the third quartile. Calculate the predicted probabilities if the person
+is hispanic and if not, and compute the difference.</p>
+<p>An easy way to do the calculation is to create an observation with
+the desired attributes, or use one in the dataset if the combination
+exists. We have plenty of cases except for age. (I forgot to specify a
+value for <code>retire</code>. Given the age it makes sense to assume
+yes.)</p>
+<pre class='stata'>. preserve
+
+. keep if retire &amp; hstatus == 1 &amp; educyear == 12 &amp; qhhinc == 3 &amp; married    
+(3,042 observations deleted)
+
+. keep in 1/2
+(162 observations deleted)
+
+. quietly replace age  = 75
+
+. quietly replace hisp = _n == 1
+
+. predict prp, pr
+
+. list hisp prp
+
+     ┌─────────────────┐
+     │ hisp        prp │
+     ├─────────────────┤
+  1. │    1   .3401491 │
+  2. │    0   .4917181 │
+     └─────────────────┘
+
+. restore
+</pre>
+<pre class='r'>> proto &lt;- matrix(c(
++   1, 1, 75, 1, 0, 1, 0, 12, 1, 1,
++   1, 1, 75, 1, 0, 1, 0, 12, 1, 0), 2, 10, byrow = TRUE)
+> xb &lt;- proto %*% coef(m4)
+> plogis(xb)
+          [,1]
+[1,] 0.3401491
+[2,] 0.4917181
+</pre>
+<p>We predict for the prototype person a probability of 34% if hispanic
+and 49% if not, a difference of 15 percentage points.</p>
+<p>Note: Stata’s powerful <code>margins</code> command can do these
+calculations, but you should do them “by hand”, so you know exactly
+what’s being done.</p>
+<h3 id="goodness-of-fit">[3] Goodness of Fit</h3>
+<p>(a) With individual data the deviance does not have a <span
+class="math"><em>χ</em><sup>2</sup></span> distribution, and even with
+household income grouped into categories there are too many covariate
+patterns to trust the asymptotics. Calculate the Hosmer-Lemeshow
+goodness of fit test using ten groups of approximately equal size based
+on predicted probabilities.</p>
+<pre class='stata'>. estat gof, group(10) table
+note: obs collapsed on 10 quantiles of estimated probabilities.
+
+Goodness-of-fit test after logistic model
+Variable: ins
+
+  Table collapsed on quantiles of estimated probabilities
+  ┌───────┬────────┬───────┬───────┬───────┬───────┬───────┐
+  │ Group │   Prob │ Obs_1 │ Exp_1 │ Obs_0 │ Exp_0 │ Total │
+  ├───────┼────────┼───────┼───────┼───────┼───────┼───────┤
+  │     1 │ 0.1169 │    20 │  26.8 │   301 │ 294.2 │   321 │
+  │     2 │ 0.1497 │    40 │  42.9 │   283 │ 280.1 │   323 │
+  │     3 │ 0.3223 │    77 │  68.1 │   241 │ 249.9 │   318 │
+  │     4 │ 0.3824 │   122 │ 114.5 │   199 │ 206.5 │   321 │
+  │     5 │ 0.4367 │   131 │ 130.5 │   190 │ 190.5 │   321 │
+  ├───────┼────────┼───────┼───────┼───────┼───────┼───────┤
+  │     6 │ 0.4922 │   155 │ 150.6 │   166 │ 170.4 │   321 │
+  │     7 │ 0.5236 │   173 │ 167.1 │   156 │ 161.9 │   329 │
+  │     8 │ 0.5448 │   164 │ 167.8 │   149 │ 145.2 │   313 │
+  │     9 │ 0.5817 │   171 │ 179.2 │   148 │ 139.8 │   319 │
+  │    10 │ 0.6568 │   188 │ 193.5 │   132 │ 126.5 │   320 │
+  └───────┴────────┴───────┴───────┴───────┴───────┴───────┘
+
+ Number of observations =  3,206
+       Number of groups =     10
+Hosmer–Lemeshow chi2(8) =   6.43
+            Prob > chi2 = 0.5988
+</pre>
+<pre class='r'>> source("https://grodri.github.io/glms/r/hosmer.R")
+> hosmer(ct$ins, fitted(m4))
+                0   1      e.0       e.1
+[0.031,0.117] 301  20 294.2278  26.77222
+(0.117,0.15]  283  40 280.0543  42.94574
+(0.15,0.322]  241  77 249.8864  68.11363
+(0.322,0.382] 199 122 206.4775 114.52255
+(0.382,0.437] 190 131 190.5101 130.48987
+(0.437,0.492] 166 155 170.3789 150.62107
+(0.492,0.524] 156 173 161.9098 167.09021
+(0.524,0.545] 149 164 145.2456 167.75442
+(0.545,0.582] 148 171 139.8297 179.17029
+(0.582,0.657] 132 188 126.4800 193.52002
+             test groups   chi.sq    pvalue
+1 Hosmer-Lemeshow     10 6.433716 0.5987689
+</pre>
+<p>We get a chi-squared of 6.43 on 8 d.f. which is quite reassuring,
+with a p-value of 0.6.</p>
+<p>(b) Compute predicted probabilities of having insurance and predict
+that a respondent will have insurance if the predicted probability is
+0.5 or more. Tabulate predicted versus actual outcomes. What’s the
+overall error rate? Comment on the numbers of false positives and false
+negatives. How well would be do if we just predicted that nobody would
+buy supplemental insurance? How much reduction in error did the model
+achieve?</p>
+<pre class='stata'>. predict pri, pr
+
+. gen preins = pri >= 0.5
+
+. tab preins ins
+
+           │          ins
+    preins │         0          1 │     Total
+───────────┼──────────────────────┼──────────
+         0 │     1,421        587 │     2,008 
+         1 │       544        654 │     1,198 
+───────────┼──────────────────────┼──────────
+     Total │     1,965      1,241 │     3,206 
+</pre>
+<pre class='r'>> ct &lt;- mutate(ct, predins = fitted(m4) >= 0.5)
+> group_by(ct, predins, ins) %>% tally()
+# A tibble: 4 × 3
+# Groups:   predins [2]
+  predins   ins     n
+  &lt;lgl>   &lt;dbl> &lt;int>
+1 FALSE       0  1421
+2 FALSE       1   587
+3 TRUE        0   544
+4 TRUE        1   654
+</pre>
+<p>We predict correctly 654 + 1421 cases or 64.7%, so the error rate is
+35.3%. Our false positives are too high, we get 45% wrong (544 of 1198
+predicted to have insurance). False negatives are a bit better, we get
+29% wrong (587 of 2008 predicted not to have insurance). The overall
+proportion was 38.7%, so if we predicted that everyone buys
+supplementary insurance we would get only 38.7% wrong. With the model we
+reduce that to 35.3%. The proportionate reduction in error is only 9%
+(or 8.86%).</p>
+<h3 id="probits-and-ols">[4] Probits and OLS</h3>
+<p>(a) Fit the model using a probit specification, compute the
+continuous marginal effect using the overall probability of having
+insurance, and compare with the results of part 2 (a).</p>
+<pre class='stata'>. probit ins retire age hstatusg hhincq2-hhincq4 educyear married hisp
+
+Iteration 0:   log likelihood = -2139.7712  
+Iteration 1:   log likelihood = -1904.9874  
+Iteration 2:   log likelihood = -1901.9111  
+Iteration 3:   log likelihood = -1901.9053  
+Iteration 4:   log likelihood = -1901.9053  
+
+Probit regression                                       Number of obs =  3,206
+                                                        LR chi2(9)    = 475.73
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -1901.9053                             Pseudo R2     = 0.1112
+
+─────────────┬────────────────────────────────────────────────────────────────
+         ins │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+      retire │   .1090073   .0522262     2.09   0.037     .0066458    .2113687
+         age │  -.0125164   .0071196    -1.76   0.079    -.0264706    .0014378
+    hstatusg │   .0722337   .0580082     1.25   0.213    -.0414602    .1859276
+     hhincq2 │    .751445   .0786195     9.56   0.000     .5973537    .9055363
+     hhincq3 │   1.067105   .0835774    12.77   0.000     .9032965    1.230914
+     hhincq4 │   1.081014   .0884047    12.23   0.000     .9077443    1.254284
+    educyear │   .0395948   .0090395     4.38   0.000     .0218777     .057312
+     married │   .0170883   .0633161     0.27   0.787     -.107009    .1411855
+        hisp │  -.3790227   .1162247    -3.26   0.001     -.606819   -.1512265
+       _cons │    -.81568   .4718992    -1.73   0.084    -1.740585    .1092254
+─────────────┴────────────────────────────────────────────────────────────────
+
+. scalar eta = invnormal(opri)
+
+. di normalden(eta) * _b[hisp]
+-.14511058
+</pre>
+<pre class='r'>> m5 &lt;- update(m4, family = binomial(probit))
+> xb = qnorm(as.numeric(p))
+> dnorm(xb) * coef(m5)["hisp"]
+      hisp 
+-0.1451103 
+</pre>
+<p>We estimate the marginal effect at the mean to be 14.5 percentage
+points using the derivative. This is very close to the comparable logit
+estimate of 14.9 obtained in part 2.a (BTW the coefficient of -0.38
+tells us that the (net) utility of buying supplementary insurance of
+hispanics is 0.38 standard deviations less than comparable
+non-hispanics.)</p>
+<p>(b) Fit the same model using OLS. The coefficient of
+<code>hisp</code> is often justified as a quick estimate of the average
+marginal effect of ethnicity adjusted for the other variables. How does
+it compare with the logit and probit estimates?</p>
+<pre class='stata'>. reg ins retire age hstatusg hhincq2-hhincq4 educyear married hisp
+
+      Source │       SS           df       MS      Number of obs   =     3,206
+─────────────┼──────────────────────────────────   F(9, 3196)      =     53.40
+       Model │  99.4266617         9  11.0474069   Prob > F        =    0.0000
+    Residual │  661.198728     3,196  .206883207   R-squared       =    0.1307
+─────────────┼──────────────────────────────────   Adj R-squared   =    0.1283
+       Total │   760.62539     3,205  .237324615   Root MSE        =    .45484
+
+─────────────┬────────────────────────────────────────────────────────────────
+         ins │ Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+      retire │   .0364401   .0177052     2.06   0.040     .0017254    .0711549
+         age │  -.0038497   .0023577    -1.63   0.103    -.0084724     .000773
+    hstatusg │   .0200136   .0192637     1.04   0.299    -.0177568    .0577841
+     hhincq2 │    .214232   .0247282     8.66   0.000     .1657472    .2627169
+     hhincq3 │   .3435194   .0269492    12.75   0.000     .2906799    .3963589
+     hhincq4 │   .3554378   .0287588    12.36   0.000     .2990503    .4118254
+    educyear │   .0115776   .0029295     3.95   0.000     .0058336    .0173215
+     married │   .0055474    .020842     0.27   0.790    -.0353177    .0464124
+        hisp │  -.0793971   .0329527    -2.41   0.016    -.1440076   -.0147866
+       _cons │   .2434602   .1563759     1.56   0.120     -.063147    .5500673
+─────────────┴────────────────────────────────────────────────────────────────
+</pre>
+<pre class='r'>> update(m4, family = gaussian)
+
+Call:  glm(formula = ins ~ retire + age + hstatusg + qhhinc + educyear + 
+    married + hisp, family = gaussian, data = ct)
+
+Coefficients:
+(Intercept)       retire          age     hstatusg      qhhinc2      qhhinc3  
+   0.243460     0.036440    -0.003850     0.020014     0.214232     0.343519  
+    qhhinc4     educyear      married         hisp  
+   0.355438     0.011578     0.005547    -0.079397  
+
+Degrees of Freedom: 3205 Total (i.e. Null);  3196 Residual
+Null Deviance:	    760.6 
+Residual Deviance: 661.2 	AIC: 4059
+</pre>
+<p>OLS estimates the average marginal effect as 7.9 percentage points,
+much lower than previous estimates. The value is more directly
+comparable to the average marginal effect than the marginal effect at
+the average, but it misses both.</p>

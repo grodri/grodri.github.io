@@ -1,0 +1,688 @@
+---
+layout: default
+section: glms
+tab: "Problem Sets"
+---
+
+<h2
+id="solutions-to-problem-set-6-methadone-treatment-of-heroin-addicts">Solutions
+to Problem Set 6 <br/> Methadone Treatment of Heroin Addicts</h2>
+<p>The survival time we will work with is the time that heroin addicts
+stay in a clinic for methadone maintenance treatment. The data were
+first analyzed by Caplehorn and Bell (1991) and appeared in a handbook
+of small datasets by Hand et al (1994). They have also been analyzed by
+Rabe-Hesketh and Everitt (2006) in various editions of their Handbook of
+Statistical Analyses using Stata. The data are available in the datasets
+section in a Stata file called <code>heroin.dta</code>.</p>
+<p>The data come from two clinics coded 1 and 2; <code>status</code> is
+1 if the event occurred (the person left the clinic) and 0 otherwise,
+and <code>time</code> is in days. The other two variables are an
+indicator of whether the person had a <code>prison</code> record, and
+the <code>dose</code> of methadone in mg.</p>
+
+{% include srtabs.html %}
+
+<h3 id="models-with-no-covariates">[1] Models with No Covariates</h3>
+<p>(a) Verify that we have 150 failures in a total of 95,812 days of
+exposure. It will be convenient to recon time in months, treating a
+month as 30 days. Assume the hazard is constant over time. What’s the
+event rate per month? What’s the probability that someone would still be
+in treatment after one, two and three years?</p>
+<pre class='stata'>. use https://grodri.github.io/datasets/heroin, clear
+(Retention of Heroin Addicts in Methadone Treatment Program, Hand(1994))
+
+. count if status==1
+  150
+
+. scalar  count = r(N)
+
+. quietly sum time
+
+. di r(sum)
+95812
+
+. gen months = time / 30
+
+. stset months, fail(status == 1) id(id)
+
+Survival-time data settings
+
+           ID variable: id
+         Failure event: status==1
+Observed time interval: (months[_n-1], months]
+     Exit on or before: failure
+
+──────────────────────────────────────────────────────────────────────────
+        238  total observations
+          0  exclusions
+──────────────────────────────────────────────────────────────────────────
+        238  observations remaining, representing
+        238  subjects
+        150  failures in single-failure-per-subject data
+  3,193.733  total analysis time at risk and under observation
+                                                At risk from t =         0
+                                     Earliest observed entry t =         0
+                                          Last observed exit t =  35.86666
+
+. scalar hazard = count/r(sum)
+
+. di hazard
+.04696698
+
+. di exp(-12*hazard), exp(-24*hazard), exp(-36*hazard)
+.56915429 .3239366 .18436991
+</pre>
+<pre class='r'>> library(haven)
+> heroin &lt;- read_dta("https://grodri.github.io/datasets/heroin.dta")
+> library(dplyr)
+> tally &lt;- summarize(heroin, events=sum(status==1), days=sum(time),
++   exposure = days/30); tally
+# A tibble: 1 × 3
+  events  days exposure
+   &lt;int> &lt;dbl>    &lt;dbl>
+1    150 95812    3194.
+> hazard &lt;- tally$events/tally$exposure; hazard
+[1] 0.04696698
+> exp(-hazard * c(12, 24, 36))
+[1] 0.5691543 0.3239366 0.1843699
+</pre>
+<p>We have 150 failures in 95,812 days as expected. The monthly event
+rate is 0.047, so addicts leave treatment at the rate of 1 out of 20 per
+month. The probability of remaining in treatment is 57% after one year,
+32% after two and 18% after three years.</p>
+<p>(b) Split the dataset so that we have separate observations for 0-3,
+3-6, 6-12, 12-18, 18-24 and 24-36 months. (In other words split the
+first year into two quarters and a semester, and the second year into
+two semesters.) There are no exits after 3 years. Fit a piece-wise
+exponential model and describe the shape of the hazard. Test the
+hypothesis that the hazard is constant. Estimate the probability that
+someone would be in treatment after one, two and three years.</p>
+<pre class='stata'>. stsplit interval, at(3 6 12 18 24 36)
+(613 observations (episodes) created)
+
+. gen events = _d
+
+. gen exposure = _t - _t0
+
+. poisson events i.interval, exposure(exposure)
+
+Iteration 0:   log likelihood = -512.97744  
+Iteration 1:   log likelihood = -512.89225  
+Iteration 2:   log likelihood = -512.89205  
+Iteration 3:   log likelihood = -512.89205  
+
+Poisson regression                                      Number of obs =    851
+                                                        LR chi2(5)    =  10.01
+                                                        Prob > chi2   = 0.0749
+Log likelihood = -512.89205                             Pseudo R2     = 0.0097
+
+─────────────┬────────────────────────────────────────────────────────────────
+      events │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+    interval │
+          3  │   .1847856    .291796     0.63   0.527    -.3871241    .7566953
+          6  │   .2764494   .2616835     1.06   0.291    -.2364409    .7893396
+         12  │   .3810534   .2752023     1.38   0.166    -.1583333      .92044
+         18  │     .45605   .3198465     1.43   0.154    -.1708377    1.082938
+         24  │   1.056881   .3318809     3.18   0.001     .4064063    1.707355
+             │
+       _cons │  -3.364343   .2085144   -16.13   0.000    -3.773024   -2.955662
+ln(exposure) │          1  (exposure)
+─────────────┴────────────────────────────────────────────────────────────────
+
+. di e(chi2), e(df_m)
+10.013372 5
+
+. mat list e(b)
+
+e(b)[1,7]
+        events:     events:     events:     events:     events:     events:
+            0b.          3.          6.         12.         18.         24.
+      interval    interval    interval    interval    interval    interval
+y1           0   .18478562   .27644938   .38105336   .45604996   1.0568809
+
+        events:
+               
+         _cons
+y1  -3.3643429
+
+. mata b = st_matrix("e(b)")
+
+. mata h = exp(b[7] :+ b[1..6])
+
+. mata w = 3, 3, 6, 6, 6, 12
+
+. mata S = exp(-runningsum(h :* w))
+
+. mata S[(3, 5, 6)]
+                 1             2             3
+    ┌───────────────────────────────────────────┐
+  1 │  .6052257103   .3219616817     .09754079  │
+    └───────────────────────────────────────────┘
+</pre>
+<pre class='r'>> library(survival)
+> heroin &lt;- mutate(heroin, months = time/30, fail = status) # for clarity
+> breaks &lt;- c(3, 6, 12, 18, 24, 36)
+> heroinx &lt;- survSplit(heroin, cut = breaks, start = "start", end = "months",
++   event = "fail", episode = "interval")   
+> heroinx &lt;- mutate(heroinx, exposure = months - start, interval = 
++   factor(interval, labels=paste("(",c(0,breaks[-6]),",",breaks,"]", sep = "")))
+> nrow(heroinx)
+[1] 851
+> pwe &lt;- glm(fail ~ interval + offset(log(exposure)), data = heroinx, family = poisson)
+> summary(pwe)$coefficients
+                  Estimate Std. Error     z value     Pr(>|z|)
+(Intercept)     -3.3643429  0.2085120 -16.1350089 1.447867e-58
+interval(3,6]    0.1847856  0.2917936   0.6332751 5.265540e-01
+interval(6,12]   0.2764494  0.2616729   1.0564692 2.907539e-01
+interval(12,18]  0.3810534  0.2751989   1.3846471 1.661604e-01
+interval(18,24]  0.4560500  0.3198416   1.4258618 1.539082e-01
+interval(24,36]  1.0568809  0.3318793   3.1845343 1.449871e-03
+> me &lt;- glm(fail ~ offset(log(exposure)), data=heroinx, family=poisson); exp(coef(me))
+(Intercept) 
+ 0.04696698 
+> deviance(me) - deviance(pwe)
+[1] 10.01337
+> b &lt;- coef(pwe)
+> h &lt;- exp(b[1] + c(0,b[-1]))
+> w &lt;- c(3, 3, 6, 6, 6, 12)
+> exp(-cumsum(h * w))
+                  interval(3,6]  interval(6,12] interval(12,18] interval(18,24] 
+     0.90144685      0.79567346      0.60522571      0.44668129      0.32196168 
+interval(24,36] 
+     0.09754079 
+</pre>
+<p>The rate at which addicts leave the clinic increases substantially
+and steadily with duration of stay; at the one year mark it is almost
+50% higher than in the first trimester, and in the third year it is
+almost three times what it was initially. To test the hypothesis of a
+constant hazard we compare this model with the null, which gives as a
+chi-squared of 10.01 on 5 d.f., a test that would accept at the
+conventional 5% level. The estimated survival probabilities are 61%
+after one year, 32% after two and just under 10% after three years.</p>
+<h3 id="clinic-effects">[2] Clinic Effects</h3>
+<p>(a) Introduce a dummy variable to identify clinic 1 and add it to the
+model. Interpret the exponentiated coefficient and test its
+significance. (Note that clinic is coded 1 and 2, we want to treat
+clinic 2 as the reference. You may want to save this model for part
+c.)</p>
+<pre class='stata'>. gen clinic1 = clinic == 1  // or use ib2.clinic
+
+. poisson events i.interval clinic1, exposure(exposure)
+
+Iteration 0:   log likelihood = -497.08351  
+Iteration 1:   log likelihood = -497.03449  
+Iteration 2:   log likelihood = -497.03443  
+Iteration 3:   log likelihood = -497.03443  
+
+Poisson regression                                      Number of obs =    851
+                                                        LR chi2(6)    =  41.73
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -497.03443                             Pseudo R2     = 0.0403
+
+─────────────┬────────────────────────────────────────────────────────────────
+      events │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+    interval │
+          3  │   .1932776   .2917984     0.66   0.508    -.3786367    .7651919
+          6  │   .3130266   .2617334     1.20   0.232    -.1999614    .8260146
+         12  │   .4588443   .2754258     1.67   0.096    -.0809804     .998669
+         18  │   .6027036   .3205791     1.88   0.060    -.0256198    1.231027
+         24  │   1.336127   .3348078     3.99   0.000     .6799155    1.992338
+             │
+     clinic1 │   1.085154   .2121442     5.12   0.000      .669359    1.500949
+       _cons │  -4.212952   .2776001   -15.18   0.000    -4.757038   -3.668866
+ln(exposure) │          1  (exposure)
+─────────────┴────────────────────────────────────────────────────────────────
+
+. estimates store clinic
+
+. di exp(_b[clinic1]) - 1
+1.9598958
+</pre>
+<pre class='r'>> heroinx &lt;- mutate(heroinx, clinic1 = as.numeric(clinic == 1))
+> pwec &lt;-  update(pwe, . ~ . + clinic1)
+> summary(pwec)$coefficient
+                  Estimate Std. Error     z value     Pr(>|z|)
+(Intercept)     -4.2129522  0.2775893 -15.1769264 5.027959e-52
+interval(3,6]    0.1932776  0.2917943   0.6623762 5.077302e-01
+interval(6,12]   0.3130266  0.2617218   1.1960284 2.316855e-01
+interval(12,18]  0.4588443  0.2754218   1.6659693 9.571952e-02
+interval(18,24]  0.6027036  0.3205751   1.8800700 6.009854e-02
+interval(24,36]  1.3361267  0.3348046   3.9907653 6.586044e-05
+clinic1          1.0851541  0.2121327   5.1154493 3.129949e-07
+> exp(coef(pwec)["clinic1"]) - 1
+ clinic1 
+1.959896 
+</pre>
+<p>The departure rate is much higher in clinic 1 than clinic 2, in fact
+almost triple at the same duration of treatment, a highly significant
+effect with a Wald z-test of 5.12.</p>
+<p>(b) Let us add an interaction between clinic and duration. To save
+d.f. we will group time in years for purposes of the interaction. For
+full credit present your parameter estimates in terms of the effect of
+clinic 1 compared to 2 in the first, second and third year of treatment.
+Comment on the point estimates.</p>
+<p>To achieve this goal we create separate dummy variables to represent
+the contrast betweeen clinics 1 and 2 in each year and then fit a
+model.</p>
+<pre class='stata'>. gen clinic1year1 = clinic1 * (interval &lt; 12)
+
+. gen clinic1year2 = clinic1 * (interval >= 12 &amp; interval &lt; 24)
+
+. gen clinic1year3 = clinic1 * (interval >= 24)
+
+. poisson events i.interval clinic1year*, exposure(exposure)
+
+Iteration 0:   log likelihood = -494.51171  
+Iteration 1:   log likelihood = -491.19934  
+Iteration 2:   log likelihood = -491.15455  
+Iteration 3:   log likelihood = -491.15449  
+Iteration 4:   log likelihood = -491.15449  
+
+Poisson regression                                      Number of obs =    851
+                                                        LR chi2(8)    =  53.49
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -491.15449                             Pseudo R2     = 0.0516
+
+─────────────┬────────────────────────────────────────────────────────────────
+      events │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+    interval │
+          3  │   .1897187   .2918028     0.65   0.516    -.3822043    .7616417
+          6  │   .2975722   .2618246     1.14   0.256    -.2155945     .810739
+         12  │  -.3384617   .4922646    -0.69   0.492    -1.303283    .6263592
+         18  │  -.1761591   .5079844    -0.35   0.729     -1.17179     .819472
+         24  │  -.7497782   1.041067    -0.72   0.471    -2.790233    1.290676
+             │
+clinic1year1 │   .5491248   .2549685     2.15   0.031     .0493957    1.048854
+clinic1year2 │   1.505471   .4095048     3.68   0.000     .7028567    2.308086
+clinic1year3 │   3.080406   1.035098     2.98   0.003      1.05165    5.109161
+       _cons │  -3.769108   .2895188   -13.02   0.000    -4.336554   -3.201661
+ln(exposure) │          1  (exposure)
+─────────────┴────────────────────────────────────────────────────────────────
+
+. mata exp(st_matrix("e(b)")[7..9])
+                 1             2             3
+    ┌───────────────────────────────────────────┐
+  1 │  1.731736713   4.506277465   21.76723125  │
+    └───────────────────────────────────────────┘
+
+. estimates store model2b
+</pre>
+<pre class='r'>> heroinx &lt;- mutate(heroinx, code = as.numeric(interval),
++   clinic1year1 = clinic1 * (code &lt;= 3),
++   clinic1year2 = clinic1 * (code > 3 &amp; code &lt; 6),
++   clinic1year3 = clinic1 * (code == 6))
+> pwei &lt;-  update(pwe, . ~ . + clinic1year1 + clinic1year2 + clinic1year3)
+> summary(pwei)$coefficient
+                  Estimate Std. Error     z value     Pr(>|z|)
+(Intercept)     -3.7691076  0.2895117 -13.0188447 9.560644e-39
+interval(3,6]    0.1897187  0.2918003   0.6501662 5.155848e-01
+interval(6,12]   0.2975722  0.2618153   1.1365732 2.557167e-01
+interval(12,18] -0.3384617  0.4922541  -0.6875751 4.917204e-01
+interval(18,24] -0.1761591  0.5079744  -0.3467875 7.287510e-01
+interval(24,36] -0.7497782  1.0410633  -0.7202042 4.713993e-01
+clinic1year1     0.5491248  0.2549585   2.1537813 3.125733e-02
+clinic1year2     1.5054714  0.4094973   3.6763887 2.365590e-04
+clinic1year3     3.0804057  1.0350963   2.9759606 2.920724e-03
+> exp(coef(pwei)[7:9])
+clinic1year1 clinic1year2 clinic1year3 
+    1.731737     4.506277    21.767232 
+</pre>
+<p>We see that the difference between the clinics increases
+substantially with duration. In the first year the exit rate in clinic 2
+is 73% higher than in clinic 1, but in year 2 it is more than four times
+as high, and in year 3 it is a remarkable 22 times as high. (Turns out
+clinic 1 pretty much restricts the duration of stay to two years.)</p>
+<p>(c) Test the hypothesis that the clinic effect does indeed vary by
+year using a likelihood ratio test and a Wald test.</p>
+<pre class='stata'>. lrtest clinic .
+
+Likelihood-ratio test
+Assumption: clinic nested within model2b
+
+ LR chi2(2) =  11.76
+Prob > chi2 = 0.0028
+
+. test clinic1year1 == clinic1year2 == clinic1year3
+
+ ( 1)  [events]clinic1year1 - [events]clinic1year2 = 0
+ ( 2)  [events]clinic1year1 - [events]clinic1year3 = 0
+
+           chi2(  2) =    8.51
+         Prob > chi2 =    0.0142
+</pre>
+<pre class='r'>> deviance(pwec) - deviance(pwei)
+[1] 11.75989
+> A &lt;- matrix( c(-1, 1, 0, -1, 0, 1), 2, 3, byrow = TRUE)
+> b &lt;- A %*% coef(pwei)[7:9]
+> V &lt;- A %*% vcov(pwei)[7:9, 7:9] %*% t(A)
+> t(b) %*% solve(V) %*% b
+         [,1]
+[1,] 8.514599
+</pre>
+<p>For the likelihood ratio test we compare the models with and without
+the interaction, obtaining a chi-squared of 11.76 on 2 d.f., which is
+significant at the 1% level. For the Wald test we simply test if the
+clinic effects are the same each year, obtaining 8.51 on the same d.f.,
+with a P-value of 0.014. <span class="r">(I thought it would be
+instructive to do the calculation from first principles.)</span></p>
+<h3 id="prison-and-methadone">[3] Prison and Methadone</h3>
+<p>(a) Starting from the model of part 2.b, where the effect of clinic
+varies by year, add a dummy variable for prison history and interpret
+the resulting estimate.</p>
+<pre class='stata'>. poisson events i.interval clinic1year* prison, exposure(exposure)
+
+Iteration 0:   log likelihood = -492.67668  
+Iteration 1:   log likelihood = -489.51457  
+Iteration 2:   log likelihood = -489.47392  
+Iteration 3:   log likelihood = -489.47387  
+
+Poisson regression                                      Number of obs =    851
+                                                        LR chi2(9)    =  56.85
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -489.47387                             Pseudo R2     = 0.0549
+
+─────────────┬────────────────────────────────────────────────────────────────
+      events │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+    interval │
+          3  │   .1918866   .2918031     0.66   0.511     -.380037    .7638103
+          6  │   .3192309   .2621104     1.22   0.223     -.194496    .8329578
+         12  │  -.3353302   .4926043    -0.68   0.496    -1.300817    .6301564
+         18  │  -.1773817   .5077096    -0.35   0.727    -1.172474    .8177109
+         24  │  -.7688194    1.04115    -0.74   0.460    -2.809436    1.271797
+             │
+clinic1year1 │   .5555696    .255022     2.18   0.029     .0557356    1.055403
+clinic1year2 │   1.551366   .4103486     3.78   0.000     .7470973    2.355634
+clinic1year3 │   3.160547   1.036035     3.05   0.002     1.129956    5.191137
+      prison │   .3048991   .1653632     1.84   0.065    -.0192068     .629005
+       _cons │  -3.925787   .3036952   -12.93   0.000    -4.521018   -3.330555
+ln(exposure) │          1  (exposure)
+─────────────┴────────────────────────────────────────────────────────────────
+
+. di exp(_b[prison]) - 1
+.35648811
+</pre>
+<pre class='r'>> pweip &lt;- update(pwei, . ~ . + prison)
+> summary(pweip)$coefficients
+                  Estimate Std. Error     z value     Pr(>|z|)
+(Intercept)     -3.9257867  0.3036874 -12.9270634 3.166853e-38
+interval(3,6]    0.1918866  0.2917996   0.6575973 5.107969e-01
+interval(6,12]   0.3192309  0.2621010   1.2179691 2.232357e-01
+interval(12,18] -0.3353302  0.4925842  -0.6807572 4.960251e-01
+interval(18,24] -0.1773817  0.5076902  -0.3493897 7.267967e-01
+interval(24,36] -0.7688194  1.0411455  -0.7384361 4.602495e-01
+clinic1year1     0.5555696  0.2550123   2.1785989 2.936148e-02
+clinic1year2     1.5513658  0.4103303   3.7807734 1.563419e-04
+clinic1year3     3.1605431  1.0360323   3.0506221 2.283678e-03
+prison           0.3048991  0.1653586   1.8438663 6.520262e-02
+> exp(coef(pweip)["prison"]) - 1
+   prison 
+0.3564881 
+</pre>
+<p>At any given duration of treatment in either clinic, the rate of
+departure is 36% higher for patients with a prison record than for those
+without.</p>
+<p>(b) Add a linear effect of dose and interpret the estimate. The
+effect of 1 mg of methadone may not be of interest because doses vary by
+several mg. In fact the standard deviation is 14.45. What’s the effect
+on the hazard of increasing the dose by one standard deviation?</p>
+<pre class='stata'>. poisson events i.interval clinic1year* prison dose, exposure(exposure)
+
+Iteration 0:   log likelihood = -477.56757  
+Iteration 1:   log likelihood = -474.29046  
+Iteration 2:   log likelihood = -474.24806  
+Iteration 3:   log likelihood =   -474.248  
+Iteration 4:   log likelihood =   -474.248  
+
+Poisson regression                                      Number of obs =    851
+                                                        LR chi2(10)   =  87.30
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -474.248                               Pseudo R2     = 0.0843
+
+─────────────┬────────────────────────────────────────────────────────────────
+      events │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+    interval │
+          3  │   .2392676    .291938     0.82   0.412    -.3329203    .8114555
+          6  │    .417069   .2626636     1.59   0.112    -.0977421    .9318802
+         12  │  -.2169191   .4935739    -0.44   0.660    -1.184306     .750468
+         18  │     .00888   .5075821     0.02   0.986    -.9859625    1.003723
+         24  │  -.3725992     1.0441    -0.36   0.721    -2.418998      1.6738
+             │
+clinic1year1 │   .4582848   .2552573     1.80   0.073    -.0420102    .9585798
+clinic1year2 │   1.502897    .411861     3.65   0.000     .6956643     2.31013
+clinic1year3 │   2.997887   1.036895     2.89   0.004     .9656101    5.030165
+      prison │    .361036   .1668066     2.16   0.030     .0341009     .687971
+        dose │  -.0350766   .0063872    -5.49   0.000    -.0475952    -.022558
+       _cons │  -1.859145     .45847    -4.06   0.000     -2.75773   -.9605601
+ln(exposure) │          1  (exposure)
+─────────────┴────────────────────────────────────────────────────────────────
+
+. estimates store model3b
+
+. di exp(14.45 * _b[dose]) - 1
+-.39761399
+</pre>
+<pre class='r'>> pweipd &lt;- update(pweip, . ~ . + dose)
+> summary(pweipd)$coefficients
+                    Estimate  Std. Error     z value     Pr(>|z|)
+(Intercept)     -1.859144804 0.458454212 -4.05524642 5.008148e-05
+interval(3,6]    0.239267570 0.291934839  0.81959238 4.124485e-01
+interval(6,12]   0.417069040 0.262655447  1.58789412 1.123103e-01
+interval(12,18] -0.216919133 0.493543045 -0.43951411 6.602891e-01
+interval(18,24]  0.008880051 0.507552344  0.01749583 9.860411e-01
+interval(24,36] -0.372599175 1.044092942 -0.35686399 7.211936e-01
+clinic1year1     0.458284775 0.255244021  1.79547702 7.257773e-02
+clinic1year2     1.502897099 0.411831929  3.64929719 2.629588e-04
+clinic1year3     2.997887375 1.036890505  2.89122850 3.837390e-03
+prison           0.361035946 0.166801697  2.16446207 3.042890e-02
+dose            -0.035076598 0.006386991 -5.49188126 3.976747e-08
+> exp(coef(pweipd)["dose"]) - 1
+       dose 
+-0.03446854 
+</pre>
+<p>The coefficient indicates that the hazard is 3.5% lower per mg of
+methadone. (The value is small enough that it can be interpreted
+directly as a percent.) A dose increase of one standard deviation or
+14.45 mg is asociated with a 39.8% reduction in the risk of leaving
+treatment.</p>
+<p>(c) The original paper by Caplehorn and Bell treated dose as a
+categorical variable with three levels: &lt; 60, 60-79, and 80+. Compare
+this specification with the linear term in part b in terms of parsimony
+and goodness of fit.</p>
+<pre class='stata'>. recode dose (min/59 = 1 "&lt; 60") (60/79=2 "60-79") (80/max=3 "80+"), ///
+>   gen(doseg)
+(851 differences between dose and doseg)
+
+. scalar aic1 = -2*e(ll) + 2*(e(df_m) + 1)
+
+. poisson events i.interval clinic1year* prison i.doseg, exposure(exposure)
+
+Iteration 0:   log likelihood = -477.36196  
+Iteration 1:   log likelihood = -474.03756  
+Iteration 2:   log likelihood = -473.99224  
+Iteration 3:   log likelihood = -473.99218  
+Iteration 4:   log likelihood = -473.99218  
+
+Poisson regression                                      Number of obs =    851
+                                                        LR chi2(11)   =  87.81
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -473.99218                             Pseudo R2     = 0.0848
+
+─────────────┬────────────────────────────────────────────────────────────────
+      events │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+    interval │
+          3  │   .2276247   .2918845     0.78   0.435    -.3444585    .7997079
+          6  │   .3914805    .262388     1.49   0.136    -.1227904    .9057515
+         12  │  -.1965312   .4931713    -0.40   0.690    -1.163129    .7700669
+         18  │   .0461413   .5087045     0.09   0.928    -.9509013    1.043184
+         24  │  -.2437024   1.046734    -0.23   0.816    -2.295263    1.807858
+             │
+clinic1year1 │   .4298679    .256712     1.67   0.094    -.0732784    .9330143
+clinic1year2 │   1.432044   .4141453     3.46   0.001     .6203341    2.243754
+clinic1year3 │   2.858089   1.042954     2.74   0.006     .8139374    4.902241
+      prison │   .3278549   .1689952     1.94   0.052    -.0033695    .6590793
+             │
+       doseg │
+      60-79  │  -.5739452   .1791532    -3.20   0.001    -.9250791   -.2228114
+        80+  │  -1.471106   .3014925    -4.88   0.000    -2.062021   -.8801918
+             │
+       _cons │  -3.438688   .3095259   -11.11   0.000    -4.045348   -2.832029
+ln(exposure) │          1  (exposure)
+─────────────┴────────────────────────────────────────────────────────────────
+
+. scalar aic2 = -2*e(ll) + 2*(e(df_m) + 1)
+
+. di aic1, aic2
+970.49601 971.98437
+</pre>
+<pre class='r'>> heroinx &lt;- mutate(heroinx, doseq = cut(dose, c(0, 60, 80, Inf), right = FALSE))
+> pweipq &lt;- update(pweip, . ~ . + doseq)
+> summary(pweipq)$coefficients
+                   Estimate Std. Error      z value     Pr(>|z|)
+(Intercept)     -3.43868815  0.3095178 -11.10982435 1.123804e-28
+interval(3,6]    0.22762470  0.2918812   0.77985399 4.354768e-01
+interval(6,12]   0.39148053  0.2623803   1.49203491 1.356900e-01
+interval(12,18] -0.19653116  0.4931548  -0.39851820 6.902482e-01
+interval(18,24]  0.04614126  0.5086887   0.09070627 9.277260e-01
+interval(24,36] -0.24370241  1.0467283  -0.23282300 8.158988e-01
+clinic1year1     0.42986790  0.2567020   1.67457952 9.401676e-02
+clinic1year2     1.43204394  0.4141315   3.45794498 5.443125e-04
+clinic1year3     2.85808901  1.0429504   2.74038830 6.136664e-03
+prison           0.32785488  0.1689909   1.94007465 5.237062e-02
+doseq[60,80)    -0.57394526  0.1791488  -3.20373422 1.356576e-03
+doseq[80,Inf)   -1.47110621  0.3014871  -4.87949950 1.063554e-06
+> c(AIC(pweipd), AIC(pweipq))
+[1] 970.4960 971.9844
+</pre>
+<p>The model treating dose as a discrete factor has a slightly higher
+log-likelihood, but according to Akaike the improvement in fit is not
+worth the loss of parsimony incurred by adding two parameters.</p>
+<h3 id="survival-probabilities">[4] Survival Probabilities</h3>
+<p>(a) Use the piece-wise exponential model of part 3.b with effects of
+clinic, dose, and prison history, to predict the probability of
+remaining in treatment after one, two and three years for someone with
+no prison record receiving the average dose of 60.4 mg of methadone in
+clinic 1.</p>
+<p>I will do the calculation from first principles. Because the effect
+of clinic 1 is not proportional we need to add it separately for each
+year:</p>
+<pre class='stata'>. estimates restore model3b
+(results model3b are active now)
+
+. mata :
+───────────────────────────────────────────────── mata (type end to exit) ──────
+:   b = st_matrix("e(b)")
+
+:   logh = b[12] :+ b[1..6]
+
+:   c = b[(7, 7, 7, 8, 8, 9)]
+
+:   h = exp(logh + c :+ (60.4 * b[11]))
+
+:   H = runningsum(h :* w)
+
+:   exp(-H)[(3, 5, 6)]
+                 1             2             3
+    ┌───────────────────────────────────────────┐
+  1 │  .6241612559   .2497116013   .0112137274  │
+    └───────────────────────────────────────────┘
+
+: end    
+────────────────────────────────────────────────────────────────────────────────
+</pre>
+<pre class='r'>> b &lt;- coef(pweipd)
+> logh &lt;- b[1] + c(0, b[2:6])
+> xb &lt;- b["dose"] * 60.4
+> h &lt;- exp(logh + b[c(7, 7, 7, 8, 8, 9)] + xb)
+> H &lt;- cumsum(h * w)
+> exp(-H)
+                  interval(3,6]  interval(6,12] interval(12,18] interval(18,24] 
+     0.91498838      0.81733685      0.62416125      0.41565387      0.24971160 
+interval(24,36] 
+     0.01121373 
+</pre>
+<p>The probabilities are 62.4%, 25.0% and 1.1%.</p>
+<p>(b) Repeat the calculations for someone with a prison record who
+receives 60.4 mg in clinic 1.</p>
+<p>A prison record affects the hazard at every duration proportionally,
+so the calculation is simple</p>
+<pre class='stata'>. mata:
+───────────────────────────────────────────────── mata (type end to exit) ──────
+:   hp = h :* exp(b[10])
+
+:   Hp = runningsum(hp :* w)
+
+:   exp(-Hp)[(3, 5, 6)]
+                 1             2             3
+    ┌───────────────────────────────────────────┐
+  1 │    .50849745   .1365953803   .0015912996  │
+    └───────────────────────────────────────────┘
+
+: end    
+────────────────────────────────────────────────────────────────────────────────
+</pre>
+<pre class='r'>> Hp &lt;- H * exp(b["prison"]) 
+> exp(-Hp)
+                  interval(3,6]  interval(6,12] interval(12,18] interval(18,24] 
+      0.8803158       0.7487068       0.5084974       0.2837597       0.1365954 
+interval(24,36] 
+      0.0015913 
+</pre>
+<p>The probabilities are 50.8%, 13.7% and 0.2%.</p>
+<p>(c) Finally, repeat the calculations for someone without a prison
+record who receives the average dose of 60.4 mg, but in clinic 2.</p>
+<p>Without a prison record and clinic 2 all we need is the baseline
+hazard and the dose effect</p>
+<pre class='stata'>. mata:
+───────────────────────────────────────────────── mata (type end to exit) ──────
+:   h2 = exp(logh :+ (60.4 * b[11]))
+
+:   H2 = runningsum(h2 :* w)
+
+:   exp(-H2)[(3, 5, 6)]
+                 1             2             3
+    ┌───────────────────────────────────────────┐
+  1 │  .7422537173   .6053897439   .5185560265  │
+    └───────────────────────────────────────────┘
+
+: end
+────────────────────────────────────────────────────────────────────────────────
+</pre>
+<pre class='r'>> h2 &lt;- exp(logh + xb)
+> H2 &lt;- cumsum(h2 * w)
+> exp(-H2)    
+                  interval(3,6]  interval(6,12] interval(12,18] interval(18,24] 
+      0.9453671       0.8802485       0.7422537       0.6780620       0.6053897 
+interval(24,36] 
+      0.5185560 
+</pre>
+<p>The probabilities are 74.2%, 60.5% and 51.9%.</p>
+<p>To present the results in a single table we combine all the
+results</p>
+<pre class='stata'>. mata HA = H \ Hp \ H2
+
+. mata exp(-HA)[ ,(3, 5, 6)]    
+                 1             2             3
+    ┌───────────────────────────────────────────┐
+  1 │  .6241612559   .2497116013   .0112137274  │
+  2 │    .50849745   .1365953803   .0015912996  │
+  3 │  .7422537173   .6053897439   .5185560265  │
+    └───────────────────────────────────────────┘
+</pre>
+<pre class='r'>> exp(-cbind(H, Hp, H2))[c(3, 5, 6), ]
+                         H        Hp        H2
+interval(6,12]  0.62416125 0.5084974 0.7422537
+interval(18,24] 0.24971160 0.1365954 0.6053897
+interval(24,36] 0.01121373 0.0015913 0.5185560
+</pre>
+<p>There are fairly substantial survival differences among these groups.
+With an average dose of methadone and no prison record, we estimate that
+more than half the addicts in clinic 2 would still be under treatment
+after three years, compared to just about one percent of those in clinic
+1, a figure that is further reduced to less than one-fifth of one
+percent for addicts in clinic 1 and with a prison record.</p>

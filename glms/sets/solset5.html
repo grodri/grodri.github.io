@@ -1,0 +1,662 @@
+---
+layout: default
+section: glms
+tab: "Problem Sets"
+---
+
+<h2
+id="solutions-to-problem-set-5-irish-educational-transitions">Solutions
+to Problem Set 5: <br/> Irish Educational Transitions</h2>
+<p><a href="http://lib.stat.cmu.edu/datasets">Statlib</a> is an
+excellent source of statistical data and programs. Their <a
+href="http://lib.stat.cmu.edu/datasets/irish.ed">Irish Educational
+Transitions</a> dataset has data for 500 Irish school children aged 11
+in 1967. The outcome of interest is educational attainment, which for
+purposes of this analysis I have recoded in <code>educg</code> in three
+categories: junior, senior, and 3rd level.</p>
+<p>The predictors of interest are <code>gender</code>, a measure of
+father’s occupational prestige which I have recoded into quartiles in
+<code>prestigeg</code>, and the score in a reasoning test, which I also
+recoded into quartiles in <code>reasong</code>. The file
+<code>irished.dta</code> in the datasets section includes these recodes
+and drops primary school leavers and a few cases with missing data, for
+an effective sample size of 435.</p>
+
+{% include srtabs.html %}
+
+<pre class='stata'>. //use https//grodri.github.io/datasets/irished, clear
+. use d:/dataweb/wws509/datasets/irished, clear
+(Irish Educational Transitions)
+
+. desc
+
+Contains data from d:/dataweb/wws509/datasets/irished.dta
+ Observations:           435                  Irish Educational Transitions
+    Variables:             9                  16 Nov 2022 16:06
+────────────────────────────────────────────────────────────────────────────────
+Variable      Storage   Display    Value
+    name         type    format    label      Variable label
+────────────────────────────────────────────────────────────────────────────────
+gender          float   %9.0g      gender     
+reason          float   %9.0g                 Score in Drumcondra verbal
+                                                reasoning test
+educ            float   %9.0g                 Educational level attained
+cert            float   %9.0g      cert       Leaving certificate taken
+prestige        float   %9.0g                 Prestige score for father's
+                                                occupation
+school          float   %23.0g     school     Type of school
+educg           float   %9.0g      educg      Educational level attained
+                                                (grouped)
+prestigeg       float   %9.0g      prestigeg
+                                              Prestige score for father's occ
+                                                (grouped)
+reasong         float   %9.0g      reasong    Score in Drymmcondra v.r. test
+                                                (grouped)
+────────────────────────────────────────────────────────────────────────────────
+Sorted by: 
+</pre>
+<pre class='r'>> library(haven)
+> library(dplyr)
+> # irish &lt;- read_dta("https://grodri.github.io/datasets/irished.dta")
+> irish &lt;- read_dta("d:/dataweb/wws509/datasets/irished.dta") |>
++     mutate_if(is.labelled, as_factor) # labelled to factor
+> head(irish)
+# A tibble: 6 × 9
+  gender reason  educ cert  prestige school     educg  prestigeg reasong
+  &lt;fct>   &lt;dbl> &lt;dbl> &lt;fct>    &lt;dbl> &lt;fct>      &lt;fct>  &lt;fct>     &lt;fct>  
+1 male      113     3 no          28 secondary  junior Q1        Q4     
+2 male      110     9 yes         69 secondary  senior Q4        Q3     
+3 male      121     5 no          57 secondary  junior Q4        Q4     
+4 male       82     4 no          18 vocational junior Q1        Q1     
+5 male       85     4 no          28 vocational junior Q1        Q1     
+6 male       98     2 no          43 vocational junior Q3        Q2     
+</pre>
+<h3 id="multinomial-logits">[1] Multinomial Logits</h3>
+<p>(a) Fit a multinomial logit model explaining educational attaintment
+in terms of gender, parental occupational prestige, and scores in the
+reasoning test, using the recoded variables.</p>
+<pre class='stata'>. mlogit educg i.gender i.prestigeg i.reasong, nolog
+
+Multinomial logistic regression                         Number of obs =    435
+                                                        LR chi2(14)   = 135.45
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -365.44159                             Pseudo R2     = 0.1563
+
+─────────────┬────────────────────────────────────────────────────────────────
+       educg │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+junior       │  (base outcome)
+─────────────┼────────────────────────────────────────────────────────────────
+senior       │
+      gender │
+     female  │   .3051277   .2304158     1.32   0.185     -.146479    .7567344
+             │
+   prestigeg │
+         Q2  │   .8704873   .3023455     2.88   0.004     .2779009    1.463074
+         Q3  │   1.189704   .3376027     3.52   0.000     .5280148    1.851393
+         Q4  │   1.340194   .3288149     4.08   0.000     .6957287    1.984659
+             │
+     reasong │
+         Q2  │  -.0830386   .2990186    -0.28   0.781    -.6691042     .503027
+         Q3  │   1.035168   .3063952     3.38   0.001     .4346448    1.635692
+         Q4  │   1.627113   .3488457     4.66   0.000     .9433884    2.310838
+             │
+       _cons │   -1.65099   .3203233    -5.15   0.000    -2.278812   -1.023167
+─────────────┼────────────────────────────────────────────────────────────────
+3rd_level    │
+      gender │
+     female  │   .1615339   .3477705     0.46   0.642    -.5200838    .8431517
+             │
+   prestigeg │
+         Q2  │     1.5331   .5534948     2.77   0.006     .4482699     2.61793
+         Q3  │   1.682486   .5878532     2.86   0.004     .5303152    2.834657
+         Q4  │   2.226992   .5433381     4.10   0.000     1.162069    3.291915
+             │
+     reasong │
+         Q2  │   2.110641   1.078963     1.96   0.050    -.0040878    4.225369
+         Q3  │   3.233068   1.064462     3.04   0.002     1.146761    5.319375
+         Q4  │   4.963772   1.053335     4.71   0.000     2.899273     7.02827
+             │
+       _cons │  -5.793072   1.116641    -5.19   0.000    -7.981649   -3.604496
+─────────────┴────────────────────────────────────────────────────────────────
+
+. scalar ml = e(ll)
+</pre>
+<p><span class="r">We need <code>multinom()</code> in the
+<code>nnet</code> package.</span></p>
+<pre class='r'>> library(nnet)
+> # make sure outcome is a factor or a matrix!
+> irish$educg &lt;- as.factor(irish$educg)
+> ml &lt;- multinom(educg ~ gender + prestigeg + reasong , data=irish)
+# weights:  27 (16 variable)
+initial  value 477.896346 
+iter  10 value 369.535450
+iter  20 value 365.464546
+final  value 365.441586 
+converged
+> summary(ml)
+Call:
+multinom(formula = educg ~ gender + prestigeg + reasong, data = irish)
+
+Coefficients:
+          (Intercept) genderfemale prestigegQ2 prestigegQ3 prestigegQ4
+senior      -1.650999    0.3051297   0.8704957    1.189714    1.340206
+3rd level   -5.792979    0.1615402   1.5331076    1.682500    2.227006
+            reasongQ2 reasongQ3 reasongQ4
+senior    -0.08303942  1.035163  1.627145
+3rd level  2.11053104  3.232968  4.963707
+
+Std. Errors:
+          (Intercept) genderfemale prestigegQ2 prestigegQ3 prestigegQ4
+senior      0.3203241    0.2304163   0.3023462   0.3376034   0.3288158
+3rd level   1.1165939    0.3477700   0.5534933   0.5878517   0.5433370
+          reasongQ2 reasongQ3 reasongQ4
+senior    0.2990188 0.3063954 0.3488479
+3rd level 1.0789145 1.0644124 1.0532858
+
+Residual Deviance: 730.8832 
+AIC: 762.8832 
+</pre>
+<p>(b) Interpret the coefficient for females in both equations.</p>
+<pre class='stata'>. di exp(_b[senior:2.gender]), exp(_b[3rd_level:2.gender])
+1.3567983 1.1753123
+</pre>
+<pre class='r'>> exp(coef(ml)[, "genderfemale"]) -1
+   senior 3rd level 
+0.3568010 0.1753197 
+</pre>
+<p>The relative probability of senior rather than junior level is 36%
+higher, and the relative probability of 3rd rather than junior level is
+18% higher, for females than for males in the same quartile of parental
+occupational prestige and reasoning scores.</p>
+<p>(c) Compute the average marginal effect of gender on the probability
+of achieving 3rd level, using the continuous approximation “by
+hand”.</p>
+<p>We follow the calculations in the R and Stata logs. First we predict
+probabilities, then calculate the marginal effect, and finally average.
+I use equation numbers for brevity. I also calculate marginal effects
+for all 3 categories but only the last one was required.</p>
+<pre class='stata'>. predict p1 p2 p3, pr
+
+. gen sumpb = p2 * _b[2:2.gender] + p3 * _b[3:2.gender]
+
+. gen me1 = p1 * (               - sumpb)
+
+. gen me2 = p2 * (_b[2:2.gender] - sumpb)
+
+. gen me3 = p3 * (_b[3:2.gender] - sumpb)
+
+. sum me1 me2 me3
+
+    Variable │        Obs        Mean    Std. dev.       Min        Max
+─────────────┼─────────────────────────────────────────────────────────
+         me1 │        435   -.0547583    .0164814  -.0751537  -.0197663
+         me2 │        435    .0581615    .0107572   .0377484   .0749559
+         me3 │        435   -.0034032    .0079186   -.022972   .0049748
+</pre>
+<pre class='r'>> probs &lt;- predict(ml, type = "probs")
+> b &lt;- c(0, coef(ml)[,"genderfemale"])
+> pb &lt;- probs[, 2] * b[2] + probs[, 3] * b[3]
+> me &lt;- matrix(0, nrow(probs), ncol(probs))
+> for(j in 1:ncol(probs)) {
++   me[, j] &lt;- probs[, j] * (b[j] - pb)
++ }
+> apply(me, 2, mean)
+[1] -0.054758571  0.058161404 -0.003402833
+</pre>
+<p>We find that the average probability of achieving third level is
+practically the same for females and comparable males, only 0.34
+percentage points lower. (The other two marginal effects tell us that
+they have a lower probability of junior level, compensated almost
+exactly by a higher probability of senior level, namely -5.48 and 5.82
+for a net difference of 0.34.)</p>
+<p>(d) Reestimate the average marginal effect of gender on the
+probability of achieving 3rd level using the exact discrete calculation,
+also “by hand”.</p>
+<p>To do this calculation we need to set gender to female and then to
+male, predict the probabilities each time, and then compute discrete
+differences and average</p>
+<pre class='stata'>. gen keep = gender
+
+. forvalues g = 1/2 {
+  2.   quietly replace gender = `g'
+  3.   predict p`g'1 p`g'2 p`g'3, pr
+  4. }
+
+. forvalues j=1/3 {
+  2.   gen de`j' = p2`j' - p1`j'
+  3. }
+
+. sum de1 de2 de3
+
+    Variable │        Obs        Mean    Std. dev.       Min        Max
+─────────────┼─────────────────────────────────────────────────────────
+         de1 │        435   -.0544882    .0163955   -.074616  -.0214939
+         de2 │        435    .0579666    .0105146   .0418357   .0742811
+         de3 │        435   -.0034784    .0080581  -.0213806   .0043799
+
+. quietly replace gender = keep
+</pre>
+<pre class='r'>> library(dplyr)
+> males &lt;- mutate(irish, gender = factor(1, levels=1:2, labels=c("male","female")))
+> pmale &lt;- predict(ml, type = "probs", newdata = males)
+> females &lt;- mutate(irish, gender = factor(2, levels=1:2, labels=c("male","female")))
+> pfemale &lt;- predict(ml, type = "probs", newdata = females)
+> mpfemale &lt;- apply(pfemale, 2, mean)
+> mpmale   &lt;- apply(pmale, 2, mean)
+> data.frame(rbind(female = mpfemale, male = mpmale, diff = mpfemale - mpmale))
+            junior     senior   X3rd.level
+female  0.44118814 0.42318310  0.135628766
+male    0.49567669 0.36521657  0.139106745
+diff   -0.05448855 0.05796653 -0.003477979
+</pre>
+<p>The results are <em>very</em> similar to the continuous calculation.
+Girls have almost the same probability of achieving third level as
+comparable boys, on average 0.35 percentage points lower. (The other two
+discrete differences show a lower probability of junior level of 5.45
+percentage points compensated by a higher probability of senior level of
+5.80 points.)</p>
+<p>(e) How would you go about testing the goodness of fit of this model
+considering that we have individual data? No need to do anything, just
+explain what you would do.</p>
+<p>The deviance does not have a chi-squared distribution with individual
+data, so we need to create groups. Fortunately all predictors are
+categorical variables, with 32 possible combinations of gender and
+quartiles of occupational prestige and resoning score. We could group
+the data into these 32 groups, and then the deviance distribution should
+be well approximated by a chi-squared distribution, as the groups would
+average almost 14 observations each.</p>
+<h3 id="sequential-logits">[2] Sequential Logits</h3>
+<p>(a) Fit a sequential logit model using the continuation ratio method,
+where you first focus on the probability of going beyond the junior
+level, and then look at the conditional probability of achieving 3rd
+form among those going beyond the junior level.</p>
+<pre class='stata'>. gen beyond = educg > 1
+
+. logit beyond i.gender i.prestigeg i.reasong, nolog
+
+Logistic regression                                     Number of obs =    435
+                                                        LR chi2(7)    = 100.36
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -250.36968                             Pseudo R2     = 0.1670
+
+─────────────┬────────────────────────────────────────────────────────────────
+      beyond │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+      gender │
+     female  │   .2836095   .2231757     1.27   0.204    -.1538069    .7210259
+             │
+   prestigeg │
+         Q2  │   .9807345   .2927419     3.35   0.001      .406971    1.554498
+         Q3  │   1.268714   .3279591     3.87   0.000     .6259258    1.911502
+         Q4  │   1.503489   .3171323     4.74   0.000     .8819216    2.125057
+             │
+     reasong │
+         Q2  │   .1002454   .2892327     0.35   0.729    -.4666402     .667131
+         Q3  │   1.221205   .3002627     4.07   0.000     .6327005    1.809709
+         Q4  │   2.141073   .3344413     6.40   0.000      1.48558    2.796565
+             │
+       _cons │   -1.70499   .3157896    -5.40   0.000    -2.323927   -1.086054
+─────────────┴────────────────────────────────────────────────────────────────
+
+. scalar sl = e(ll)
+
+. estimates store beyond
+
+. di exp(_b[2.gender]) - 1
+.32791427
+
+. gen third = educg == 3
+
+. logit third i.gender i.prestigeg i.reasong if beyond, nolog
+
+Logistic regression                                     Number of obs =    232
+                                                        LR chi2(7)    =  34.81
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -115.21048                             Pseudo R2     = 0.1312
+
+─────────────┬────────────────────────────────────────────────────────────────
+       third │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+      gender │
+     female  │  -.0541974     .33231    -0.16   0.870     -.705513    .5971182
+             │
+   prestigeg │
+         Q2  │   .6368128   .5673881     1.12   0.262    -.4752474    1.748873
+         Q3  │   .4121018   .5852127     0.70   0.481     -.734894    1.559098
+         Q4  │   .8775737    .535457     1.64   0.101    -.1719027     1.92705
+             │
+     reasong │
+         Q2  │   2.108388   1.090134     1.93   0.053    -.0282357    4.245011
+         Q3  │   2.180404   1.066049     2.05   0.041     .0909867    4.269821
+         Q4  │   3.327179   1.044294     3.19   0.001       1.2804    5.373958
+             │
+       _cons │  -4.133982   1.126399    -3.67   0.000    -6.341682   -1.926281
+─────────────┴────────────────────────────────────────────────────────────────
+
+. scalar sl = sl + e(ll)
+
+. estimates store third
+
+. di exp(_b[2.gender]) - 1
+-.05275488
+</pre>
+<pre class='r'>> irish &lt;- mutate(irish, beyond = educg != "junior", third = educg == "3rd level")
+> sl1 &lt;- glm(beyond ~ gender + prestigeg + reasong, data=irish, family=binomial)
+> summary(sl1)
+
+Call:
+glm(formula = beyond ~ gender + prestigeg + reasong, family = binomial, 
+    data = irish)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-2.1568  -0.9986   0.5066   0.9328   1.9349  
+
+Coefficients:
+             Estimate Std. Error z value Pr(>|z|)    
+(Intercept)   -1.7050     0.3158  -5.399 6.70e-08 ***
+genderfemale   0.2836     0.2232   1.271 0.203803    
+prestigegQ2    0.9807     0.2927   3.350 0.000808 ***
+prestigegQ3    1.2687     0.3280   3.869 0.000110 ***
+prestigegQ4    1.5035     0.3171   4.741 2.13e-06 ***
+reasongQ2      0.1002     0.2892   0.347 0.728899    
+reasongQ3      1.2212     0.3003   4.067 4.76e-05 ***
+reasongQ4      2.1411     0.3344   6.402 1.53e-10 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 601.10  on 434  degrees of freedom
+Residual deviance: 500.74  on 427  degrees of freedom
+AIC: 516.74
+
+Number of Fisher Scoring iterations: 4
+
+> sl2 &lt;- glm(third ~ gender + prestigeg + reasong, data=filter(irish, beyond), family=binomial)
+> summary(sl2)
+
+Call:
+glm(formula = third ~ gender + prestigeg + reasong, family = binomial, 
+    data = filter(irish, beyond))
+
+Deviance Residuals: 
+   Min      1Q  Median      3Q     Max  
+-1.208  -0.766  -0.588   1.148   2.587  
+
+Coefficients:
+             Estimate Std. Error z value Pr(>|z|)    
+(Intercept)   -4.1340     1.1264  -3.670 0.000242 ***
+genderfemale  -0.0542     0.3323  -0.163 0.870445    
+prestigegQ2    0.6368     0.5674   1.122 0.261710    
+prestigegQ3    0.4121     0.5852   0.704 0.481313    
+prestigegQ4    0.8776     0.5355   1.639 0.101229    
+reasongQ2      2.1084     1.0901   1.934 0.053104 .  
+reasongQ3      2.1804     1.0660   2.045 0.040822 *  
+reasongQ4      3.3272     1.0443   3.186 0.001442 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 265.23  on 231  degrees of freedom
+Residual deviance: 230.42  on 224  degrees of freedom
+AIC: 246.42
+
+Number of Fisher Scoring iterations: 6
+</pre>
+<p>(b) Interpret the coefficients for females in both equations in terms
+of odds or conditional odds. Is this result broadly consistent with the
+results of part 1?</p>
+<pre class='r'>> b &lt;- c(coef(sl1)["genderfemale"], coef(sl2)["genderfemale"])
+> exp(b) - 1
+genderfemale genderfemale 
+  0.32791427  -0.05275488 
+</pre>
+<p>The odds of going beyond the junior level are 32.8% higher for
+females than males in the same quartile of parental occupational
+prestige and reasoning score. Among those who go beyond the junior
+level, the (conditional) odds of achieving third level are 5.3% lower
+for females than males in the same category of occupational prestige and
+reasoning score.</p>
+<p>The results are generally consistent with the previous model, both
+estimating a higher probability of going beyond the junior level, but
+then a lower probability of going beyond the senior level conditional on
+having gotten there. It is not immediately obvious whether these two
+effects cancel each other in terms of the probability of achieving third
+level, but marginal effects can clear than up.</p>
+<p>(c) Predict the average probability of reaching 3rd level if everyone
+was male and then if everyone was female, and compare your results with
+the corresponding answer from part 1.</p>
+<pre class='stata'>. forvalues g = 1/2 {
+  2.   quietly replace gender = `g'
+  3.   quietly estimates restore beyond
+  4.   predict p`g'b, pr
+  5.   quietly estimates restore third
+  6.   predict p`g'tb, pr
+  7.   gen p`g't = p`g'b * p`g'tb
+  8. }
+
+. quietly replace gender = keep
+
+. gen des = p2t - p1t
+
+. sum p2t p1t des
+
+    Variable │        Obs        Mean    Std. dev.       Min        Max
+─────────────┼─────────────────────────────────────────────────────────
+         p2t │        435    .1399573    .1444416   .0029064   .4548946
+         p1t │        435    .1348909    .1441322   .0024251    .452615
+         des │        435    .0050663    .0036268   .0004813   .0124282
+</pre>
+<pre class='r'>> pb_male &lt;- predict(sl1, type = "response", newdata = males)
+> pt.b_male &lt;- predict(sl2, type = "response", newdata = males)
+> pt_male &lt;- pb_male * pt.b_male
+> pb_female &lt;- predict(sl1, type = "response", newdata = females)
+> pt.b_female &lt;- predict(sl2, type = "response", newdata = females)
+> pt_female &lt;- pb_female * pt.b_female
+> c(female = mean(pt_female), male = mean(pt_male), 
++   diff = mean(pt_female) - mean(pt_male))
+     female        male        diff 
+0.139957258 0.134890925 0.005066332 
+</pre>
+<p>We find a difference of half a percentage point, not unlike the 0.34
+we found in the previous model, indicating essentially no gender
+differences in the overall probability of reaching third level.</p>
+<p>(d) Compare the sequential and multinomial logit models in terms of
+parsimony, goodness of fit, and how well they represent gender
+differences in educational attaintment.</p>
+<pre class='stata'>. di ml, sl
+-365.44159 -365.58016
+</pre>
+<pre class='r'>> c(logLik(ml), logLik(sl1) + logLik(sl2))
+[1] -365.4416 -365.5802
+</pre>
+<p>The models have very similar log-likelihoods, -365.4 for the
+multinomial logit and -365.6 for the sequential logit, with a tiny
+difference in favor of multinomial logits, and exactly the same number
+of parameters, so there really isn’t much to choose here. From what we
+have seen, they also lead to similar predictions by gender, so from this
+point of view we could declare it a tie.</p>
+<p>Taking a closer look, the generally small gender differences are
+confined to the contrast between junior and senior levels, which happens
+to be one of the two contrasts in the multinomial logit model, so that
+would be a point in its favor. On the other hand, the sequential logit
+model shows that girls have a higher probability of going beyond junior,
+but then a lower conditional probability of continuing to third, which I
+think shows more clearly what’s going on. This would tip the balance
+towards sequential logits.</p>
+<p>(e) Comment of the coefficients that correspond to children in the
+top quartile of the reasoning test. Do we need marginal effects to
+determine if they have a higher probability of reaching 3rd level than
+comparable children with lower scores?</p>
+<p>In case it was not clear this question refers just to the sequential
+logit model. In this model, children in the top quartile of reasoning
+scores, compared with children in lower quartiles, with the same gender
+and parental occupational prestige, have a higher probability of going
+beyond junior level and <em>also</em> a higher conditional probability
+of continuing to third level given that they went beyond junior, so
+obviously the overall probability is also higher. Marginal effects are
+clearly not needed to settle this issue.</p>
+<p>(If you think in terms of the multinomial logit model, the answer is
+not so clear. Kids in the upper quartile of reasoning have higher
+relative probabilities of senior compared to junior, and generally much
+higher relative probabilities or third compared to junior, so it looks
+like the overall probability of third level should be higher, but I
+would compute marginal effects to make sure. In fact they do.)</p>
+<h3 id="ordered-logits">[3] Ordered Logits</h3>
+<p>(a) Fit an ordered logit model to the same data using the same
+predictors.</p>
+<pre class='stata'>. ologit educg i.gender i.prestigeg i.reasong, nolog
+
+Ordered logistic regression                             Number of obs =    435
+                                                        LR chi2(7)    = 125.58
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -370.37744                             Pseudo R2     = 0.1450
+
+─────────────┬────────────────────────────────────────────────────────────────
+       educg │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+      gender │
+     female  │   .1974119   .1987321     0.99   0.321     -.192096    .5869197
+             │
+   prestigeg │
+         Q2  │   .9903856   .2794842     3.54   0.000     .4426066    1.538165
+         Q3  │   1.165486   .3021775     3.86   0.000     .5732289    1.757743
+         Q4  │    1.47537   .2896877     5.09   0.000      .907592    2.043147
+             │
+     reasong │
+         Q2  │   .2097262   .2829288     0.74   0.459     -.344804    .7642565
+         Q3  │   1.238899   .2832053     4.37   0.000     .6838272    1.793971
+         Q4  │   2.354729   .2989482     7.88   0.000     1.768801    2.940656
+─────────────┼────────────────────────────────────────────────────────────────
+       /cut1 │   1.693513   .3016261                      1.102337     2.28469
+       /cut2 │   4.170666   .3600605                      3.464961    4.876372
+─────────────┴────────────────────────────────────────────────────────────────
+
+. scalar ol = e(ll)
+
+. scalar odf = e(df_m)
+</pre>
+<pre class='r'>> library(MASS)
+> ol &lt;- polr(educg ~ gender + prestigeg + reasong, data = irish)    
+> summary(ol)
+Call:
+polr(formula = educg ~ gender + prestigeg + reasong, data = irish)
+
+Coefficients:
+              Value Std. Error t value
+genderfemale 0.1974     0.1987  0.9933
+prestigegQ2  0.9904     0.2795  3.5436
+prestigegQ3  1.1655     0.3022  3.8570
+prestigegQ4  1.4754     0.2897  5.0929
+reasongQ2    0.2097     0.2829  0.7413
+reasongQ3    1.2389     0.2832  4.3745
+reasongQ4    2.3547     0.2989  7.8767
+
+Intercepts:
+                 Value   Std. Error t value
+junior|senior     1.6935  0.3016     5.6146
+senior|3rd level  4.1707  0.3601    11.5832
+
+Residual Deviance: 740.7549 
+AIC: 758.7549 
+</pre>
+<p>(b) Interpret the estimate of the first cutpoint in terms of odds or
+probabilities, keeping in mind the reference cell used in the model.</p>
+<pre class='stata'>. di exp(_b[/cut1]), invlogit(_b[/cut1])
+5.4385543 .84468563
+</pre>
+<pre class='r'>> cut1 &lt;- ol$zeta[1]
+> c(exp(cut1), plogis(cut1))
+junior|senior junior|senior 
+    5.4385069     0.8446845 
+</pre>
+<p>For males in the lower quartile of parental occupational prestige and
+reasoning score, the odds of being in junior level are 5.44 to 1, which
+gives a probability of 84.5%,</p>
+<p>(c) Interpret the coefficient of females in terms of (i) a latent
+variable, and (ii) the odds of progressing past junior and senior
+levels.</p>
+<pre class='stata'>. di _b[educg:2.gender]/(_pi/sqrt(3))
+.10883886
+
+. di exp(_b[educg:2.gender])
+1.2182457
+</pre>
+<pre class='r'>> b &lt;- coef(ol)["genderfemale"]
+> c(b/(pi/sqrt(3)), exp(b))
+genderfemale genderfemale 
+   0.1088369    1.2182413 
+</pre>
+<p>In terms of a latent scale of educational achievement, girls are on
+average about one-tenth of a standard deviation higher than boys in the
+same category of parental occupational prestige and reasoning score.
+These girls also have 21.8% higher odds of going beyond junior level, as
+well as 21.8% higher odds of going beyond senior level, than boys in the
+same category of occupational prestige and reasoning score. (I think
+this is clearer than saying they have 21.8% higher odds or achieving
+third level rather than junior or senior, as well as 21.8% higher odds
+of achieving senior or third level rather than junior.)</p>
+<p>(d) Predict the probability of reaching 3rd level if everyone was
+male and then if everyone was female, and compare your result with the
+corresponding answer from part 2.</p>
+<pre class='stata'>. forvalues g = 1/2 {
+  2.   quietly replace gender = `g'
+  3.   predict o`g'1 o`g'2 o`g'3, pr
+  4. }
+
+. quietly replace gender = keep
+
+. gen ode = o23 - o13
+
+. sum o23 o13 ode
+
+    Variable │        Obs        Mean    Std. dev.       Min        Max
+─────────────┼─────────────────────────────────────────────────────────
+         o23 │        435    .1505351    .1414167   .0184647    .464272
+         o13 │        435    .1302775    .1265154   .0152071   .4156715
+         ode │        435    .0202576     .015174   .0032576   .0486004
+</pre>
+<pre class='r'>> pol_male   &lt;- predict(ol, type = "probs", newdata = males) 
+> pol_female &lt;- predict(ol, type = "probs", newdata = females) 
+> mo_male   &lt;- apply(pol_male, 2, mean)
+> mo_female &lt;- apply(pol_female, 2, mean)
+> data.frame(rbind(female = mo_female, male = mo_male, diff = mo_female - mo_male))
+            junior    senior X3rd.level
+female  0.44597704 0.4034877 0.15053524
+male    0.48405429 0.3856677 0.13027799
+diff   -0.03807725 0.0178200 0.02025725
+</pre>
+<p>We see that on average girls have a 15% probability of reaching third
+level, while comparable boys have an average probability of 13%, a
+difference of two percentage points. This is larger than we had
+estimated using multinomial or sequential logit models.</p>
+<p>(e) How well does this model stack up against the previous two? Make
+sure you consider parsimony, goodness of fit, and how well the model
+reflects gender differences in educational attaintment.</p>
+<pre class='stata'>. di -2 * ml + 2 * 16
+762.88317
+
+. di -2 * ol + 2 *  9
+758.75489
+</pre>
+<pre class='r'>> c(ml = AIC(ml),  ol = AIC(ol))
+      ml       ol 
+762.8832 758.7549 
+</pre>
+<p>The model is clearly more parsimonious than the previous ones, using
+only 9 parameters instead of 16, a savings of 7. The log-likelihood of
+-370.4 is 4.9 points lower than the multinomial logit model, so the fit
+is a bit worse. Using Akaike’s criterion, with a deviance penalty of two
+points per parameter, we obtain a small advantage of 4.1 points for the
+ordered logit model.</p>
+<p>In terms of representing gender differences, however, the ordered
+logit model is not as good as the previous ones, because it assumes a
+uniform shift in academic achievement. This should result in girls
+having higher progressions from junior to senior as well as senior to
+third, whereas the evidence indicates that they have a somewhat higher
+probability of progressing to senior level but then a somewhat lower
+probability of continuing to third level, so in the end we see no gender
+differences in the probability of achieving third level.</p>
