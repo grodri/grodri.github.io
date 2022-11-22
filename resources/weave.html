@@ -1,0 +1,148 @@
+---
+layout: default
+section: resources
+---
+
+<h2>Weaving Stata Output and Annotations</h2>
+
+<div class="alert alert-warning">The code described here has been superseded by <code>markstat</code>,
+a powerful Stata command that can tangle and weave Markdown and Stata code. More information at 
+<a href="https://grodri.github.io/markstat">https://grodri.github.io/markstat</a>.</div>
+<p>
+I am sharing some of the code I use to prepare the Stata logs, hoping you'll
+find it useful to combine annotations and Stata code in an approach that I
+call <i>Literate Data Analysis</i>, after Donald Knuth's literate programming.
+</p><p>
+The basic idea is quite simple, you 
+(1) prepare a do file that includes Stata code and annotations, 
+as explained below,
+(2) run it logging the output to a text file, and then 
+(3) use the <code>weave</code> command to convert the log to a web page, 
+including tables, figures and your comments.
+</p><p>
+<h4>A Sample Do File</h4>
+<p>
+Here's a complete example used to read a small dataset and draw
+a scatterplot matrix. 
+</p>
+<pre class="stata">
+capture log close
+log using sample.usl, text replace
+<div class="c">/**
+  &lt;h2>Sample Log&lt;/h2>
+  
+  We read the program effort data from the course website and list the
+  first three observations
+*/</div>use https://grodri.github.io/datasets/effort
+list in 1/3
+<div class="c">/**
+  Next we draw a scatterplot matrix
+*/</div>graph matrix change setting effort
+graph export sample.png, width(500) replace
+<div class="c">/**
+&lt;img class="center" src="sample.png"/>
+
+That's all folks!
+*/</div>log close
+</pre>
+<p>
+This file consists of Stata commands and annotations, written in 
+special comment blocks that start with /** on a line all by itself,
+and end with */, also in a line all by itself. 
+This is a standard do file, and will run on any version of Stata, 
+without the need for special commands.
+</p><p>
+When you log the results it is important to use a plain text file rather
+than Stata's SMCL format, hence the option <code>text</code>. I often use 
+the extension ".usl" for <u>u</u>nformated <u>s</u>tata <u>l</u>og, but you 
+can use the default ".log" instead. If you forget to use a text format
+you can always translate SMCL to text, type <code>help translate</code>
+to learn more.
+</p>
+<h4>Annotations</h4>
+<p>
+Annotations are written in HTML, but you don't need to learn more than a
+handful of tags. In fact you can produce basic output without knowing any
+tags at all, just type plain text using blank lines to indicate paragraph 
+breaks. The <code>weave</code> command adds the necessary paragraph tags.
+</p><p>
+You may also use &lt;h2&gt; and &lt;/h2&gt; tags for headings at level 2, 
+or &lt;h4&gt; and &lt;/h4&gt;  for headings at level 4, as I did in the 
+example.  Headings must appear on a line by themselves.  The only other tag 
+you need to know about is the image tag discussed in the next section.
+</p><p>
+Technically you should encode the symbol &lt; using <code>&amp;lt;</code> so it is not
+mistaken for the start of a tag, but most modern browsers are smart
+enough not to be confused. The same applies to the ampersand &amp;, which 
+can be encoded as <code>&amp;amp;</code>. The <code>weave</code> command encodes 
+these symbols in Stata output, but leaves the annotations alone, otherwise you 
+wouldn't be able to use any tags!
+</p>
+<h4>Figures</h4>
+<p>
+After you produce a Stata graph, use the <code>graph export</code> command
+to export it to a file in PNG (Portable Network Graphics) format. I usually
+specify the width as 500 pixels using <code>width(500)</code>, letting Stata 
+figure out the height needed to maintain the aspect ratio. 
+</p><p>
+In the next annotation block, you add HTML code to include the figure.
+This is done with the image tag, which has a "src" attribute to specify the
+name of the file. I usually add the class="center" attribute to center the image 
+on the page, as as shown in the example above. For clarity it is best to put the 
+image tag on a line all by itself.
+</p>
+<h4>Weaving</h4>
+<p>
+The <code>weave</code> command has the following syntax: 
+<code>
+weave using <i>filename</i>[, <u>h</u>eader(filename) <u>f</u>ooter(filename)]
+</code>.
+<p>The <code>using</code> argument is the name of the log file. 
+You may omit the extension if it is "usl". 
+The optional <code>header</code> and <code>footer</code> are files 
+containing bloilerplate html to be included at the beginning and end of the
+web page. These files have extension ".html" by default. 
+</p><p>
+The <code>weave</code>
+command comes with default versions of these files, called 
+<code>weave_header.html</code> and  <code>weave_footer.html</code>. 
+The main job of the default header is to define a few styles to render
+the page. The footer closes the body and html tags.
+To convert the above log to a web page using the defaults all you need is
+</p>
+<pre class="stata">
+weave using sample
+</pre>
+
+<h4>Self-Contained Output</h4>
+<p>
+Unfortunately the output is not completely self-contained beause the HTML and 
+the figures are separate files. There are three solutions to this problem:
+</p>
+<ol>
+<li><p>Read the HTML file into Word, which does a reasonable job of
+parsing the code and including the figures. It has a nasty habit of
+adding a blank line at the start of code blocks, but the latest version of 
+<code>weave</code> gets around that. (Stata 13 and later can generate Word
+documents, but it is a lot easier to read the html.) </p></li>
+
+<li><p>Use my <code>bundle</code> command, which goes through the html
+file and each time it finds an image it grabs the file and encodes it
+as text using the same format as email attachments (base64). </p></li>
+
+<li><p>Use the Chrome browser, which  can save a web page in PDF format 
+(right click, select Print, and under destination select Print to PDF).
+Or use Safari on a Mac.  I understand that IE can also do this, but only 
+if you have the full version of Adobe Acrobat installed on your PC.</p></li>
+</ol>
+
+<h4>Installation</h4>
+<p>
+There's really no need to install this command, but if you are curious, 
+download the zip file
+<a href="weavebundle.zip" style="text-decoration:underline">available here</a>
+and unzip all the files in your working folder. If you are using a public
+computer you may want to keep everything on a USB drive. The zip file
+also includes the graph scheme I use in my own logs, called <code>grlog</code>, 
+in case you want to use it. 
+</p>

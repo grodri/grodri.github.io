@@ -1,0 +1,189 @@
+---
+layout: default
+section: resources
+mathjax: true
+---
+
+<h2 id="multiple-imputation-combining-results">Multiple Imputation:
+Combining Results</h2>
+<p>Multiple imputation consists of three conceptually distinct steps:
+(1) generate <i>m</i> copies of the data with missing values imputed,
+(2) analyze each dataset using standard estimation procedures, and (3)
+combine the resulting parameter estimates.</p>
+<p>Stata’s <code>mi</code> command greatly facilitates this process.
+Step 1 is handled by <code>mi impute</code>. All generated datasets are
+stored in one of several efficient formats.<br />
+Steps 2 and 3 are handled together by <code>mi estimate</code>. In this
+note we unwrap the last two steps to gain understanding and for greater
+flexibility.</p>
+<h3 id="impute-and-estimate">Impute and Estimate</h3>
+<p>This is the example included in the Stata manual, the only difference
+is that we will generate five rather than ten imputed datasets, and we
+will save the imputed master file for later analysis. Here’s the
+imputation step:</p>
+<pre class='stata'>. webuse mheart5, clear
+(Fictional heart attack data)
+
+. mi set mlong 
+
+. mi register imputed age bmi 
+(28 m=0 obs now marked as incomplete)
+
+. set seed 29390 
+
+. mi impute mvn age bmi = attack smokes hsgrad female, add(5) 
+
+Performing EM optimization:
+note: 12 observations omitted from EM estimation because of all imputation
+      variables missing.
+  observed log likelihood = -651.75868 at iteration 7
+
+Performing MCMC data augmentation ... 
+
+Multivariate imputation                     Imputations =        5
+Multivariate normal regression                    added =        5
+Imputed: m=1 through m=5                        updated =        0
+
+Prior: uniform                               Iterations =      500
+                                                burn-in =      100
+                                                between =      100
+
+───────────────────┬──────────────────────────────────────────────
+                   │               Observations per m             
+                   ├───────────────────────────────────┬──────────
+          Variable │   Complete   Incomplete   Imputed │     Total
+───────────────────┼───────────────────────────────────┼──────────
+               age │        142           12        12 │       154
+               bmi │        126           28        28 │       154
+───────────────────┴───────────────────────────────────┴──────────
+(Complete + Incomplete = Total; Imputed is the minimum across m
+ of the number of filled-in observations.)
+
+. save mheart5all, replace // the master file!
+file mheart5all.dta saved
+</pre>
+<p>And here is the estimation step:</p>
+<pre class='stata'>. mi estimate: logistic attack smokes age bmi hsgrad female
+
+Multiple-imputation estimates                   Imputations       =          5
+Logistic regression                             Number of obs     =        154
+                                                Average RVI       =     0.1320
+                                                Largest FMI       =     0.3851
+DF adjustment:   Large sample                   DF:     min       =      32.88
+                                                        avg       =  12,025.67
+                                                        max       =  58,921.61
+Model F test:       Equal FMI                   F(   5,  770.0)   =       3.12
+Within VCE type:          OIM                   Prob > F          =     0.0085
+
+─────────────┬────────────────────────────────────────────────────────────────
+      attack │ Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+      smokes │   1.192604   .3636287     3.28   0.001     .4795546    1.905653
+         age │   .0311264   .0172324     1.81   0.074    -.0030289    .0652817
+         bmi │   .1081207   .0555918     1.94   0.060    -.0049265    .2211679
+      hsgrad │   .1758472   .4057911     0.43   0.665    -.6195796    .9712739
+      female │  -.0753752   .4142863    -0.18   0.856    -.8873781    .7366276
+       _cons │  -5.324249    2.00767    -2.65   0.012    -9.409449   -1.239048
+─────────────┴────────────────────────────────────────────────────────────────
+</pre>
+<h3 id="separate-estimation">Separate Estimation</h3>
+<p>We now extract each of the five imputed datasets using
+<code>mi extract #</code>, fit the logit model using
+<code>logistic</code>, and save the estimates to a file using
+<code>estimates save</code></p>
+<pre class='stata'>. forvalues n=1/5 {
+  2.   quietly use mheart5all, clear
+  3.   mi extract `n'
+  4.   quietly logit attack smokes age bmi hsgrad female
+  5.   estimates save mhrun`n', replace
+  6. }
+file mhrun1.ster saved
+file mhrun2.ster saved
+file mhrun3.ster saved
+file mhrun4.ster saved
+file mhrun5.ster saved
+</pre>
+<p>That’s it. We now have five sets of estimation results.</p>
+<h3 id="combining-estimates">Combining Estimates</h3>
+<p>To combine the estimates of the separate analyses we use Rubin’s
+formulas, see for example Rubin (1996, p.447).</p>
+<p>Let <span class="math inline">\(b_i\)</span> denote a vector of
+parameter estimates from the <span class="math inline">\(i\)</span>-th
+imputed dataset and let <span class="math inline">\(V_i\)</span> denote
+the corresponding estimate of the variance-covariance matrix, for <span
+class="math inline">\(i = 1, 2, \ldots, m\)</span>.</p>
+<p>The combined estimate of the parameters is simply the average of the
+<span class="math inline">\(m\)</span> imputations:</p>
+<p><span class="math display">\[
+        b = \sum_i b_i / m
+\]</span></p>
+<p>For the variance we compute the average within-imputation
+variance:</p>
+<p><span class="math display">\[
+        V_W = \sum_i V_i / m
+\]</span></p>
+<p>We also compute the between-imputation variance:</p>
+<p><span class="math display">\[
+        V_B  = \sum_i  (b_i - b)(b_i - b)&#39;/ (m-1)
+\]</span></p>
+<p>And finally we combine the within and between variances:</p>
+<p><span class="math display">\[
+        V = V_W + (1 + \frac{1}{m}) V_B
+\]</span></p>
+<p>These calculations are easily done in Mata, and we have wrapped them
+in an estimation command called <code>micombine</code>, which takes as
+arguments a list of <i>m</i> files with saved estimation results and
+computes the combined estimate.</p>
+<p>The estimates, standard errors, and t-statistics produced by
+<code>micombine</code> are exactly the same as <code>mi estimate</code>,
+but the p-values and confidence intervals are different. Stata estimates
+the parameter-specific degrees of freedom using Rubin’s proposal</p>
+<p><span class="math display">\[
+\mbox{df}_i = (m-1)\left( 1 + \frac{m V_{W,ii}}{(m+1)V_{B,ii}}\right)^2
+\]</span></p>
+<p>and uses these df to calculate the p-values and confidence intervals.
+The <code>micombine</code> command uses a normal approximation instead,
+but it computes and stores the df in a Stata matrix that can be listed
+using <code>mat list e(df)</code> to check if using a t-distribution
+would make a difference for some parameters.</p>
+<p>Here’s the result for the example in the Stata manual:</p>
+<pre class='stata'>. micombine mhrun1 mhrun2 mhrun3 mhrun4 mhrun5
+
+Multiple imputation results 
+
+─────────────┬────────────────────────────────────────────────────────────────
+          y1 │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+attack       │
+      smokes │   1.192604   .3636287     3.28   0.001     .4799044    1.905303
+         age │   .0311264   .0172324     1.81   0.071    -.0026486    .0649013
+         bmi │   .1081207   .0555918     1.94   0.052    -.0008373    .2170787
+      hsgrad │   .1758472   .4057911     0.43   0.665    -.6194887     .971183
+      female │  -.0753752   .4142863    -0.18   0.856    -.8873614     .736611
+       _cons │  -5.324249    2.00767    -2.65   0.008    -9.259209   -1.389289
+─────────────┴────────────────────────────────────────────────────────────────
+</pre>
+<p>Note that estimates and standard errors are indeed the same as in
+<code>mi estimate</code>. The parameter-specific estimated df are:</p>
+<pre class='stata'>. mat list e(df)
+
+e(df)[1,6]
+       attack:    attack:    attack:    attack:    attack:    attack:
+       smokes        age        bmi     hsgrad     female      _cons
+df  2467.6482   108.6709   33.43006  10589.786  58921.605  32.880056
+</pre>
+<p>These values are large enough to ensure that using a Student’s t or a
+normal distribution yields very similar p-values and confidence
+intervals. The smallest df is for bmi; the normal approx gives the 95%
+CI (.006,.224) and Student’s t yields the slightly wider (.002, .227),
+which can be replicated ‘by hand’ as</p>
+<pre class='stata'>. scalar tp = invttail(38.13519, .025)
+
+. di _b[bmi] - tp*_se[bmi], _b[bmi] + tp*_se[bmi]
+-.00440599 .2206474
+</pre>
+<p><span class="small"> posted December 9, 2011</span></p>
+<h3 id="reference">Reference</h3>
+<p>Rubin, D. B. (1996). On Variance Estimation With Imputed Survey Data.
+<em>Journal of the American Statistical Association</em>,
+<strong>91</strong>(434) 473-489.</p>

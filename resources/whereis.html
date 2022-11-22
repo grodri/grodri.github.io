@@ -1,0 +1,44 @@
+---
+layout: default
+section: resources
+---
+
+<h2>Keeping Track of Ancillary Programs, Files and Folders</h2>
+<p>
+Stata commands often need to access external programs or ancillary files, which may be hard to find unless they are in the working directory or the ado path. The <code>whereis</code> command provides a convenient way to keep track of resource locations by maintaining a directory or registry of external files and folders, making things simple for developers and users alike.
+</p>
+<h3 id="syntax">Syntax</h3>
+<p>The syntax of the command is simple</p>
+<table style='margin-left:4em'><tr><td style='border:1px solid #c0c0c0;padding:12px; '>
+<strong>whereis</strong> [<em>name</em> [<em>location</em>]]
+</td></tr></table>
+<p></p>
+<p>The <code>name</code> argument specifies the name of a resource, and must be a single word conforming to Stata conventions for names, with no spaces.</p>
+<p>The <code>location</code> argument is used when registering a resource and should be a full path specifying the location of the file or folder. This must conform to Stata conventions for file names. In particular, it should be enclosed in quotes if it includes spaces.</p>
+<p>When the command is called with <code>name</code> and <code>location</code> it checks that the named file or folder exists and creates or updates an entry in its registry. If only a <code>name</code> is specified the command retrieves and prints the location of the named resource and checks that it exists. In both cases the location is stored in a macro called <code>r(name)</code> using the name of the resource.</p>
+<p>If the command is called with no arguments it simply lists all registered resources.</p>
+<h3 id="motivation">Motivation</h3>
+<p>Consider a Stata command that needs to access an external executable, for example the <code>pandoc</code> document converter. Suppose <code>pandoc</code> was installed at <code>c:\program files (x86)\pandoc\pandoc.exe</code>. How can we pass this information to the command?</p>
+<p>One solution I have seen used is to provide an option for the user to specify the full path to the executable. For example the developer may provide a <code>pandoc()</code> option, so the user can type <code>pandoc(c:\program files (x86)\pandoc\pandoc.exe)</code> among the options. Unfortunately this procedure is tedious and error prone, as the path has to be specified every time the program is used.</p>
+<p>An alternative solution is to define a global macro, for example <code>global PANDOC c:\program files (x86)\pandoc\pandoc.exe</code>, and an even better one is to store this macro in the user's <code>profile.do</code> file, so it will be loaded when Stata starts up. There is a slight inefficiency in defining the macro regardless of whether the resource will be used, but presumably only a small number of programs would be involved for any given user.</p>
+<h3 id="our-solution">Our Solution</h3>
+<p>The <code>whereis</code> command provides a simpler solution. Once <code>pandoc</code> has been installed, the user registers its location by typing in Stata the one-time command <code>whereis pandoc &quot;c:\program files (x86)\pandoc.exe&quot;</code>, where we have used quotation marks because the full path to the command includes spaces.</p>
+<p>In turn, the Stata command that needs to know the location of <code>pandoc</code> uses the one-liner <code>whereis pandoc</code>. The <code>whereis</code> command will print the location of the file and, being an r-class command, will also store it in the macro <code>r(pandoc)</code>, where it can be retrieved.</p>
+<p>Diana Goldemberg from the World Bank suggested using <code>whereis</code> to store the location of <i>folders</i> as well as files, and indicated how to modify the code to enable this extension. Their teams use GitHub and Dropbox with the same project folder structure, but  everyone has a different GitHub or Dropbox root. Storing the root with <code>whereis</code> provides a uniform way to refer to project files and folders.
+</p>
+<p>The advantages of the <code>whereis</code> approach over storing global macros in <code>profile.do</code> are that the resource location is retrieved only on demand, and more importantly, the command checks that the file or folder exists at the given location, both on storage and retrieval. This feature can be important when Stata executes a command by ``shelling out'', as the failure may not be noticed immediately.</p>
+<h3 id="tips-for-users">Tips for Users</h3>
+<p>For this scheme to work the user needs to know the location of the external resources. If you are not sure exactly where a program has been installed, the operating system may help locate the file.</p>
+<p>On Mac and Linux systems there is a system command called <code>which</code> that can find an executable by searching the user's path. If you are not quite sure where <code>pandoc</code> was installed in your Mac, open a terminal window (select Applications, Utilities and then Terminal) and type <code>which pandoc</code>. This will list the path to the executable if found. (There is also a Unix <code>whereis</code> command, after which this Stata command is named, which searches the standard locations for binary files, but I have obtained better results with <code>which</code>.)</p>
+<p>On Windows there is a similar command called <code>where</code>. By default this searches only the user's path, but there is an option to search recursively. If you think <code>pandoc</code> was installed in your C drive try opening a command prompt window and typing <code>where /R c:\ pandoc.exe</code>.</p>
+<p>Once you have identified the location of the file of interest using the operating system, don't forget to register it by running the Stata <code>whereis</code> command.</p>
+<h3 id="notes-for-developers">Notes for Developers</h3>
+<p>Programmers using <code>whereis</code> to access a resource should allow for the possibility that the path may include spaces. For example to execute <code>pandoc</code> one could code</p>
+<pre><code>. whereis pandoc
+. shell &quot;`r(pandoc)&#39;&quot; *arguments*</code></pre>
+<p>Note that the command will fail with error code 601 if <code>pandoc</code> has not been registered with <code>whereis</code> or if the file is not found in the specified location.</p>
+<h3 id="installation">Installation</h3>
+<p>The <code>whereis</code> command is available from the Statistical Software Components (SSC) archive and can be installed by typing in Stata</p>
+<pre><code>. ssc install whereis</code></pre>
+<p>You may also try <code>search whereis</code> and follow the links.  The current version is 1.4, and became available on SSC on 28 feb 2020.
+</p>

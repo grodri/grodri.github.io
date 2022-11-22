@@ -1,0 +1,50 @@
+---
+layout: default
+section: resources
+mathjax: true
+---
+
+<h2 id="multinormal-conditionals">Multinormal Conditionals</h2>
+<p>This is a continuation of a <a href="https://www.statalist.org/forums/forum/general-stata-discussion/general/1416143-simulating-bivariate-normal-distributed-data-using-conditional-normal-distribution">Stata Forum post</a>, done here because I haven't figured out how to use MathJax with the forum software, not to mention the fact that combining text, Stata code and math equations is so much easier with <code>markstat</code>.</p>
+<p>The solution in #6 relies on the Cholesky decomposition, which is the simplest way to simulate the distribution. However, the simulation can also be done using conditional distributions, albeit with more work.</p>
+<p>For a trivariate normal distribution we first generate <span class="math inline">\(y_1 \sim N(0,1)\)</span>, then <span class="math inline">\(Y_2|Y_1=y_1\)</span>, which is <span class="math inline">\(N(\rho_{12} y_1, 1 - \rho_{12}^2)\)</span> where <span class="math inline">\(\rho_{12}\)</span> is the desired correlation between y1 and y2, as noted in #3 .</p>
+<pre class='stata'>. clear
+
+. set obs 10000
+number of observations (_N) was 0, now 10,000
+
+. set seed 1234
+
+. gen y1 = rnormal(0, 1)
+
+. scalar r12 = 0.7
+
+. gen y2 = rnormal( r12*y1, sqrt(1 - r12^2))
+</pre>
+<p>Finally, we generate <span class="math inline">\(Y_3|Y_1=y_1,Y_2=y_2\)</span> which is also univariate normal with conditional mean <span class="math display">\[
+E(Y_3|Y_1=y_1,Y_2=y_2) = (\rho_{13}, \rho_{23}) 
+\left( \begin{array}{lr} 1&amp; \rho_{12} \\ \rho_{12} &amp; 1 \end{array} \right)^{-1}
+\left( \begin{array}{l} y_1 \\ y_2 \end{array}\right)
+\]</span> and conditional variance <span class="math display">\[ 
+\mathrm{var}(Y_3|Y_1=y_1,Y_2=y_2) = (\rho_{13}, \rho_{23}) 
+\left( \begin{array}{lr} 1&amp; \rho_{12} \\ \rho_{12} &amp; 1 \end{array} \right)^{-1}
+\left( \begin{array}{l} \rho_{13} \\ \rho_{23}\end{array}\right)
+\]</span></p>
+<pre class='stata'>. mata: R = (1, 0.7, 0.5 \ 0.7, 1, 0.4 \ 0.5, 0.4, 1)
+
+. mata: st_matrix("M", R[3, 1..2] * invsym(R[1::2,1..2]))
+
+. mata: st_matrix("V", R[3, 1..2] * invsym(R[1::2,1..2]) * R[1::2, 3])
+
+. gen y3 = rnormal(M[1,1] * y1 + M[1,2] * y2, sqrt(1 - V[1,1]))
+
+. corr y1 y2 y3
+(obs=10,000)
+
+             │       y1       y2       y3
+─────────────┼───────────────────────────
+          y1 │   1.0000
+          y2 │   0.7060   1.0000
+          y3 │   0.4989   0.4075   1.0000
+</pre>
+<p>Extension to more variables follows along the same lines.</p>

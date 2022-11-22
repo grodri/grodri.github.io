@@ -1,0 +1,91 @@
+---
+layout: default
+section: resources
+---
+
+<style>
+pre.plain, pre.stata  { font-family "Lucida Console", monospace; font-size:13px; line-height:13px;}
+</style>
+<h2>Stata Rules</h2>
+<p>
+If you are posting Stata output on the web, it probably looks like this:
+</p>
+<pre class="plain">
+. sysuse auto, clear
+(1978 Automobile Data)
+
+. regress mpg weight foreign
+
+      Source |       SS           df       MS      Number of obs   =        74
+-------------+----------------------------------   F(2, 71)        =     69.75
+       Model |   1619.2877         2  809.643849   Prob > F        =    0.0000
+    Residual |  824.171761        71   11.608053   R-squared       =    0.6627
+-------------+----------------------------------   Adj R-squared   =    0.6532
+       Total |  2443.45946        73  33.4720474   Root MSE        =    3.4071
+
+------------------------------------------------------------------------------
+         mpg |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      weight |  -.0065879   .0006371   -10.34   0.000    -.0078583   -.0053175
+     foreign |  -1.650029   1.075994    -1.53   0.130      -3.7955    .4954422
+       _cons |    41.6797   2.165547    19.25   0.000     37.36172    45.99768
+------------------------------------------------------------------------------
+
+</pre>
+<p>
+Wouldn't it be nice if it looked like the following?
+</p>
+<pre class="stata">
+. regress mpg weight foreign
+
+      Source |       SS           df       MS      Number of obs   =        74
+-------------+----------------------------------   F(2, 71)        =     69.75
+       Model |   1619.2877         2  809.643849   Prob > F        =    0.0000
+    Residual |  824.171761        71   11.608053   R-squared       =    0.6627
+-------------+----------------------------------   Adj R-squared   =    0.6532
+       Total |  2443.45946        73  33.4720474   Root MSE        =    3.4071
+
+------------------------------------------------------------------------------
+         mpg |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      weight |  -.0065879   .0006371   -10.34   0.000    -.0078583   -.0053175
+     foreign |  -1.650029   1.075994    -1.53   0.130      -3.7955    .4954422
+       _cons |    41.6797   2.165547    19.25   0.000     37.36172    45.99768
+------------------------------------------------------------------------------
+
+</pre>
+<p>
+It's easy as 1-2-3:</p>
+<p>1. Make sure your output blocks are preformatted with class "stata".</p>
+<p>2. Include the following CSS rule in your page or style file:</p>
+</p>
+<pre>
+pre.stata {
+	font-family "Lucida Console", monospace; font-size:13px; line-height:13px;
+}
+</pre>	
+<p>
+3. Include the following script at the bottom of your page:
+</p>
+<pre>
+&lt;script src="https://grodri.github.io/assets/js/strules.js"&gt;&lt;/script&gt;
+</pre>
+<!-- Using a public CDN not only saves me bandwidth, but allows the script to be
+cached by your browser. -->
+<h4>Remarks</h4>
+<p>
+The script works by detecting horizontal and vertical rules (and their crossings)
+and rewriting them using the original IBM drawing characters:
+</p>
+<pre style="font-family: monospace">
+─   │   ┌   ┬   ┐   ├   ┼   ┤   └   ┴   ┘
+</pre>
+<p>
+Of course you need a monospace font that has these Unicode characters. On Windows I 
+get the best results with "Lucida Console", which is why this is the first choice. 
+Otherwise, looks like the best strategy is simply to specify "monospace" and trust
+the browser to make a good choice. This seems to work on Windows 10, Mac OS X,
+Linux Ubuntu 16.4 and even my iPhone 5. Feedback is always appreciated.
+</p>
+<p><small>Posted January 2014</small></p>
+<script src="/assets/js/strules.js"></script>
