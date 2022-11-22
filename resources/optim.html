@@ -1,0 +1,152 @@
+---
+layout: default
+section: resources
+---
+
+<h1 id="matas-optimize-made-simple">Mata's Optimize Made Simple</h1>
+<p>Mata has a wonderful function optimizer, but it does require substantial setup. This page describes a simple Mata function called <code>optim()</code> that serves as a user-friendly wrapper for <code>optimize()</code>.</p>
+<h2 id="aims">Aims</h2>
+<p>The idea is that you code your criterion as a function that takes as argument a vector of parameters and returns a scalar, and then call <code>optim()</code> with a vector of starting values and the <em>address</em> of the criterion function.</p>
+<p>The code takes care of all the necessary setup. It also creates a global variable <code>optim_S</code> to store the opaque handle returned by the optimizaton system, in case you want to call directly any function.</p>
+<h2 id="the-code">The Code</h2>
+<p>Here is the code</p>
+<pre><span style='color:#c0c0c0'>─────────────────────────────────────────────────────────────────────── optim.mata ────────</span>
+mata:
+    void optim_eval(todo, b, p, f, g, H) {
+        f = (*p)(b)
+    }
+    real vector optim(real vector b, pointer(function) p, 
+        | real scalar trace) {    
+        external optim_S
+        if (args() < 3) trace = 0
+        S = optimize_init()
+        if(trace != 1) optimize_init_tracelevel(S, "none")
+        optimize_init_evaluator(S, &optim_eval())
+        optimize_init_params(S, b)
+        optimize_init_argument(S, 1, p)
+        r = optimize(S)
+        optim_S = S
+        if(!optimize_result_converged(S)) {                
+            errprintf("{p}\n")
+            errprintf("%s\n", optimize_result_errortext(S))
+            errprintf("{p_end}\n")
+            exit(optimize_result_returncode(S))
+        }
+        return(optimize_result_params(S))            
+    }
+end
+<span style='color:#c0c0c0'>───────────────────────────────────────────────────────────────────────────────────────────</span>
+</pre>
+
+<h2 id="example-1-a-beta-density">Example 1: A Beta Density</h2>
+<p>As a simple example, suppose you need to find the maximum of a beta density with parameters 2.6 and 7.3. The beta density is available in Mata as <code>betaden()</code>. The criterion function just returns the density</p>
+<pre class='stata'>. clear mata
+
+. quietly do optim.mata
+
+. mata:    
+───────────────────────────────────────────────── mata (type end to exit) ─────────────────
+:     real scalar beta(b) {
+>         return(betaden(2.6, 7.3, b[1]))
+>     }
+
+:     optim( 0.2, &amp;beta(), 1)
+Iteration 0:   f(p) =   2.977162  
+Iteration 1:   f(p) =  2.9776316  
+Iteration 2:   f(p) =  2.9776316  
+  .2025316475
+
+: end
+───────────────────────────────────────────────────────────────────────────────────────────
+</pre>
+<p>We find that the mode is 0.2025.</p>
+<h2 id="example-2blood-types">Example 2: Blood Types</h2>
+<p>Following Kempthorne (1969, p.172), consider the standard human blood groups O, A, B and AB. Suppose the relative frequencies of the underlying genes are <span class="math">\(r\)</span>, <span class="math">\(p\)</span> and <span class="math">\(q\)</span>, so the probabilities of the four groups under random mating are</p>
+<p><span class="math display">\[
+\begin{array}{llll}
+O&amp; A&amp; B&amp; AB \\\\ 
+r^2&amp; p^2+2pr&amp;  q^2+2qr&amp; 2pq \\\\ 
+\end{array}
+\]</span></p>
+
+<p>We observe frequencies of 202, 179, 35 and 6 people in the four groups. What's the frequency of each gene?</p>
+<p>We treat the counts as multinomial, so the log-likelihood has the form, <span class="math">\(\sum y\log(\pi)\)</span>, where the sum is over four counts and probabilities corresponding to the four blood groups. Under the model, however, the latter depend on just three probabilities, <span class="math">\(r, p, q\)</span>, which add up to one. To handle this constraint we work with multinomial logits or log-relative probabilities, so our parameter vector is <span class="math">\(\beta = (\log(p/r), \log(q/r))\)</span>.</p>
+<p>I write a couple of helper functions to translate multinomial logits back to probabilities, and to translate gene to blood type frequencies, and use those in a log-likelihood evaluator</p>
+<pre><span style='color:#a0a0a0'>────────────────────────────────────────────────────────────────── bloodtypes.mata ────────</span>
+mata:
+    real vector invmlogit(real vector b) {
+        real vector u
+        u = 1, exp(b)
+        return(u:/sum(u))
+    }
+
+    real vector bt(real vector g) {
+        real vector p
+        p = g[1]^2, g[2]^2 + 2*g[2]*g[1], g[3]^2 + 2*g[3]*g[1], 2*g[2]*g[3]
+        return(p)
+    }
+
+    real scalar logL(b) {
+        external y
+        real vector p
+        p = bt(invmlogit(b))
+        return(sum(y :* ln(p)))
+    }
+end
+<span color='#c0c0c0'>───────────────────────────────────────────────────────────────────────────────────────────</span>
+</pre>
+
+<p>We are now ready to set up the data and call <code>optim()</code>.</p>
+<pre class='stata'>. quietly do bloodTypes.mata
+
+. mata:
+───────────────────────────────────────────────── mata (type end to exit) ─────────────────
+:     y =(202, 179, 35, 6)
+
+:     b0 = log(.6/.3), log(.1/.3)
+
+:     b = optim(b0, &amp;logL())
+
+:     b
+                  1              2
+    ┌───────────────────────────────┐
+  1 │  -1.021151019   -2.636577769  │
+    └───────────────────────────────┘
+
+: end
+───────────────────────────────────────────────────────────────────────────────────────────
+</pre>
+<p>Finally we convert the parameter estimates to probabilities, and then to gene frequencies:</p>
+<pre class='stata'>. mata:
+───────────────────────────────────────────────── mata (type end to exit) ─────────────────
+:     round(invmlogit(b), 0.001)
+          1      2      3
+    ┌──────────────────────┐
+  1 │  .698   .252    .05  │
+    └──────────────────────┘
+
+:     p = bt(invmlogit(b))
+
+:     round(p, .001)
+          1      2      3      4
+    ┌─────────────────────────────┐
+  1 │  .488   .415   .072   .025  │
+    └─────────────────────────────┘
+
+:     n = sum(y) 
+
+:     2 * sum(y :* log(y :/ (n*p)))
+  3.173289944
+
+: end
+───────────────────────────────────────────────────────────────────────────────────────────
+</pre>
+<p>We find gene frequencies of 69.8%, 25.2% and 5%, which correspond to blood group frequencies of 48.8%, 41.5%, 7.2% and 2.5%. The goodness of fit chi-squared statistic, obtained as twice the difference in log-likelihoods between this model and a saturated multinomial model, is 3.17 on one d.f. Thompson and Baker (1981) use these data to illustrate the use of composite links in generalized linear models, and arrive at the same results by a different route.</p>
+<h2 id="how-it-works">How it Works</h2>
+<p>Mata's optimizer calls an evaluator with at least five parameters, a scalar <code>todo</code>, a vector of parameters <code>b</code>, and three variables to return results: a scalar <code>f</code> for the function, a vector <code>g</code> for the gradient, and a matrix <code>H</code> for the Hessian. The <code>todo</code> argument is set by Mata to 1 to request the function, 2 for first derivatives and 3 for second derivatives. We use numerical derivatives throughout, so <code>todo</code> is always 1.</p>
+<p>The key to our simplification is wrapping all of this in <code>optim_eval()</code>, which in turn calls the simpler evaluator that you write and then puts the function value in <code>f</code>. Everything else is done in <code>optim()</code>, which sets up the problem by calling <code>optimize_init()</code> to obtain a handle, <code>optimize_init_evaluator()</code> to define <code>optim_eval()</code> as the evaluator, <code>optimize_init_params()</code> to pass along the starting values, and <code>optimize_init_argument()</code> to pass along the pointer to you evaluator as an extra argument to the dummy evaluator.</p>
+<p>Then <code>optim()</code> calls <code>optimize()</code> to do the optimization and <code>optimize_result_params()</code> to retrieve the parameters to return them. Just before this we save the handle in a global variable <code>optim_S</code> in case you need if. By default we supress the iteration trace, but you can restore it by calling <code>optim()</code> with a third parameter <code>trace</code> set to 1. In case of error we print an error message as explained in <code>help optimize()</code>.</p>
+
+<h2 id="references">References</h2>
+<p>Kempthorne, O. (1969). <em>An Introduction to Genetic Statistics</em>. Ames, Iowa: Iowa State University Press.</p>
+<p>Thompson, R and Baker, R. J. (1981). Composite link functions in generalized linear models. <em>Applied Statistics</em>, <strong>30</strong>:125-131.</p>
