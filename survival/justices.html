@@ -5,6 +5,9 @@ tab: "Competing Risks"
 pager: true
 ---
 
+<style>
+* {font-size:12pt;}
+</style>
 <h2 id="survival-with-competing-risks">Survival with Competing
 Risks</h2>
 <p>Singer and Willet (2003) <em>Applied Longitudinal Data Analysis</em>,
@@ -143,8 +146,8 @@ Call: survfit(formula = Surv(tenure, event > 0) ~ 1, data = justices)
 null device 
           1 
 </pre>
-<p><img src="justices-km.png" class="stata" /> <img
-src="justices-kmr.png" class="r" /></p>
+<p><img src="justices-km.png" class="img-responsive img-center stata" />
+<img src="justices-kmr.png" class="img-responsive img-center r" /></p>
 <p>The median length of tenure in the court is 16.5 years.</p>
 <h3 id="incidence-functions">Incidence Functions</h3>
 <p><span class="stata">We will use the command <code>stcompet</code>,
@@ -210,8 +213,9 @@ file justices-cif.png saved as PNG format
 > g &lt;- arrangeGrob(g1, g2, ncol=2); #plot(g)
 > ggsave(plot = g, "justices-cifr.png", width = 10, height = 5, dpi = 72)
 </pre>
-<p><img src="justices-cif.png" class="stata" /> <img
-src="justices-cifr.png" class="r" /></p>
+<p><img src="justices-cif.png"
+class="img-responsive img-center stata" /> <img src="justices-cifr.png"
+class="img-responsive img-center r" /></p>
 <h3 id="the-status-plot">The Status Plot</h3>
 <p>We now build a nice plot that combines the Kaplan-Meier estimate of
 overall attrition with the cumulative incidence functions showing
@@ -314,10 +318,10 @@ itself I found it easier to draw the areas using
 pdf 
   2 
 </pre>
-<p><img src="justices-status.png" class="stata" /> <img
-src="justices-statusr.png" class="r" /></p>
+<p><img src="justices-status.png"
+class="img-responsive img-center stata" /> <img
+src="justices-statusr.png" class="img-responsive img-center r" /></p>
 <p>The green area is the survival function, showing the probability of
 remaining in the court, and the other two areas partition attrition into
 death and retirement, based on the incidence functions. In the long run
 death and retirement are approximately equally likely.</p>
-
