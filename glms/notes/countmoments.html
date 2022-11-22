@@ -1,0 +1,117 @@
+---
+layout: default
+section: glms
+tab: Notes
+mathjax: true
+---
+
+<h2 id="mean-and-variance-in-models-for-count-data">Mean and Variance in Models for Count Data</h2>
+<p>I collect here a few useful results on the mean and variance under various models for count data.</p>
+<h3 id="poisson">1. Poisson</h3>
+<p>In a Poisson distribution with parameter <span class="math inline">\(\mu\)</span>, the density is <span class="math display">\[
+\Pr\{ Y = y \} = \frac{ \mu^y e^{-\mu} }{ y! }
+\]</span> and thus the probability of zero is <span class="math display">\[
+\Pr\{ Y = 0 \} = e^{-\mu}
+\]</span> The expected value and variance are <span class="math display">\[
+ E(Y) = \mu \quad\mbox{and}\quad \operatorname{var}(Y) = \mu
+\]</span></p>
+<h3 id="negative-binomial">2. Negative Binomial</h3>
+<p>In a negative binomial distribution with parameters <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\alpha\)</span>, the density is <span class="math display">\[
+\newcommand{\k}{\alpha^{-1}}
+\Pr\{ Y = y \} = \frac{\Gamma(y + \k)}{y!\Gamma(\k)} 
+    \left( \frac{\k}{\mu + \k} \right) ^{\k}
+    \left( \frac{\mu}{\mu + \k} \right)^y
+\]</span> In particular, the probability of a zero count simplifies to <span class="math display">\[
+\Pr\{Y=0\} = (1 + \alpha\mu)^{-1/\alpha}
+\]</span> The mean is simply <span class="math display">\[
+E(Y) = \mu
+\]</span> and the variance is <span class="math display">\[
+\operatorname{var}(Y) = \mu(1 + \alpha\mu)
+\]</span> a quadratic function of the mean for <span class="math inline">\(\alpha &gt; 0\)</span>, equal to the Poisson variance if <span class="math inline">\(\alpha=0\)</span>.</p>
+<p>The handout at <a href="https://grodri.github.io/glms/notes/c4a.pdf" class="uri">https://grodri.github.io/glms/notes/c4a.pdf</a> uses <span class="math inline">\(\sigma^2\)</span> for the parameter called <span class="math inline">\(\alpha\)</span> here, and shows how the negative binomial can be obtained as a gamma mixture of Poissons. It also fits overdispersed Poisson and negative binomial models to data from Long and Freese(2006) and compares the two variance functions.</p>
+<h3 id="zero-inflated-poisson">3. Zero-Inflated Poisson</h3>
+<p>This is a finite mixture model where <span class="math inline">\(Y=0\)</span> when <span class="math inline">\(Z=1\)</span> (the so-called &quot;always zero&quot; condition) and <span class="math inline">\(Y\)</span> has a Poisson distribution with mean <span class="math inline">\(\mu\)</span> when <span class="math inline">\(Z=0\)</span> (which of course includes the possibility of zero).</p>
+<p>The probability of zero in this model is <span class="math display">\[
+\Pr\{ Y=0\} = \pi + (1-\pi) e^{-\mu}
+\]</span> showing the two sources of zeroes.</p>
+<p>The expected count is <span class="math display">\[
+E(Y) = (1-\pi)\mu
+\]</span> and the variance is <span class="math display">\[
+\operatorname{var}(Y) = (1 - \pi) \mu (1 + \mu\pi)
+\]</span> The simplest way to derive the last result is using the law of iterated expectations.</p>
+<h3 id="zero-inflated-negative-binomial">4. Zero-Inflated Negative Binomial</h3>
+<p>The same kind of model, but assuming the count in the not-always-zero group has a negative binomial distribution with mean <span class="math inline">\(\mu\)</span> and overdispersion parameter <span class="math inline">\(\alpha\)</span>.</p>
+<p>The probability of zero is then <span class="math display">\[
+\Pr\{ Y=0\} = \pi + (1-\pi) (1 + \alpha\mu)^{-1/\alpha}
+\]</span> where the last term is based on the probability of zero in a negative binomial given earlier.</p>
+<p>The expected count is <span class="math display">\[
+E(Y) = (1-\pi)\mu
+\]</span> and the variance is <span class="math display">\[
+\operatorname{var}(Y) = (1-\pi)\mu(1 + \mu(\pi+\alpha))
+\]</span> You may verify that for <span class="math inline">\(\alpha=0\)</span> we obtain the zero-inflated Poisson variance.</p>
+<h3 id="truncated-poisson">5. Truncated Poisson</h3>
+<p>A zero-truncated Poisson distribution is the distribution of a Poisson r.v. conditional on it taking positive values. The conditional density is <span class="math display">\[
+\Pr\{Y=y|Y&gt;0\} = \frac{f(y)}{1-f(0)}, y=1,2,\dots
+\]</span> where <span class="math inline">\(f(y)\)</span> is the unconditional density given in Section 1.</p>
+<p>The (conditional) mean is <span class="math display">\[
+E(Y|Y&gt;0) = \frac{\mu}{1 - e^{-\mu}}
+\]</span> not to be confused with <span class="math inline">\(\mu\)</span>, which is the mean of the entire Poisson distribution.</p>
+<p>The (conditional) variance is best written as <span class="math display">\[
+\operatorname{var}(Y|Y&gt;0) = \frac{\mu}{1-f(0)}- f(0)[E(Y|Y&gt;0)]^2
+\]</span> where <span class="math inline">\(f(0)\)</span> is the probability of zero as given in Section 1.</p>
+<p>This can be a component of a hurdle model, as shown further below.</p>
+<h3 id="truncated-negative-binomial">6. Truncated Negative Binomial</h3>
+<p>A zero-truncated negative binomial distribution is the distribution of a negative binomial r.v. conditional on it taking positive values. The density has the same form as the Poisson, with the complement of the probability of zero as a normalizing factor.</p>
+<p>The (conditional) mean is <span class="math display">\[
+E(Y|Y&gt;0) = \frac{\mu}{1 - (1+\alpha\mu)^{-1/\alpha}}
+\]</span> The conditional variance is best written as <span class="math display">\[
+\operatorname{var}{Y|Y&gt;0} = \frac{\mu(1 + \alpha\mu)}{1-f(0)} - f(0)[E(Y|Y&gt;0)]^2
+\]</span> where <span class="math inline">\(f(0)\)</span> is the probability of zero as given in Section 2.</p>
+<p>This can also be used in a hurdle model.</p>
+<h3 id="a-poisson-hurdle-model">7. A Poisson Hurdle Model</h3>
+<p>A hurdle model assumes that there is a Bernoulli r.v. that determines whether a count will be zero or positive. If positive, there is a separate truncated Poisson r.v. that determines the actual count. Thus <span class="math display">\[
+\Pr\{ Y = y \} = \begin{cases} 
+    \pi, y = 0, \\   
+    (1-\pi) \mu^y e^{-\mu} /y!, y = 1, 2, \dots
+\end{cases}
+\]</span></p>
+<p>Unlike the zero-inflated models discussed earlier, there is only one source of zeroes in this model, and the two equations can be fitted separately, for example using a logit model for zero or positive counts, combined with a truncated Poisson model for positive counts.</p>
+<p>The expected count is <span class="math display">\[
+E(Y) = (1-\pi) E(Y|Y&gt;0) = (1-\pi) \frac{\mu}{1-e^{-\mu}}
+\]</span> The variance can be written as <span class="math display">\[
+\operatorname{var}(Y) = (1-\pi)\operatorname{var}(Y|Y>0)+\pi(1-\pi)[E(Y|Y>0)]^2
+\]</span> where the expectation and variance on the right-hand-side correspond to the truncated Poisson distribution as given in Section 5.</p>
+<h3 id="a-negative-binomial-hurdle-model">8. A Negative Binomial Hurdle Model</h3>
+<p>The final model changes the distribution of the positive counts to be a truncated negative binomial.</p>
+<p>The expected count is then <span class="math display">\[
+E(Y) = (1 - \pi) \frac{\mu}{1 - (1 + \alpha\mu )^{-1/\alpha}}
+\]</span> The variance can be written, as we did for the Poisson case, as</p>
+<p><span class="math display">\[
+\operatorname{var}(Y) = (1-\pi)\operatorname{var}(Y|Y>0)+\pi(1-\pi)[E(Y|Y>0)]^2
+\]</span> where the mean and variance on the right-hand-side correspond to the truncated negative binomial distribution as given in Section 6.</p>
+<h3 id="appendix-a-note-on-derivations">Appendix: A Note on Derivations</h3>
+<p>The results on the means follow from first principles and coincide with the results in Long and Freese (2006), see in particular equations (8.6) to (8.9) in pages 382-383. Getting the variances requires a bit more work.</p>
+<p>For the zero-inflated models I used the law of iterated expectations, which takes advantage of the fact that the mean and variance in the always zero class are zero, to obtain <span class="math display">\[
+E(Y) = (1-\pi)E(Y|Z=0)
+\]</span> and <span class="math display">\[
+\operatorname{var}(Y) = (1-\pi)\operatorname{var}(Y|Z=0) + \pi(1-pi)[E(Y|Z=0)]^2
+\]</span> Results in Sections 3 and 4 follow by substituting the Poisson and negative binomial mean and variance.</p>
+<p>For truncation I worked from first principles, to obtain <span class="math display">\[
+E(Y|Y&gt;0) = \frac{E(Y)}{1-f(0)}
+\]</span> For the variance note that <span class="math inline">\(\operatorname{var}(Y|Y&gt;0)=E(Y^2|Y&gt;0)-[E(Y|Y&gt;0)]^2\)</span>, and the terms on the right-hand side are easy to obtain. This leads directly to <span class="math display">\[
+\operatorname{var}(Y|Y&gt;0) = \frac{ E(Y^2) }{ 1-f(0)} - 
+    \left[ \frac{ E(Y) }{ 1-f(0) } \right]^2
+\]</span> This expression can also be written in terms of the unconditional variance as <span class="math display">\[
+\operatorname{var}(Y|Y&gt;0) = \frac{ \operatorname{var}(Y) }{ 1-f(0) } - 
+    f(0) \left[ \frac{ E(Y) }{ 1-f(0) }\right]^2
+\]</span> Plug in in the mean, variance and probability of zero in the Poisson and negative binomial  to obtain the results in sections 5 and 6.</p>
+<p>For hurdle models I used again the law of iterated expectations to write the moments in terms of the conditional moments when <span class="math inline">\(Z\)</span> is one and zero. The mean is then <span class="math display">\[
+E(Y) = (1-\pi)E(Y|Y&gt;0)
+\]</span> and the variance is <span class="math display">\[
+\operatorname{var}(Y) = (1-\pi)\operatorname{var}(Y|Y&gt;0) + \pi(1-\pi)[E(Y|Y&gt;0)]^2
+\]</span> All we need to do is plug in the truncated mean and variance from above.</p>
+<p>All results were verified using simulation, and agree with results in the references were available. Shinkwiler (2016) notes that the variance for the truncated negative binomial in Cameron and Trivedi (1998) was incorrect.</p>
+<h3 id="references">References</h3>
+<p>Cameron, A. C. and Trivedi, P. K. (1998) <em>Regression Analysis of Count Data</em>. Cambridge: Cambridge University Press.</p>
+<p>Long, J.S. and Freese, J (2006) <em>Regression Models for Categorical Dependent Variables Using Stata</em>. College Station, Texas: Stata Press.</p>
+<p>Shonkwiler, J. S. (2016) Variance of the Truncated Negative Binomial Distribution. <em>Journal of Econometrics</em> 195:209-210.</p>

@@ -1,0 +1,357 @@
+---
+layout: default
+section: glms
+tab: Notes
+mathjax: true
+---
+
+<h2 id="models-for-count-data-with-overdispersion">Models for Count Data
+with Overdispersion</h2>
+<p><span class="math display">\[
+\newcommand{\var}{\operatorname{var}}
+\]</span></p>
+<p>This addendum to the GLM notes covers extra-Poisson variation and the
+negative binomial model, with brief appearances by zero-inflated and
+hurdle models. The companion Stata and R logs illustrate fitting these
+models to data from Long (1990) on the number of publications by
+Ph.D. biochemists.</p>
+<h3 id="the-over-dispersed-poisson-model">1 The Over-Dispersed Poisson
+Model</h3>
+<p>One of the key features of the Poisson distribution is that the
+variance equals the mean, so</p>
+<p><span class="math display">\[
+\var(Y ) = E(Y ) = \mu
+\]</span></p>
+<p>Empirically, however, we often find data that exhibit
+over-dispersion, with a variance larger than the mean. This is certainly
+the case with the Ph.D.  biochemist data, where we have evidence that
+the variance is about 1.8 times the mean. We now consider models that
+accommodate this excess variation.</p>
+<p>An interesting feature of the iteratively-reweighted least squares
+(IRLS) algorithm used in generalized linear models is that it depends
+only on the mean and variance of the observations. Nelder and Wedderburn
+(1972) proposed specifying just the mean and variance relationship, and
+then applying the algorithm. The resulting estimates are called maximum
+quasi-likelihood estimates (MQLE), and have been shown to share many of
+the optimality properties of maximum likelihood estimates (MLE) under
+fairly general conditions.</p>
+<p>In the context of count data, consider the assumption that the
+variance is proportional to the mean. Specifically,</p>
+<p><span class="math display">\[
+\var(Y) = \phi E(Y) = \phi\mu
+\]</span></p>
+<p>If <span class="math inline">\(\phi = 1\)</span> then the variance
+equals the mean and we obtain the Poisson mean-variance relationship. If
+<span class="math inline">\(\phi &gt; 1\)</span> then the have
+over-dispersion relative to the Poisson distribution. If <span
+class="math inline">\(\phi &lt; 1\)</span> we would have
+under-dispersion, but this is relatively rare.</p>
+<p>We then maintain the assumption that the log of the mean is a linear
+function of a vector of covariates, in other words we use a log link, so
+the model for the mean is</p>
+<p><span class="math display">\[
+\log(\mu) = X \beta
+\]</span></p>
+<p>It turns out that applying the IRLS algorithm in this more general
+case involves working with weights <span class="math inline">\(w =
+\mu/\phi\)</span>. These are the Poisson weights <span
+class="math inline">\(w = \mu\)</span> divided by <span
+class="math inline">\(\phi\)</span>, but the <span
+class="math inline">\(\phi\)</span> cancels out when we compute the
+weighted estimator <span
+class="math inline">\((X&#39;WX)^{-1}X&#39;Wz\)</span>, where <span
+class="math inline">\(z\)</span> is the working dependent variable. In
+other words, the estimator reduces to the Poisson MLE. This implies that
+Poisson estimates are MQLE when the variance is proportional (not just
+equal) to the mean.</p>
+<p>The variance of the estimator in the more general case involves <span
+class="math inline">\(\phi\)</span>, and is given by</p>
+<p><span class="math display">\[
+\var(\hat{\beta}) = \phi (X&#39;WX)^{-1}
+\]</span></p>
+<p>where <span class="math inline">\(W = diag(\mu_1, \ldots ,
+\mu_n)\)</span>, reducing to the Poisson variance when <span
+class="math inline">\(\phi = 1\)</span>. This means that Poisson
+standard errors will be conservative in the presence of
+over-dispersion.</p>
+<p>The obvious solution is to correct the standard errors using an
+estimate of <span class="math inline">\(\phi\)</span>. The standard
+approach relies on Pearson’s <span class="math inline">\(\chi^2\)</span>
+statistic, which is defined as</p>
+<p><span class="math display">\[
+\chi^2_p  = \sum_{i=1}^{n} \frac{(y_u-\mu_i)^2}{\var(y_i)}
+          = \sum_{i=1}^{n} \frac{(y_u-\mu_i)^2}{\phi \mu_i}
+\]</span></p>
+<p>If the model is correct, the expected value of this statistic is
+<span class="math inline">\(n-p\)</span>. Equating the statistic to its
+expectation, and solving for <span class="math inline">\(\phi\)</span>,
+gives the estimate</p>
+<p><span class="math display">\[
+\hat{\phi} = \frac{\chi^2_p}{n-p}
+\]</span></p>
+<p>In the biochemist example, <span class="math inline">\(\chi^2_p =
+1662.55\)</span> for a model with p = 6 parameters on n = 915
+observations, which leads to <span class="math inline">\(\hat{\phi} =
+1662.55/909 = 1.829\)</span>. We retain the Poisson estimates but
+multiply the standard errors by <span
+class="math inline">\(\sqrt{1.829}=1.352\)</span>, which inflates them
+by 35.2%.</p>
+<p>A word of caution is in order. Normally one would consider a large
+value of Pearson’s <span class="math inline">\(\chi^2\)</span> as
+evidence of lack of fit. What we are doing here is treating that as pure
+error to inflate our standard errors. Obviously this requires a high
+degree of confidence in the systematic part of the model, so we can be
+reasonably sure that the lack of fit is not due to specification errors
+but just over-dispersion.</p>
+<p>An alternative approach that often gives similar results is to use a
+robust estimator of standard errors in the tradition of Huber (1967) and
+White (1980).</p>
+<h3 id="negative-binomial">2 Negative Binomial</h3>
+<p>An alternative approach to modeling over-dispersion in count data is
+to start from a Poisson regression model and add a multiplicative random
+effect <span class="math inline">\(\theta\)</span> to represent
+unobserved heterogeneity. This leads to the negative binomial regression
+model.</p>
+<p>Suppose that the conditional distribution of the outcome <span
+class="math inline">\(Y\)</span> given an unobserved variable <span
+class="math inline">\(\theta\)</span> is indeed Poisson with mean and
+variance <span class="math inline">\(\theta \mu\)</span>, so</p>
+<p><span class="math display">\[
+Y | \theta \sim  P(\mu\theta)
+\]</span></p>
+<p>In the context of the Ph.D. biochemists, <span
+class="math inline">\(\theta\)</span> captures unobserved factors that
+increase (if <span class="math inline">\(\theta &gt; 1\)</span>) or
+decrease (if <span class="math inline">\(\theta &lt; 1\)</span>)
+productivity relative to what one would expect given the observed values
+of the covariates, which is of course <span
+class="math inline">\(\mu\)</span> where <span
+class="math inline">\(\log \mu = x \beta\)</span>. For convenience we
+take <span class="math inline">\(E(\theta) = 1\)</span>, so <span
+class="math inline">\(\mu\)</span> represents the expected outcome for
+the average individual given covariates <span
+class="math inline">\(x\)</span>.</p>
+<p>In this model the data would be Poisson if only we could observe
+<span class="math inline">\(\theta\)</span>. Unfortunately we do not.
+Instead, we make an assumption regarding its distribution and “integrate
+it out” of the likelihood, effectively computing the unconditional
+distribution of the outcome. It turns out to be mathematically
+convenient to assume that <span class="math inline">\(\theta\)</span>
+has a gamma distribution with parameters <span
+class="math inline">\(\alpha\)</span> and <span
+class="math inline">\(\beta\)</span>. This distribution has mean <span
+class="math inline">\(\alpha/\beta\)</span> and variance <span
+class="math inline">\(\alpha/\beta^2\)</span>, so we take <span
+class="math inline">\(\alpha = \beta = 1/\sigma^2\)</span>, which makes
+the mean of the unobserved effect one and its variance <span
+class="math inline">\(\sigma^2\)</span>.</p>
+<p>With this information we can compute the unconditional distribution
+of the outcome, which happens to be the negative binomial distribution.
+The density is best written in terms of the parameters <span
+class="math inline">\(\alpha, \beta\)</span> and <span
+class="math inline">\(\mu\)</span> as done below, although you must
+recall that in our case <span class="math inline">\(\alpha = \beta =
+1/\sigma^2\)</span>, so there’s just one more parameter compared to a
+Poisson model.</p>
+<p><span class="math display">\[
+\Pr\{Y = y\} = \frac{\Gamma(\alpha+y)}{y!\Gamma(\alpha)}
+                \frac{\beta^\alpha y^\mu}{(\mu+\beta)^{\alpha+y}}
+\]</span></p>
+<p>This distribution is best known as the distribution of the number of
+failures before the <span class="math inline">\(k\)</span>-th success in
+a series of independent Bernoulli trials with common probability of
+success <span class="math inline">\(\pi\)</span>. The density
+corresponding to this interpretation can be obtained from the expression
+above by setting <span class="math inline">\(\alpha = k\)</span> and
+<span class="math inline">\(\pi = \beta/(\mu + \beta)\)</span>.</p>
+<p>The negative binomial distribution with <span
+class="math inline">\(\alpha = \beta = 1/\sigma^2\)</span> has mean and
+variance</p>
+<p><span class="math display">\[
+E(Y) = \mu \quad\mbox{and}\quad  \var(Y) = \mu(1 + \sigma^2\mu),
+\]</span></p>
+<p>a quadratic function of the mean.</p>
+<p>If <span class="math inline">\(\sigma^2 = 0\)</span> there is no
+unobserved heterogeneity, and we obtain the Poisson variance. If <span
+class="math inline">\(\sigma^2 &gt; 0\)</span> then the variance is
+larger than the mean. Thus, the negative binomial distribution is
+over-dispersed relative to the Poisson.</p>
+<p>Interestingly, these moments can be derived using the law of iterated
+expectations without assuming that the unobservable has a gamma
+distribution; all we need are the conditional moments <span
+class="math inline">\(E(Y|\theta) = var(Y|\theta) = \theta\mu\)</span>
+and the assumption that the unobservable has mean one and variance <span
+class="math inline">\(\sigma^2\)</span>.</p>
+<p>The unconditional mean is simply the expected value of the
+conditional mean</p>
+<p><span class="math display">\[
+E(Y) = E_{\theta}[E_{Y|\theta}(Y|\theta)
+     = E_{\theta}(\theta\mu) = \mu E_\theta(\theta) = \mu
+\]</span></p>
+<p>where we used subscripts to clarify over which distribution we are
+taking expectations. The unconditional variance is the expected value of
+the conditional variance plus the variance of the conditional mean</p>
+<p><span class="math display">\[
+\begin{aligned}
+\var(Y) &amp; = E_\theta[\var_{Y|\theta}(Y|\theta)] +
+\var_\theta[E_\theta(\theta\mu)] \\
+        &amp; = E_\theta(\theta\mu) + \var_\theta(\theta\mu) \\
+        &amp; = \mu E_\theta(\theta) + \mu^2 \var_\theta(\theta) \\
+        &amp; = \mu + \mu^2\sigma^2 = \mu(1 + \mu\sigma^2)
+\end{aligned}
+\]</span></p>
+<p>again using a subscript to clarify over which distribution we are
+taking expectation or computing variance.</p>
+<p>The model can be fit by maximum quasi-likelihood, using only the
+mean-variance relationship, provided <span
+class="math inline">\(\sigma^2\)</span> is known or estimated
+separately. It is possible to derive an estimate of <span
+class="math inline">\(\sigma^2\)</span> using Pearson’s <span
+class="math inline">\(\chi^2\)</span> statistic, but this requires
+alternating between estimating <span class="math inline">\(\mu\)</span>
+given <span class="math inline">\(\sigma^2\)</span> and then <span
+class="math inline">\(\sigma^2\)</span> given <span
+class="math inline">\(\mu\)</span>, so this approach loses the
+simplicity it has in the Poisson case.</p>
+<p>Both Stata and R can fit the negative binomial model described here
+using maximum likelihood, please refer to the computing logs for
+details. The table below compares estimates and standard errors for
+three models.</p>
+<p>Both sets of parameter estimates would lead to the same conclusions.
+Looking at the standard errors, we see that both approaches to
+over-dispersion produce very similar estimates, and that ordinary
+Poisson regression substantially underestimates the standard errors.</p>
+<p>Because the Poisson model is a special case of the negative binomial
+when <span class="math inline">\(\sigma^2 = 0\)</span>, we can use a
+likelihood ratio test to compare the two models. There is, however, a
+small difficulty. Because the null hypothesis corresponding to the
+Poisson model is on a boundary of the parameter space, the likelihood
+ratio test statistic does not converge to a <span
+class="math inline">\(\chi^2\)</span> distribution with one d.f as one
+might expect. Simulations suggest that the null distribution is better
+approximated as a 50:50 mixture of zero and a <span
+class="math inline">\(\chi^2\)</span> with one d.f. An alternative is
+simply to note that treating the test statistic as <span
+class="math inline">\(\chi^2\)</span> with one d.f. results in a
+conservative test.</p>
+<p>For the biochemist data the LR <span
+class="math inline">\(\chi^2\)</span> statistic is 180.2 on one (or a
+mixture of one and zero) d.f., which is highly significant with or
+without the adjustment for the boundary condition. We conclude that the
+negative binomial model captures significant over-dispersion.</p>
+<p>At this point you may wonder whether the over-dispersed Poisson model
+or the negative binomial model provides a better description of the
+data. Because the over-dispersed Poisson model is not fitted by maximum
+likelihood we can’t use likehood-based measured such as AIC or BIC, the
+Akaike or Bayesian information criteria. We can, however, compare the
+variance functions. We use fitted values from one of the models to
+create groups, calculate the mean and variance for each group, and plot
+these against the variance functions <span class="math inline">\(\phi
+\mu\)</span> for Poisson and <span
+class="math inline">\(\mu(1+\sigma^2\mu)\)</span> for the negative
+binomial, where <span class="math inline">\(\mu\)</span> is the mean and
+<span class="math inline">\(\phi\)</span> and <span
+class="math inline">\(\sigma^2\)</span> are the overdispersion estimates
+from the two models. Please refer to the computing logs for calculation
+details, which result in the figure below.</p>
+<p><img src="c4afig1.png" style="width:75.0%" /></p>
+<p>We see that the over-dispersed Poisson model does a pretty good job
+capturing the mean-variance relationship for the bulk of the data, but
+fails to capture the high variances of the most productive scholars. The
+negative binomial variance function is not too different, but being a
+quadratic can rise faster and does a better job at the end. These
+results suggest that the negative binomial model provides a better
+description of the data than the over-dispersed Poisson model.</p>
+<p>We note in closing this section that there are alternative
+formulations of the negative binomial model. In particular, Cameron and
+Trivedi (1986) describe two variants called NB1 and NB2, with linear and
+quadratic variance functions. The formulation given here corresponds to
+NB2, and is the one in common use.</p>
+<h3 id="zero-inflated-models">3. Zero-Inflated Models</h3>
+<p>Another common problem with count data models, including both Poisson
+and negative binomial models, is that empirical data often show more
+zeroes than would be expected under either model. In the
+Ph.D. Biochemist data, for example, we find that 30% of the individuals
+publish no papers at all. The Poisson model predicts 21%, so it
+underestimates the zeroes by nine percentage points.</p>
+<p>The zero-inflated Poisson model postulates that there are two latent
+classes of people. The “always zero”, which in our example would be
+individuals who never publish, and the rest, or “not always zero”, for
+whom the number of publications has a Poisson distribution with mean and
+variance µ &gt; 0. The model combines a logit model that predicts which
+of the two latent classes a person belongs to, with a Poisson model that
+predicts the outcome for those in the second latent class. In this model
+there are two kinds of zeroes: some are structural zeroes from the
+always zero class, and some are random zeroes from the other class.</p>
+<p>These models are very appealing, but interpretation is not always
+straightforward. In an analysis of number of cigarettes smoked last
+week, the latent classes have a natural interpretation: the “always
+zero” are non-smokers, to be distinguished from smokers who happen to
+smoke no cigarettes in a week, but one would be better off ascertaining
+whether the respondent smokes. When analyzing publications, the “always
+zero” could be respondents in non-academic jobs where publishing is not
+required or expected, but again it would be better to include the type
+of job as a covariate. In health research it is common to ask elderly
+respondents how many limitations they encounter in carrying out
+activities of daily living, such as getting up from a chair or climbing
+some stairs. It is common to observe more zeroes than expected in a
+Poisson model, but it is not clear what an “always zero” class would
+mean.</p>
+<p>In the biochemist example, the model does solve the problem of excess
+zeroes, predicting that 29.9% of the biochemists will publish no
+articles, extremely close to the observed value of 30.0%. As it happens,
+the negative binomial model solves the problem too, predicting that
+30.4% of the biochemists would publish no articles in the last three
+years of their Ph.D. Please refer to the Stata and R logs for
+calculation details.</p>
+<p>There is also a zero-inflated negative binomial model, which uses a
+logit equation for the “always zero” class and then a negative binomial
+equation for the counts in the other class. This model effectively adds
+unobserved heterogeneity to the group not in the “always zero” class. To
+be honest I find this model a bit of overkill, as often introducing just
+the two latent classes or unobserved heterogeneity will suffice, as it
+does in the example at hand.</p>
+<h3 id="hurdle-models">4. Hurdle Models</h3>
+<p>Another approach to excess zeroes is to use a logit model to
+distinguish counts of zero from larger counts, effectively collapsing
+the count distribution into two categories, and then use a truncated
+Poisson model, namely a Poisson distribution where zero has been
+excluded, for the positive counts. This approach differs from the zip
+models because the classes are observed rather than latent; one consists
+of observed zeroes and the other of observed positive counts. The term
+“hurdle” is evocative of a threshold that must be exceeded before events
+occur, with a separate process determining the number of events.</p>
+<p>Interpretation of the logit equation is more straightforward than in
+zip models because the binary choice is clear; you are modeling whether
+people smoke, publish, or have limitations in activities of daily
+living. Interpretation of the Poisson equation, however, is not so
+obvious because the quantity being modeled, <span
+class="math inline">\(\mu\)</span>, is the mean of the entire
+distribution, not the mean for those who experience events, which would
+be <span class="math inline">\(\mu/(1-e^{-\mu})\)</span>. This means
+that a coefficient such as <span class="math inline">\(\beta =
+0.1\)</span> cannot be interpreted as reflecting a 10% increase in the
+mean, and the simplicity of the Poisson multiplicative model is
+lost.</p>
+<p>An alternative approach is to compute the derivative of the fitted
+values with respect to the predictors, and interpret results in terms of
+marginal effects, which have the benefit of clarity.</p>
+<h3 id="references">References</h3>
+<p>Cameron, A., Trivedi, P., 1986. Econometric models based on count
+data: comparisons and applications of some estimators and tests.
+<em>Journal of Applied Econometrics</em>, <strong>1</strong>:29–54.</p>
+<p>Huber, P.J. (1967) The behavior of maximum likelihood estimates under
+nonstandard conditions. <em>Proceedings of the Fifth Berkeley Symposium
+on Mathematical Statistics and Probability</em>, Volume
+<strong>1</strong>: 221-233.</p>
+<p>Long, J.S. (1990). The Origins of Sex Differences in Science.
+<em>Social Forces</em>, <strong>68</strong>:1297-1315.</p>
+<p>Long, J.S. and Freese, J (2006) <em>Regression Models for Categorical
+Dependent Variables Using Stata</em>. Second Edition. College Station,
+Texas: Stata Press.</p>
+<p>Rodríguez G. (2014). Count Data Moments. URL: <a
+href="https://grodri.github.io/glms/notes/countmoments"
+class="uri">https://grodri.github.io/glms/notes/countmoments</a>.</p>
+<p>White, H. (1980). A Heteroskedasticity-Consistent Covariance Matrix
+Estimator and a Direct Test for Heteroskedasticity.
+<em>Econometrica</em>, <strong>48</strong>(4):817-838.</p>
