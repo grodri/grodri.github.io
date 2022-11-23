@@ -76,11 +76,19 @@ Recall that for the normal distribution we had
 \( \theta_i=\mu_i \),
 \( b(\theta_i) = \frac{1}{2}\theta_i^2 \), and
 \( a_i(\phi)=\sigma^2 \), so the prior weights are \( p_i=1 \).
-Thus, the deviance is
-\[\tag{B.13}\begin{eqnarray*}D(\boldsymbol{y},\hat{\boldsymbol{\mu}})& =& 2 \sum\{ y_i(y_i-\hat{\mu_i})-
-\frac{1}{2} y_i^2 +\frac{1}{2}\hat{\mu_i}^2\}\& =& 2\sum\{ \frac{1}{2} y_i^2 - y_i\hat{\mu_i}^2+\frac{1}{2}\hat{\mu_i}^2\}\& =& \sum(y_i - \hat{\mu_i})^2\end{eqnarray*}\]
-<p>our good old friend, the residual sum of squares.\( \Box \)</p>
-
+<p>Thus, the deviance is <span class="math display">\[
+    \tag{B.13}\begin{align}
+    D(\boldsymbol{y},\hat{\boldsymbol{\mu}})  &amp;=
+        2 \sum\{ y_i(y_i-\hat{\mu_i})-
+          \frac{1}{2} y_i^2 +\frac{1}{2}\hat{\mu_i}^2\} \\
+          &amp;=
+        2\sum\{ \frac{1}{2} y_i^2 - y_i\hat{\mu_i}^2 +
+           \frac{1}{2}\hat{\mu_i}^2\}  \\
+          &amp;=  
+        \sum(y_i - \hat{\mu_i})^2
+    \end{align}
+    \]</span> our good old friend, the residual sum of squares. <span
+    class="math inline">\(\Box\)</span></p>
 <p>Let us now return to the comparison of two nested models
 \( \omega_1 \), with \( p_1 \) parameters, and
 \( \omega_2 \), with \( p_2 \) parameters,

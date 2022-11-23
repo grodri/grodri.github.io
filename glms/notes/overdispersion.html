@@ -1,15 +1,14 @@
 ---
 layout: default
 section: glms
-tab: Notes
+tab: "Lecture Notes"
 mathjax: true
+pager: true
 ---
 
 <h2 id="models-for-count-data-with-overdispersion">Models for Count Data
 with Overdispersion</h2>
-<p><span class="math display">\[
-\newcommand{\var}{\operatorname{var}}
-\]</span></p>
+
 <p>This addendum to the GLM notes covers extra-Poisson variation and the
 negative binomial model, with brief appearances by zero-inflated and
 hurdle models. The companion Stata and R logs illustrate fitting these
@@ -20,6 +19,7 @@ Model</h3>
 <p>One of the key features of the Poisson distribution is that the
 variance equals the mean, so</p>
 <p><span class="math display">\[
+\newcommand{\var}{\operatorname{var}}
 \var(Y ) = E(Y ) = \mu
 \]</span></p>
 <p>Empirically, however, we often find data that exhibit
@@ -254,7 +254,7 @@ binomial, where <span class="math inline">\(\mu\)</span> is the mean and
 class="math inline">\(\sigma^2\)</span> are the overdispersion estimates
 from the two models. Please refer to the computing logs for calculation
 details, which result in the figure below.</p>
-<p><img src="c4afig1.png" style="width:75.0%" /></p>
+<p><img src="c4afig1.png" class="img-responsive img-center"/></p>
 <p>We see that the over-dispersed Poisson model does a pretty good job
 capturing the mean-variance relationship for the bulk of the data, but
 fails to capture the high variances of the most productive scholars. The

@@ -6,149 +6,191 @@ mathjax: true
 pager: true
 ---
 
-
-<a name='s_B_4'></a><h3>B.4 Binomial Errors and Link Logit</h3>
-<p>We apply the theory of generalized linear models to
-the case of binary data, and in particular to
-logistic regression models.</p>
-
-<h4>B.4.1 The Binomial Distribution</h4>
-<p>First we verify that the binomial distribution \( B(n_i,\pi_i) \)
-belongs to the exponential family of Nelder and Wedderburn&nbsp;(1972).
-The binomial probability distribution function (p.d.f.) is</p>
-
-\[\tag{B.14}f_i(y_i) = \left(\begin{array}{c}n_i\ y_i\end{array}\right)
- \pi_i^{y_i} (1-\pi_i)^{n_i-y_i}.\]
+<h3 id="b.4-binomial-errors-and-link-logit">B.4 Binomial Errors and Link
+Logit</h3>
+<p>We apply the theory of generalized linear models to the case of
+binary data, and in particular to logistic regression models.</p>
+<h4 id="b.4.1-the-binomial-distribution">B.4.1 The Binomial
+Distribution</h4>
+<p>First we verify that the binomial distribution <span
+class="math inline">\(B(n_i,\pi_i)\)</span> belongs to the exponential
+family of Nelder and Wedderburn (1972). The binomial probability
+distribution function (p.d.f.) is</p>
+<p><span class="math display">\[
+\tag{B.14} f_i(y_i) = {n_i \choose y_i} \pi_i^{y_i} (1-\pi_i)^{n_i-y_i}.
+\]</span></p>
 <p>Taking logs we find that</p>
-
-\[ \log f_i(y_i) = y_i \log(\pi_i) + (n_i-y_i)\log(1-\pi_i)
-+ \log\left(\begin{array}{c}n_i\\ y_i\end{array}\right). \]
-<p>Collecting terms on \( y_i \) we can write</p>
-
-\[ \log f_i(y_i) = y_i \log ( \frac{\pi_i}{1-\pi_i})
-+ n_i \log(1-\pi_i) + \log\left(\begin{array}{c}n_i\\ y_i\end{array}\right). \]
+<p><span class="math display">\[
+\log f_i(y_i) = y_i \log(\pi_i) + (n_i-y_i)\log(1-\pi_i) +
+  \log {n_i \choose y_i}.
+\]</span></p>
+<p>Collecting terms on <span class="math inline">\(y_i\)</span> we can
+write</p>
+<p><span class="math display">\[
+\log f_i(y_i) = y_i \log ( \frac{\pi_i}{1-\pi_i} ) +
+  n_i\log(1-\pi_i) + \log{n_i \choose y_i}.
+\]</span></p>
 <p>This expression has the general exponential form</p>
-
-\[ \log f_i(y_i) =
-\frac{y_i \theta_i - b(\theta_i)}{a_i(\phi)} + c(y_i,\phi) \]
-<p>with the following equivalences:
-Looking first at the coefficient of \( y_i \) we note that
-the canonical parameter is the logit of \( \pi_i \)</p>
-
-\[\tag{B.15}\theta_i = \log ( \frac{\pi_i}{1-\pi_i} ).\]
-<p>Solving for \( \pi_i \) we see that</p>
-
-\[ \pi_i = \frac{e^{\theta_i}}{1 + e^{\theta_i}},
- \quad\mbox{so}\quad
- 1-\pi_i = \frac{1}{1 + e^{\theta_i}}. \]
-<p>If we rewrite the second term in the p.d.f.&nbsp;as
-a function of \( \theta_i \),
-so \( \log(1-\pi_i) = -\log(1+e^{\theta_i}) \),
-we can identify the cumulant function \( b(\theta_i) \) as</p>
-
-\[ b(\theta_i) = n_i \log(1+e^{\theta_i}). \]
-<p>The remaining term in the p.d.f.&nbsp;is a function of \( y_i \) but not \( \pi_i \),
-leading to</p>
-
-\[ c(y_i,\phi) = \log\left(\begin{array}{c}n_i\\ y_i\end{array}\right). \]
-<p>Note finally that we may set \( a_i(\phi)=\phi \) and \( \phi=1 \).</p>
-
-<p>Let us verify the mean and variance. Differentiating \( b(\theta_i) \)
-with respect to \( \theta_i \) we find that</p>
-
-\[ \mu_i = b'(\theta_i) = n_i \frac{e^{\theta_i}}{1+e^{\theta_i}}
-= n_i \pi_i, \]
+<p><span class="math display">\[
+\log f_i(y_i) = \frac{y_i \theta_i - b(\theta_i)}{a_i(\phi)} +
+c(y_i,\phi)   
+\]</span></p>
+<p>with the following equivalences: Looking first at the coefficient of
+<span class="math inline">\(y_i\)</span> we note that the canonical
+parameter is the logit of <span class="math inline">\(\pi_i\)</span></p>
+<p><span class="math display">\[
+\tag{B.15} \theta_i = \log ( \frac{\pi_i}{1-\pi_i} ).
+\]</span></p>
+<p>Solving for <span class="math inline">\(\pi_i\)</span> we see
+that</p>
+<p><span class="math display">\[
+\pi_i = \frac{e^{\theta_i}}{1 + e^{\theta_i}},
+  \quad\mbox{so}\quad
+  1-\pi_i = \frac{1}{1 + e^{\theta_i}}.
+\]</span></p>
+<p>If we rewrite the second term in the p.d.f. as a function of <span
+class="math inline">\(\theta_i\)</span>, so <span
+class="math inline">\(\log(1-\pi_i) = -\log(1+e^{\theta_i})\)</span>, we
+can identify the cumulant function <span
+class="math inline">\(b(\theta_i)\)</span> as</p>
+<p><span class="math display">\[
+b(\theta_i) = n_i \log(1+e^{\theta_i}).
+\]</span></p>
+<p>The remaining term in the p.d.f. is a function of <span
+class="math inline">\(y_i\)</span> but not <span
+class="math inline">\(\pi_i\)</span>, leading to</p>
+<p><span class="math display">\[
+c(y_i,\phi) = \log {n_i \choose y_i}.
+\]</span></p>
+<p>Note finally that we may set <span
+class="math inline">\(a_i(\phi)=\phi\)</span> and <span
+class="math inline">\(\phi=1\)</span>.</p>
+<p>Let us verify the mean and variance. Differentiating <span
+class="math inline">\(b(\theta_i)\)</span> with respect to <span
+class="math inline">\(\theta_i\)</span> we find that</p>
+<p><span class="math display">\[
+\mu_i = b&#39;(\theta_i) = n_i \frac{e^{\theta_i}}{1+e^{\theta_i}} = n_i
+\pi_i,
+\]</span></p>
 <p>in agreement with what we knew from elementary statistics.
 Differentiating again using the quotient rule, we find that</p>
-
-\[ v_i = a_i(\phi) b''(\theta_i) = n_i \frac{ e^{\theta_i}}{(1+e^{\theta_i})^2}
-= n_i \pi_i (1-\pi_i), \]
+<p><span class="math display">\[
+v_i = a_i(\phi) b&#39;&#39;(\theta_i) =
+n_i \frac{e^{\theta_i}}{(1+e^{\theta_i})^2} =
+n_i \pi_i (1-\pi_i),
+\]</span></p>
 <p>again in agreement with what we knew before.</p>
-
-<p>In this development I have worked with the binomial count \( y_i \), which
-takes values \( 0(1)n_i \). McCullagh and Nelder&nbsp;(1989) work with the proportion
-\( p_i=y_i/n_i \), which takes values \( 0(1/n_i)1 \). This explains the
-differences between my results and their Table 2.1.</p>
-
-<h4>B.4.2 Fisher Scoring in Logistic Regression</h4>
-<p>Let us now find the working dependent variable and the iterative weight
-used in the Fisher scoring algorithm for estimating the parameters in
-logistic regression, where we model</p>
-
-\[\tag{B.16}\eta_i = \mbox{logit}(\pi_i).\]
-<p>It will be convenient to write the link function in terms of the
-mean \( \mu_i \), as:</p>
-
-\[ \eta_i = \log(\frac{\pi_i}{1-\pi_i}) = \log(\frac{\mu_i}{n_i-\mu_i}), \]
-<p>which can also be written as \( \eta_i = \log(\mu_i)-\log(n_i-\mu_i) \).</p>
-
-<p>Differentiating with respect to \( \mu_i \) we find that</p>
-
-\[ \frac{d\eta_i}{d\mu_i} = \frac{1}{\mu_i}+\frac{1}{n_i-\mu_i}
-= \frac{n_i}{\mu_i(n_i-\mu_i)} = \frac{1}{n_i \pi_i (1-\pi_i)}. \]
+<p>In this development I have worked with the binomial count <span
+class="math inline">\(y_i\)</span>, which takes values <span
+class="math inline">\(0(1)n_i\)</span>. McCullagh and Nelder (1989) work
+with the proportion <span class="math inline">\(p_i=y_i/n_i\)</span>,
+which takes values <span class="math inline">\(0(1/n_i)1\)</span>. This
+explains the differences between my results and their Table 2.1.</p>
+<h4 id="b.4.2-fisher-scoring-in-logistic-regression">B.4.2 Fisher
+Scoring in Logistic Regression</h4>
+<p>Let us now find the working dependent variable and the iterative
+weight used in the Fisher scoring algorithm for estimating the
+parameters in logistic regression, where we model</p>
+<p><span class="math display">\[
+\tag{B.16} \eta_i = \mbox{logit}(\pi_i).
+\]</span></p>
+<p>It will be convenient to write the link function in terms of the mean
+<span class="math inline">\(\mu_i\)</span>, as:</p>
+<p><span class="math display">\[
+\eta_i = \log(\frac{\pi_i}{1-\pi_i}) =
+\log(\frac{\mu_i}{n_i-\mu_i}),
+\]</span></p>
+<p>which can also be written as <span class="math inline">\(\eta_i =
+\log(\mu_i)-\log(n_i-\mu_i)\)</span>.</p>
+<p>Differentiating with respect to <span
+class="math inline">\(\mu_i\)</span> we find that</p>
+<p><span class="math display">\[
+\frac{d\eta_i}{d\mu_i} =
+  \frac{1}{\mu_i}+\frac{1}{n_i-\mu_i} =
+  \frac{n_i}{\mu_i(n_i-\mu_i)} =
+  \frac{1}{n_i \pi_i (1-\pi_i)}.
+\]</span></p>
 <p>The working dependent variable, which in general is</p>
-
-\[ z_i = \eta_i + (y_i-\mu_i)\frac{d\eta_i}{d\mu_i}, \]
+<p><span class="math display">\[
+z_i = \eta_i + (y_i-\mu_i)\frac{d\eta_i}{d\mu_i},
+\]</span></p>
 <p>turns out to be</p>
-
-\[\tag{B.17}z_i = \eta_i + \frac{y_i-n_i\pi_i}{n_i \pi_i (1-\pi_i)}.\]
+<p><span class="math display">\[
+\tag{B.17} z_i = \eta_i + \frac{y_i-n_i\pi_i}{n_i \pi_i (1-\pi_i)}.
+\]</span></p>
 <p>The iterative weight turns out to be</p>
-
-\[\tag{B.18}\begin{eqnarray*}w_i& =& 1 / \left[ b''(\theta_i) (\frac{d\eta_i}{d\mu_i})^2 \right],\& =& \frac{1}{n_i \pi_i (1-\pi_i)} [ n_i \pi_i (1-\pi_i) ]^2,\end{eqnarray*}\]
+<p><span class="math display">\[
+\tag{B.18}\begin{align} w_i &amp;=
+  1 / \left[ b&#39;&#39;(\theta_i) (\frac{d\eta_i}{d\mu_i})^2 \right] \\
+&amp;=
+  \frac{1}{n_i \pi_i (1-\pi_i)} [ n_i \pi_i (1-\pi_i) ]^2,\end{align}
+\]</span></p>
 <p>and simplifies to</p>
-
-\[\tag{B.19}w_i = n_i \pi_i (1-\pi_i).\]
+<p><span class="math display">\[
+\tag{B.19} w_i = n_i \pi_i (1-\pi_i).
+\]</span></p>
 <p>Note that the weight is inversely proportional to the variance of the
 working dependent variable. The results here agree exactly with the
-results in Chapter 4 of McCullagh and Nelder&nbsp;(1989).</p>
-
-<i>Exercise:</i>
-Obtain analogous results for Probit analysis,
-where one models
-\[ \eta_i = \Phi^{-1}(\mu_i), \]
-<p>where \( \Phi() \) is the standard normal cdf. <i>Hint:\/</i> To calculate the
-derivative of the link function find \( d\mu_i/d\eta_i \)
-and take reciprocals.\( \Box \)</p>
-
-<h4>B.4.3 The Binomial Deviance</h4>
-<p>Finally, let us figure out the binomial deviance. Let \( \hat{\mu_i} \)
-denote the m.l.e.&nbsp;of \( \mu_i \) under the model of interest, and let
-\( \tilde{\mu_i}=y_i \) denote the m.l.e.&nbsp;under the saturated model.
-From first principles,</p>
-
-\[\tag{B.20}\begin{eqnarray*}D & = & 2 \sum [  y_i \log(\frac{y_i}{n_i}) +
-    (n_i-y_i)\log(\frac{n_i-y_i}{n_i}) \  &   &   -  y_i \log(\frac{\hat{\mu_i}}{n_i}) -
-    (n_i-y_i)\log(\frac{n_i-\hat{\mu_i}}{n_i})].\end{eqnarray*}\]
-<p>Note that all terms involving \( \log(n_i) \) cancel out. Collecting
-terms on \( y_i \) and on \( n_i-y_i \) we find that</p>
-
-\[\tag{B.21}D = 2 \sum [ y_i \log(\frac{y_i}{\hat{\mu_i}}) +
-(n_i-y_i) \log( \frac{n_i-y_i}{n_i-\mu_i})].\]
-<p>Alternatively, you may obtain this result from the general form
-of the deviance given in Section <a href='#s_B_3'>B.3</a>.</p>
-
+results in Chapter 4 of McCullagh and Nelder (1989).</p>
+<p><em>Exercise:</em> Obtain analogous results for Probit analysis,
+where one models</p>
+<p><span class="math display">\[
+  \eta_i = \Phi^{-1}(\mu_i),
+\]</span></p>
+<p>where <span class="math inline">\(\Phi()\)</span> is the standard
+normal cdf. <em>Hint:</em> To calculate the derivative of the link
+function find <span class="math inline">\(d\mu_i/d\eta_i\)</span> and
+take reciprocals.<span class="math inline">\(\Box\)</span></p>
+<h4 id="b.4.3-the-binomial-deviance">B.4.3 The Binomial Deviance</h4>
+<p>Finally, let us figure out the binomial deviance. Let <span
+class="math inline">\(\hat{\mu_i}\)</span> denote the m.l.e. of <span
+class="math inline">\(\mu_i\)</span> under the model of interest, and
+let <span class="math inline">\(\tilde{\mu_i}=y_i\)</span> denote the
+m.l.e. under the saturated model. From first principles,</p>
+<p><span class="math display">\[
+\tag{B.20}
+\begin{split}
+D &amp;=
+2 \sum  [
+   y_i\log( \frac{y_i}{n_i} )  
+   + (n_i-y_i)\log( \frac{n_i-y_i}{n_i} )  \\
+   &amp;- y_i \log( \frac{\hat{\mu_i}}{n_i} )
+  - (n_i-y_i)\log( \frac{n_i-\hat{\mu_i}}{n_i} ) ]
+  \end{split}
+\]</span></p>
+<p>Note that all terms involving <span
+class="math inline">\(\log(n_i)\)</span> cancel out. Collecting terms on
+<span class="math inline">\(y_i\)</span> and on <span
+class="math inline">\(n_i-y_i\)</span> we find that</p>
+<p><span class="math display">\[
+\tag{B.21} D = 2 \sum \left[ y_i \log(\frac{y_i}{\hat{\mu_i}}) +
+  (n_i-y_i) \log( \frac{n_i-y_i}{n_i-\hat{\mu_i}}) \right]
+\]</span></p>
+<p>Alternatively, you may obtain this result from the general form of
+the deviance given in Section <a href="#s_B_3">B.3</a>.</p>
 <p>Note that the binomial deviance has the form</p>
-
-\[ D = 2 \sum o_i \log(\frac{o_i}{e_i}), \]
-<p>where \( o_i \) denotes observed, \( e_i \) denotes expected (under the model
-of interest) and the sum is over both &ldquo;successes&rdquo; and &ldquo;failures&rdquo;
-for each \( i \) (i.e. we have a contribution from \( y_i \) and one from
-\( n_i-y_i \)).</p>
-
-<p>For grouped data the deviance has an asymptotic chi-squared distribution
-as \( n_i \rightarrow \infty \) for all \( i \), and can be used as a goodness
-of fit test.</p>
-
+<p><span class="math display">\[
+    D = 2 \sum o_i \log(\frac{o_i}{e_i}),
+\]</span></p>
+<p>where <span class="math inline">\(o_i\)</span> denotes observed,
+<span class="math inline">\(e_i\)</span> denotes expected (under the
+model of interest) and the sum is over both “successes” and “failures”
+for each <span class="math inline">\(i\)</span> (i.e. we have a
+contribution from <span class="math inline">\(y_i\)</span> and one from
+<span class="math inline">\(n_i-y_i\)</span>).</p>
+<p>For grouped data the deviance has an asymptotic chi-squared
+distribution as <span class="math inline">\(n_i \rightarrow
+\infty\)</span> for all <span class="math inline">\(i\)</span>, and can
+be used as a goodness of fit test.</p>
 <p>More generally, the difference in deviances between nested models
-(i.e. the log of the likelihood ratio test criterion) has an
-asymptotic chi-squared distribution as the number of groups
-\( k \rightarrow \infty \) or the size of each group \( n_i \rightarrow \infty \),
+(i.e. the log of the likelihood ratio test criterion) has an asymptotic
+chi-squared distribution as the number of groups <span
+class="math inline">\(k \rightarrow \infty\)</span> or the size of each
+group <span class="math inline">\(n_i \rightarrow \infty\)</span>,
 provided the number of parameters stays fixed.</p>
-
-<p>As a general rule of thumb due to Cochrane&nbsp;(1950),
-the asymptotic chi-squared distribution provides a reasonable
-approximation when all <i>expected</i> frequencies
-(both \( \hat{\mu_i} \) and \( n_i-\hat{\mu_i} \))
-under the <i>larger</i> model exceed one, and at least
-80% exceed five.</p>
-
+<p>As a general rule of thumb due to Cochrane (1950), the asymptotic
+chi-squared distribution provides a reasonable approximation when all
+<em>expected</em> frequencies (both <span
+class="math inline">\(\hat{\mu_i}\)</span> and <span
+class="math inline">\(n_i-\hat{\mu_i}\)</span>) under the
+<em>larger</em> model exceed one, and at least 80% exceed five.</p>

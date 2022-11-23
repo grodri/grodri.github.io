@@ -2,13 +2,7 @@
 layout: default
 section: R
 tab: "Reading Data"
-git: true
 ---
-
-<style>
-pre {background-color: white;} 
-pre.r {background-color: #fafafa;} 
-</style>
 
 <div id="reading-and-examining-data" class="section level1">
 <h1>3 Reading and Examining Data</h1>
@@ -28,28 +22,28 @@ lists.</p>
 numeric, or all character), the elements of a list may have different
 types. Here’s a list with two components created using the function
 <code>list()</code>:</p>
-<pre class="r"><code>&gt; person = list(name=&quot;Jane&quot;, age=24)</code></pre>
+<pre class="r"><code>person = list(name=&quot;Jane&quot;, age=24)</code></pre>
 <p>Typing the name of the list prints all elements.</p>
-<pre class="r"><code>&gt; person</code></pre>
-<pre><code>$name
-[1] &quot;Jane&quot;
-
-$age
-[1] 24</code></pre>
+<pre class="r"><code>person</code></pre>
+<pre><code>## $name
+## [1] &quot;Jane&quot;
+## 
+## $age
+## [1] 24</code></pre>
 <p>You can extract a component of a list using the extract operator
 <code>$</code>. For example we can list just the <code>name</code> or
 <code>age</code> of this person:</p>
-<pre class="r"><code>&gt; person$name</code></pre>
-<pre><code>[1] &quot;Jane&quot;</code></pre>
-<pre class="r"><code>&gt; person$age</code></pre>
-<pre><code>[1] 24</code></pre>
+<pre class="r"><code>person$name</code></pre>
+<pre><code>## [1] &quot;Jane&quot;</code></pre>
+<pre class="r"><code>person$age</code></pre>
+<pre><code>## [1] 24</code></pre>
 <p>Individual elements of a list can also be accessed using their
 indices or their names as subscripts. For example we can get the name
-using <code>person[1]</code> or <code>person[&quot;name&quot;]</code>. (You can
+using <code>person[1]</code> or <code>person["name"]</code>. (You can
 use single or double square brackets depending on whether you want a
 list with the name, which is what we did, or just the name, which would
 require double brackets as in <code>person[[1]]</code> or
-<code>person[[&quot;name&quot;]]</code>. The distinction is not important at this
+<code>person[["name"]]</code>. The distinction is not important at this
 point.)</p>
 <p>A <strong>data frame</strong> is essentially a rectangular array
 containing the values of one or more variables for a set of units. The
@@ -86,7 +80,7 @@ between 1965 and 1975. The data are available on this website in a file
 called <code>effort.dat</code> that includes a header with the variable
 names.</p>
 <p>R can read the data directly from the web:</p>
-<pre class="r"><code>&gt; fpe = read.table(&quot;https://grodri.github.io/datasets/effort.dat&quot;)</code></pre>
+<pre class="r"><code>fpe = read.table(&quot;https://grodri.github.io/datasets/effort.dat&quot;)</code></pre>
 <p>The function used to read data frames is <code>read.table()</code>.
 The argument is a character string giving the name of the file
 containing the data, but here we have given it a fully qualified url
@@ -102,34 +96,34 @@ instead) when specifying paths in Windows.</p>
 <p>Here we assigned the data to an object called <code>fpe</code>. R’s
 “official”” assignment operator is <code>&lt;-</code> but I prefer
 <code>=</code>. Yo print the object simply type its name</p>
-<pre class="r"><code>&gt; fpe</code></pre>
-<pre><code>               setting effort change
-Bolivia             46      0      1
-Brazil              74      0     10
-Chile               89     16     29
-Colombia            77     16     25
-CostaRica           84     21     29
-Cuba                89     15     40
-DominicanRep        68     14     21
-Ecuador             70      6      0
-ElSalvador          60     13     13
-Guatemala           55      9      4
-Haiti               35      3      0
-Honduras            51      7      7
-Jamaica             87     23     21
-Mexico              83      4      9
-Nicaragua           68      0      7
-Panama              84     19     22
-Paraguay            74      3      6
-Peru                73      0      2
-TrinidadTobago      84     15     29
-Venezuela           91      7     11</code></pre>
+<pre class="r"><code>fpe</code></pre>
+<pre><code>##                setting effort change
+## Bolivia             46      0      1
+## Brazil              74      0     10
+## Chile               89     16     29
+## Colombia            77     16     25
+## CostaRica           84     21     29
+## Cuba                89     15     40
+## DominicanRep        68     14     21
+## Ecuador             70      6      0
+## ElSalvador          60     13     13
+## Guatemala           55      9      4
+## Haiti               35      3      0
+## Honduras            51      7      7
+## Jamaica             87     23     21
+## Mexico              83      4      9
+## Nicaragua           68      0      7
+## Panama              84     19     22
+## Paraguay            74      3      6
+## Peru                73      0      2
+## TrinidadTobago      84     15     29
+## Venezuela           91      7     11</code></pre>
 <p>In this example R detected correctly that the first line in our file
 was a header with the variable names. It also inferred correctly that
 the first column had the observation names. (Well, it did so with a
 little help; I made sure the row names did not have embedded spaces,
 hence <code>CostaRica</code>. Alternatively, I could have used
-<code>&quot;Costa Rica&quot;</code> in quotes as a row name.)</p>
+<code>"Costa Rica"</code> in quotes as a row name.)</p>
 <p>You can always tell R explicitly whether or not you have a header by
 specifying the optional argument <code>header=TRUE</code> or
 <code>header=FALSE</code> to the <code>read.table()</code> function.
@@ -151,7 +145,7 @@ continuation symbol <code>+</code> instead of the usual prompt
 <code>&gt;</code>.</p>
 <p>If your file does not have observation names, R will simply number
 the observations from 1 to n. You can specify row names using
-<code>read.table()&#39;s  optional argument</code>row.names<code>, which works just like</code>col.names<code>; type</code>?data.frame`
+<code>read.table()'s  optional argument</code>row.names<code>, which works just like</code>col.names<code>; type</code>?data.frame`
 for more information. (I should mention that in a “tidy” world row names
 should just be another column, but classic R treats them as observation
 indices.)</p>
@@ -205,7 +199,7 @@ argument, called <code>sep</code>, which is used to indicate how the
 variables are separated. The default is white space, which is
 appropriate when the variables are separated by one or more blanks or
 tabs. If the data are separated by commas, a common format with
-spreadsheets, you can specify <code>sep =  &quot;,&quot;</code>. Here I created a
+spreadsheets, you can specify <code>sep =  ","</code>. Here I created a
 vector with the numbers 1, 3 and 5 to specify the character position (or
 column) where each variable starts. Type <code>?read.table</code> for
 more details.</p>
@@ -215,8 +209,8 @@ more details.</p>
 <p>You can refer to any variable in the <code>fpe</code> data frame
 using the extract operator <code>$</code>. For example to look at the
 values of the fertility change variable, type</p>
-<pre class="r"><code>&gt; fpe$change</code></pre>
-<pre><code> [1]  1 10 29 25 29 40 21  0 13  4  0  7 21  9  7 22  6  2 29 11</code></pre>
+<pre class="r"><code>fpe$change</code></pre>
+<pre><code>##  [1]  1 10 29 25 29 40 21  0 13  4  0  7 21  9  7 22  6  2 29 11</code></pre>
 <p>and R will list a vector with the values of change for the 20
 countries. You can also define <code>fpe</code> as your default dataset
 by “attaching” it to your session:</p>
@@ -231,49 +225,49 @@ object in <code>fpe</code>. My advice is to always specify the data
 frame name, as we do below.</p>
 <p>To obtain simple descriptive statistics on these variables try the
 <code>summary()</code> function:</p>
-<pre class="r"><code>&gt; summary(fpe)</code></pre>
-<pre><code>    setting         effort          change     
- Min.   :35.0   Min.   : 0.00   Min.   : 0.00  
- 1st Qu.:66.0   1st Qu.: 3.00   1st Qu.: 5.50  
- Median :74.0   Median : 8.00   Median :10.50  
- Mean   :72.1   Mean   : 9.55   Mean   :14.30  
- 3rd Qu.:84.0   3rd Qu.:15.25   3rd Qu.:22.75  
- Max.   :91.0   Max.   :23.00   Max.   :40.00  </code></pre>
+<pre class="r"><code>summary(fpe)</code></pre>
+<pre><code>##     setting         effort          change     
+##  Min.   :35.0   Min.   : 0.00   Min.   : 0.00  
+##  1st Qu.:66.0   1st Qu.: 3.00   1st Qu.: 5.50  
+##  Median :74.0   Median : 8.00   Median :10.50  
+##  Mean   :72.1   Mean   : 9.55   Mean   :14.30  
+##  3rd Qu.:84.0   3rd Qu.:15.25   3rd Qu.:22.75  
+##  Max.   :91.0   Max.   :23.00   Max.   :40.00</code></pre>
 <p>As you can see, we get the min and max, 1st and 3rd quartiles, median
 and mean. For categorical variables you get a table of counts.
 Alternatively, you may ask for a summary of a specific variable. Or use
 the functions <code>mean()</code> and <code>var()</code> for the mean
 and variance of a variable, or <code>cor()</code> for the correlation
 between two variables, as shown below:</p>
-<pre class="r"><code>&gt; mean(fpe$effort)</code></pre>
-<pre><code>[1] 9.55</code></pre>
-<pre class="r"><code>&gt; cor(fpe$effort, fpe$change)</code></pre>
-<pre><code>[1] 0.8008299</code></pre>
+<pre class="r"><code>mean(fpe$effort)</code></pre>
+<pre><code>## [1] 9.55</code></pre>
+<pre class="r"><code>cor(fpe$effort, fpe$change)</code></pre>
+<pre><code>## [1] 0.8008299</code></pre>
 <p>Elements of data frames can be addressed using the subscript notation
 introduced in Section 2.3 for vectors and matrices. For example to list
 the countries that had a family planning effort score of zero we can
 use</p>
-<pre class="r"><code>&gt; fpe[fpe$effort == 0, ]</code></pre>
-<pre><code>          setting effort change
-Bolivia        46      0      1
-Brazil         74      0     10
-Nicaragua      68      0      7
-Peru           73      0      2</code></pre>
+<pre class="r"><code>fpe[fpe$effort == 0, ]</code></pre>
+<pre><code>##           setting effort change
+## Bolivia        46      0      1
+## Brazil         74      0     10
+## Nicaragua      68      0      7
+## Peru           73      0      2</code></pre>
 <p>This works because the expression <code>fpe$effort == 0</code>
 selects the rows (countries) where the effort score is zero, while
 leaving the column subscript blank selects all columns (variables).</p>
 <p>The fact that the rows are named allows yet another way to select
 elements: by name. Here’s how to print the data for Chile:</p>
-<pre class="r"><code>&gt; fpe[&quot;Chile&quot;, ]</code></pre>
-<pre><code>      setting effort change
-Chile      89     16     29</code></pre>
+<pre class="r"><code>fpe[&quot;Chile&quot;, ]</code></pre>
+<pre><code>##       setting effort change
+## Chile      89     16     29</code></pre>
 <p><em>Exercise</em>: Can you list the countries where social setting is
 high (say above 80) but effort is low (say below 10)? Hint: recall the
 element-by-element logical operator <code>&amp;</code>.</p>
 </div>
 <div id="plotting-data" class="section level2">
 <h2>3.5 Plotting Data</h2>
-<p><img src="data:image/png;base64,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" style="float:right; padding:0 0 2rem 2rem" /></p>
+<p><img src="boxplot.png" style="float:right; padding:0 0 2rem 2rem"/></p>
 <p>Probably the best way to examine the data is by using graphs. Here’s
 a boxplot of setting. Inspired by a demo included in the R distribution,
 I used custom colors for the box (“lavender”, specified using a name R
@@ -289,11 +283,11 @@ in another document.</p>
 correlation of 0.80 looks like:</p>
 <pre class="r"><code>&gt; plot(fpe$effort, fpe$change, pch=21, bg=&quot;gold&quot;)
 &gt; title(&quot;Scatterplot of Change by Effort&quot;, col.main=&quot;#3366CC&quot;)</code></pre>
-<img src="data:image/png;base64,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" style="width:600px; margin:auto" />
+<img src="scatterplot.png" class="img-responsive img-center"/>
 <p>I used two optional arguments that work well together:
 <code>pch=21</code> selects a special plotting symbol, in this case a
 circle, that can be colored and filled; and
-<code>bf=&quot;gold&quot; selects the fill color for the symbol. I left the perimeter  black, but you can change this color with the</code>col`
+<code>bf="gold" selects the fill color for the symbol. I left the perimeter  black, but you can change this color with the</code>col`
 argument.</p>
 <p>To identify points in a scatterplot use the <code>identify()</code>
 function. Try the following on the graph window:</p>
@@ -313,14 +307,14 @@ had the most change?</p>
 a scatterplot matrix. In our example try</p>
 <pre class="r"><code>pairs(fpe)
 title(&quot;Scatterplots for Setting, Effort and Change&quot;, col.main=&quot;#3366cc&quot;)</code></pre>
-<img src="data:image/png;base64,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" style="margin:auto" />
+<img src="pairs.png" class="img-responsive img-center" />
 <p>The result is a 3 by 3 matrix of scatterplots, with the variable
 names down the diagonal and plots of each variable against every other
 one.</p>
 <p>Before you quit this session consider saving the <code>fpe</code>
 data frame. To do this use the <code>save()</code> function</p>
-<pre class="r"><code>&gt; save(fpe, file=&quot;fpe.Rdata&quot;)
-&gt; load(&quot;fpe.Rdata&quot;)</code></pre>
+<pre class="r"><code>save(fpe, file=&quot;fpe.Rdata&quot;)
+load(&quot;fpe.Rdata&quot;)</code></pre>
 <p>The first argument specifies the object to be saved, and the
 <code>file</code> argument provides the name of a file, which will be in
 the working directory unless a full path is given. (Remember to
@@ -342,7 +336,7 @@ main menu; choose <code>File|Save</code> and
 <code>File|Load</code>.)</p>
 <p>When you quit R using <code>q()</code> you will be prompted to save
 the workspace, unless you skip this safeguard by typing
-<code>q(&quot;no&quot;)</code>.</p>
+<code>q("no")</code>.</p>
 <p><em>Exercise</em>: Use R to create a scatterplot of change by
 setting, cut and paste the graph into a document in your favorite word
 processor, and try resizing and printing it. I recommend that you use
