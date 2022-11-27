@@ -88,13 +88,14 @@
 
 
 {% if page.pager or page.toc or page.git %}
-<a class="pull-right" style="margin-right:1em;margin-top:1ex" href="https://github.com/grodri/websrc/blob/main/{{ page.section }}/">
+<a class="pull-right" style="margin:1rem" href="https://github.com/grodri/websrc/blob/main/{{ page.section }}/">
   <img src="/images/github.png" width="24px" title="View source"/></a>
 {% endif %}
 
 <div class="container" style="max-width:768px; margin-top:2ex">
 
 {% if page.tab %}
+  {% assign tabs = site.data.tabs[page.section] %}
   <div id="tabs" class="hidden-xs">
     <ul class="nav nav-tabs">
     {% assign tabs = site.data.tabs[page.section] %}
@@ -103,6 +104,17 @@
         <a href="{{ tab.url }}">{{ tab.label }}</a></li>
     {% endfor %}
     </ul>
+  </div>
+  <div id="tabs-ellipsis" class="visible-xs">
+    <ul class="nav nav-tabs">      
+      <li class="active"><a href="#">{{ page.tab }}</a></li>
+      <li><button class="btn btn-default btn-clear" data-toggle="collapse" data-target="#tabs-links"><i class="glyphicon glyphicon-option-horizontal"></i></button></a></li>
+    </ul>
+    <div id="tabs-links" class="list-group collapse">
+      {% for tab in tabs %}
+        <a class="list-group-item" href="{{ tab.url }}">{{ tab.label }}</a>
+      {% endfor %}
+    </div>
   </div>
   <p></p>
 {% endif %}
@@ -137,7 +149,6 @@ $(function(){
     // download toc and render (haven't done continue with)
     var page = location.href.split('/').slice(-1)
     var url = location.href.replace(page, "toc.json");
-    console.log("getting Json from " + url);
     $.getJSON(url, function(data){
         toc.chapters = data;
         toc.pager();
