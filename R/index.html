@@ -28,7 +28,9 @@ more powerful features of R as a programming language.</p>
 <h2>1.1 The R Language and environment</h2>
 <p>R was first written as a research project by Ross Ihaka and Robert
 Gentleman, and is now under active development by a group of
-statisticians called ‘the R core team’, with a home page at <a href="https://www.r-project.org" class="uri">https://www.r-project.org</a>.</p>
+statisticians called ‘the R core team’, with a home page at <a
+href="https://www.r-project.org"
+class="uri">https://www.r-project.org</a>.</p>
 <p>R was designed to be ‘not unlike’ the S language developed by John
 Chambers and others at Bell Labs. A commercial version of S with
 additional features was developed and marketed as S-Plus by Statistical
@@ -36,48 +38,66 @@ Sciences, eventually becoming part of TIBCO Spotfire. You can view R and
 S-Plus as alternative implementations of the same underlying S language.
 The modern R implementation, however, is by far the most popular.</p>
 <p>R is available free of charge and is distributed under the terms of
-the <a href="http://www.gnu.org/">Free Software Foundation</a>‘s <a href="http://www.gnu.org/licenses/gpl-3.0.html">GNU General Public
-License</a>. You can download the program from the <a href="http://lib.stat.cmu.edu/R/CRAN/mirrors.html">Comprehensive R
+the <a href="http://www.gnu.org/">Free Software Foundation</a>‘s <a
+href="http://www.gnu.org/licenses/gpl-3.0.html">GNU General Public
+License</a>. You can download the program from the <a
+href="http://lib.stat.cmu.edu/R/CRAN/mirrors.html">Comprehensive R
 Archive Network (CRAN)</a>. Ready-to-run ’binaries’ are available for
 Windows, Mac OS, and Linux. The source code is also available for
 download and can be compiled for other platforms.</p>
 </div>
 <div id="bibliographic-remarks" class="section level2">
 <h2>1.2 Bibliographic Remarks</h2>
-<p>S was first introduced by Becker and Chambers <span class="citation">[-@beckerChambers1984]</span> in what’s known as the
-‘brown’ book. The new S language was described by Becker, Chambers and
-Wilks <span class="citation">[-@beckerChambersWilks1988]</span> in the
-‘blue’ book. Chambers and Hastie <span class="citation">[-@chambersHastie1992]</span> edited a book discussing
+<p>S was first introduced by Becker and Chambers <span
+class="citation">(1984)</span> in what’s known as the ‘brown’ book. The
+new S language was described by Becker, Chambers and Wilks <span
+class="citation">(1988)</span> in the ‘blue’ book. Chambers and Hastie
+<span class="citation">(1992)</span> edited a book discussing
 statistical modeling in S, called the ‘white’ book. The latest version
-of the S language is described by <span class="citation">@chambers1998</span> in the ‘green’ book, but R is
-largely an implementation of the versions documented in the blue and
-white books. Chamber’s latest books, <span class="citation">@chambers2008</span> and <span class="citation">@chambers2016</span>, focus on programming with R.</p>
-<p>Venables and Ripley -<span class="citation">@venablesRipley2002</span> have written an excellent
-book on Modern Applied Statistics with S-PLUS that is now in its fourth
-edition. The latest edition is particularly useful to R users because
-the main text explains differences between S-Plus and R where relevant.
-A companion volume called <em>S Programming</em> appeared in 2000 and
-applies to both S-Plus and R <span class="citation">[@venablesRipley2000]</span>. These authors have also
-made available in their website an extensive collection of complements
-to their books, follow the links at <a href="http://www.stats.ox.ac.uk/pub/MASS4/">MASS 4</a>.</p>
+of the S language is described by <span class="citation">Chambers
+(1998)</span> in the ‘green’ book, but R is largely an implementation of
+the versions documented in the blue and white books. Chamber’s latest
+books, <span class="citation">Chambers (2008)</span> and <span
+class="citation">Chambers (2016)</span>, focus on programming with
+R.</p>
+<p>Venables and Ripley -<span class="citation">Venables and Ripley
+(2002)</span> have written an excellent book on Modern Applied
+Statistics with S-PLUS that is now in its fourth edition. The latest
+edition is particularly useful to R users because the main text explains
+differences between S-Plus and R where relevant. A companion volume
+called <em>S Programming</em> appeared in 2000 and applies to both
+S-Plus and R <span class="citation">(Venables and Ripley 2000)</span>.
+These authors have also made available in their website an extensive
+collection of complements to their books, follow the links at <a
+href="http://www.stats.ox.ac.uk/pub/MASS4/">MASS 4</a>.</p>
 <p>There is now an extensive and rapidly growing literature on R. Good
-introductions include the books by <span class="citation">@krauseOlson1997</span>, <span class="citation">@dalgaard2008</span>, and <span class="citation">@braunMurdoch2016</span>. Beginners will probably
-benefit from working through the examples in <span class="citation">@hothornEveritt2014</span> <em>A Handbook of
-Statistical Analyses Using R</em>, now in its third edition, or <span class="citation">@fox2002</span>’s companion to applied regression.
-Among more specialized books my favorites include <span class="citation">@murrell2006</span>, an essential reference on R
-graphics, <span class="citation">@pinheiroBates2000</span>, a book on
-mixed models, and <span class="citation">@therneauGrambsch2000</span>’s
-book on survival models. (Therneau wrote the survival analysis code used
-in S-Plus and R.)</p>
+introductions include the books by <span class="citation">Krause and
+Olson (1997)</span>, <span class="citation">Dalgaard (2008)</span>, and
+<span class="citation">Braun and Murdoch (2016)</span>. Beginners will
+probably benefit from working through the examples in <span
+class="citation">Hothorn and Everitt (2014)</span> <em>A Handbook of
+Statistical Analyses Using R</em>, now in its third edition, or <span
+class="citation">Fox (2002)</span>’s companion to applied regression.
+Among more specialized books my favorites include <span
+class="citation">Murrell (2006)</span>, an essential reference on R
+graphics, <span class="citation">Pinheiro and Bates (2000)</span>, a
+book on mixed models, and <span class="citation">Therneau and Grambsch
+(2000)</span>’s book on survival models. (Therneau wrote the survival
+analysis code used in S-Plus and R.)</p>
 <p>Hadley Wickham has made a number of ground-breaking contributions to
 R that deserve special mention.He is the author of the
-<code>ggplot2</code> package <span class="citation">[@wickham2016]</span>, a very popular graphics package
-that has brought to R the grammar of graphics proposed by <span class="citation">@wilkinson2005</span>. He has also contributed a number
-of data-management packages, of which the most notable is
-<code>dplyr</code>, and has advocated the use of “tidy” datasets. His
-approach to data management is explained in detail in <span class="citation">@wickhamGrolemund2017</span>, with its own website at
-<a href="https://www.tidyverse.org/" class="uri">https://www.tidyverse.org/</a>. He has also written an
-advanced book on programming R, now in its second edition (<span class="citation">@wickham2019</span>). You will find most of his work
+<code>ggplot2</code> package <span class="citation">(Wickham
+2016)</span>, a very popular graphics package that has brought to R the
+grammar of graphics proposed by <span class="citation">Wilkinson
+(2005)</span>. He has also contributed a number of data-management
+packages, of which the most notable is <code>dplyr</code>, and has
+advocated the use of “tidy” datasets. His approach to data management is
+explained in detail in <span class="citation">Wickham and Grolemund
+(2017)</span>, with its own website at <a
+href="https://www.tidyverse.org/"
+class="uri">https://www.tidyverse.org/</a>. He has also written an
+advanced book on programming R, now in its second edition (<span
+class="citation">Wickham (2019)</span>). You will find most of his work
 available online; follow the links in the list of references at the end
 of this tutorial.</p>
 <p>The official R manuals are distributed as PDF files. These include
@@ -89,7 +109,8 @@ the <em>R Language Definition</em>, a guide to <em>Writing R
 Extensions</em>, documentation on <em>R Internals</em> including coding
 standards, and finally the massive <em>R Reference Index</em> (~3000
 pages). The online help facility is excellent. For additional references
-see the annotated list at <a href="https://www.r-project.org/doc/bib/R-books.html">R Books</a>.</p>
+see the annotated list at <a
+href="https://www.r-project.org/doc/bib/R-books.html">R Books</a>.</p>
 <p class="pull-right">Continue with <a href="gettingStarted" class="btn btn-default">
 Getting Started</a></p>
 </div>
