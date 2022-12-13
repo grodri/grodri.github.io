@@ -21,17 +21,12 @@ href="hospbugs">Gibbs sampling with BUGS</a>, <a href="hospjags">Gibbs
 sampling with JAGS</a>, and <a href="hospstan">Hamiltonian Monte Carlo
 with Stan</a>. First we read the data</p>
 <pre class='stata'>. infile hosp loginc distance dropout college mother ///
->     using https://data.princeton.edu/pop510/hospital.dat, clear
+>     using https://grodri.github.io/datasets/hospital.dat, clear
 (1,060 observations read)
 </pre>
 <p>Next we run the model. My setup follows very closely the example in
 the Stata manual [BAYES, p. 199].</p>
-<pre class='stata'>. set matsize 1000
-set matsize ignored.
-    Matrix sizes are no longer limited by c(matsize) in modern Statas.  Matrix
-    sizes are now limited by edition of Stata.  See limits for more details.
-
-. set seed 81
+<pre class='stata'>. set seed 81
 
 . bayesmh hosp loginc distance dropout college, ///
 >   likelihood(logit) reffects(mother) ///
@@ -106,11 +101,11 @@ excellent graphic facilities. Here’s how to generate diagnostic plots
 for the variance parameter at the mother level:</p>
 <pre class='stata'>. bayesgraph diagnostics {mother:var}
 
-. graph export bayesmvvar.png, width(700) replace
-(file bayesmvvar.png not found)
-file bayesmvvar.png saved as PNG format
+. graph export bayesmvar.png, width(700) replace
+file bayesmvar.png saved as PNG format
 </pre>
-<p><img src="bayesmvar.png" /></p>
+<p><img src="bayesmvar.png"
+class="img-responsive img-center stata" /></p>
 <p>The graph reveals “slow mixing” and high auto-correlation, which is a
 common occurrence with variance parameters, but a comparison of the
 first and second halves of the Markov chain is reassuring. Try running
@@ -183,4 +178,3 @@ class="math inline"><em>s</em><sup>2</sup></span></td>
 </table>
 <p>We note general agreement, as all procedures would lead us to the
 same conclusions.</p>
-

@@ -173,7 +173,7 @@ the equations)</span> and compare with school and child means</p>
 . graph export egmfig1.png, width(700) replace
 file egmfig1.png saved as PNG format
 </pre>
-<p><img src="egmfig1.png" class="stata" /></p>
+<p><img src="egmfig1.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> library(dplyr)
 > library(ggplot2)
 > library(gridExtra)
@@ -195,7 +195,7 @@ file egmfig1.png saved as PNG format
 > g &lt;- arrangeGrob(g3, g2, ncol=2)
 > ggsave("egmfig1r.png", plot = g, width=10, height=5, dpi=72)
 </pre>
-<p><img src="egmfig1r.png" class="r" /></p>
+<p><img src="egmfig1r.png" class="img-responsive img-center r" /></p>
 <p>We see the usual shrinkage, particularly for the child means.</p>
 <h3 id="growth-curves">Growth Curves</h3>
 <p>The obvious predictor at the observation level is study
@@ -408,7 +408,7 @@ variables to store the Bayes estimates. I’ll use numbers for the levels,
 . graph export egmfig2.png, width(700) replace
 file egmfig2.png saved as PNG format
 </pre>
-<p><img src="egmfig2.png" class="stata" /></p>
+<p><img src="egmfig2.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> b = fixef(gc)
 > gcre &lt;- ranef(gc)
 > names(gcre$schoolid) &lt;- names(gcre$childid) &lt;- c("intercept","slope")
@@ -423,7 +423,7 @@ file egmfig2.png saved as PNG format
 > g &lt;- arrangeGrob(g3, g2, ncol=2)
 > ggsave("egmfig2r.png", plot = g, width=10, height=5, dpi=72)
 </pre>
-<p><img src="egmfig2r.png" class="r" /></p>
+<p><img src="egmfig2r.png" class="img-responsive img-center r" /></p>
 <p>We see substantial variation in school levels and rates of change in
 math achievement. One school is notable for having a reasonable
 third-grade mean, but a low rate of change per year (just above 0.5). I
@@ -697,14 +697,14 @@ effects.</span></p>
 . graph export egmfig3.png, width(700) replace
 file egmfig3.png saved as PNG format
 </pre>
-<p><img src="egmfig3.png" class="stata" /></p>
+<p><img src="egmfig3.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> ggplot(filter(pdf,childz==-1), aes(year, fv, linetype=eth)) +
 +   geom_line() + 
 +   geom_line(data=filter(pdf,childz==1), aes(year, fv, linetype=eth)) +
 +   facet_grid(lowinc ~ schoolz) 
 >   ggsave("egmfig3r.png", width=10, height=8, dpi=72)
 </pre>
-<p><img src="egmfig3r.png" class="r" /></p>
+<p><img src="egmfig3r.png" class="img-responsive img-center r" /></p>
 <p>The plot shows the relative importance of fixed and random effects at
 the school and individual levels. At the school level the difference
 between 50% and 100% poor is smaller than the two-sigma difference in
@@ -714,4 +714,3 @@ two-sigma differences in unobserved child characteristics.
 Interestingly, within each school type the average line for hispanics
 starts at about the average level of blacks in first grade, but catches
 up with the average level of whites by sixth grade.</p>
-

@@ -55,8 +55,8 @@ file us2013.png saved as PNG format
 > g &lt;- arrangeGrob(g1, g2, ncol=2)
 > ggsave("us2013r.png", plot=g, width=10, height=5, dpi=72);
 </pre>
-<p><img src="us2013.png" class="stata" /> <img src="us2013r.png"
-class="r" /></p>
+<p><img src="us2013.png" class="img-responsive img-center stata" /> <img
+src="us2013r.png" class="img-responsive img-center r" /></p>
 <p>The Gompertz distribution provides a remarkably close fit to the
 hazard at adult ages, as one would expect from the linearity of the
 graph. Here’s a visual check of the fit at ages above 35:</p>
@@ -71,10 +71,9 @@ file us2013g.png saved as PNG format
 +     stat_smooth(data=adults,method="lm")
 > ggsave("us2013gr.png", width=500/72, height=400/72, dpi=72)
 </pre>
-<p><img src="us2013g.png" class="stata" /> <img src="us2013g.png"
-class="r" /></p>
+<p><img src="us2013g.png" class="img-responsive img-center stata" />
+<img src="us2013gr.png" class="img-responsive img-center r" /></p>
 <p>The U.S. survival function for 2002 is <a
 href="https://grodri.github.io/datasets/us2002s.dat">here</a>, in a file
 that has age and S but no header. How much has the hazard function
 changed between 2002 and 2013?</p>
-
