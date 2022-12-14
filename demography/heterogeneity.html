@@ -67,12 +67,12 @@ compute age midpoints by adding 0.5.</p>
 . graph export uswbmh.png, width(500) replace
 file uswbmh.png saved as PNG format
 </pre>
-<p><img src="uswbmh.png" class="stata" /></p>
+<p><img src="uswbmh.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> filter(us, !is.na(h)) |>
 + ggplot(aes(age, log(h), color = race)) + geom_line()
 > ggsave("uswbmhr.png", width=500/72, height=400/72, dpi=72)
 </pre>
-<p><img src="uswbmhr.png" class="r" /></p>
+<p><img src="uswbmhr.png" class="img-responsive img-center r" /></p>
 <p>We see that the hazard in 2002 was higher for blacks at every age up
 to 87, but then the curves cross over.</p>
 <h3 id="individual-and-population-hazards">Individual and Population
@@ -116,12 +116,12 @@ for each ethnic group:</p>
 . graph export uswbmhh0.png, width(600) replace
 file uswbmhh0.png saved as PNG format
 </pre>
-<p><img src="uswbmhh0.png" class="stata" /></p>
+<p><img src="uswbmhh0.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> ggplot(us, aes(age, log(h0))) + geom_line() + 
 +   geom_line(aes(age, log(h))) + facet_grid(. ~ race)
 > ggsave("uswbmhh0r.png", width=500/72, height=400/72, dpi=72)    
 </pre>
-<p><img src="uswbmhh0r.png" class="r" /></p>
+<p><img src="uswbmhh0r.png" class="img-responsive img-center r" /></p>
 <p>We see how, for each ethnic group, the subject-specific hazard rises
 with age more steeply than the population-average hazard. The difference
 is larger for blacks because mortality is higher. If we had used cohort
@@ -138,11 +138,11 @@ individual-level baseline hazards:</p>
 . graph export uswbmh0.png, width(500) replace
 file uswbmh0.png saved as PNG format
 </pre>
-<p><img src="uswbmh0.png" class="stata" /></p>
+<p><img src="uswbmh0.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> ggplot(us, aes(age, log(h0), color=race)) + geom_line() 
 > ggsave("uswbmh0r.png", width=500/72, height=400/72, dpi=72)    
 </pre>
-<p><img src="uswbmh0r.png" class="r" /></p>
+<p><img src="uswbmh0r.png" class="img-responsive img-center r" /></p>
 <p>We see that the cross-over has practically dissappeared, the baseline
 hazard is higher for whites only after age 98. Increasing the variance
 of frailty a little would erase that too.</p>
@@ -155,4 +155,3 @@ If you have installed `shiny` in R, you can also run it on your computer
 using the function call
 `runUrl("https://grodri.github.io/demography/heterogeneity.zip")`
 --></p>
-

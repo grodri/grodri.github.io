@@ -520,8 +520,8 @@ file phplot.png saved as PNG format
 null device 
           1 
 </pre>
-<p><img src="phplot.png" class="stata" /> <img src="phplotr.png"
-class="r" /></p>
+<p><img src="phplot.png" class="img-responsive img-center stata" /> 
+<img src="phplotr.png" class="img-responsive img-center r" /></p>
 <p>The residuals show no time trend at all, showing that the treatment
 hazard ratio is fairly constant over time. (We will confirm this result
 below with a plot of cumulative hazards that provides more direct
@@ -577,8 +577,8 @@ file coxkm.png saved as PNG format
 +     scale_shape_manual(values = c(1, 4)) 
 > ggsave("coxkmr.png", width=500/72, height=400/72, dpi=72)     
 </pre>
-<p><img src="coxkm.png" class="stata" /> <img src="coxkmr.png"
-class="r" /></p>
+<p><img src="coxkm.png" class="img-responsive img-center stata" /> 
+<img src="coxkmr.png" class="img-responsive img-center r" /></p>
 <p>The figure looks just like Figure 1 in Cox’s paper. If the purpose of
 the graph is to check the proportional hazards assumption a much better
 alternative is to plot the log-log transformation of the survival
@@ -600,7 +600,6 @@ file coxphplot.png saved as PNG format
 +     geom_line() +   ylab("-log(-log(S(t)))")
 > ggsave("coxphplotr.png", width=500/72, height=400/72, dpi=72)
 </pre>
-<p><img src="coxphplot.png" class="stata" /> <img src="coxphplotr.png"
-class="r" /></p>
+<p><img src="coxphplot.png" class="img-responsive img-center stata" /> 
+<img src="coxphplotr.png" class="img-responsive img-center r" /></p>
 <p>The two lines look quite parallel indeed.</p>
-

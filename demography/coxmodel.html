@@ -110,7 +110,7 @@ in Cox’s paper</p>
 . graph export coxkm.png, width(500) replace          
 file coxkm.png saved as PNG format
 </pre>
-<p><img src="coxkm.png" class="stata" /></p>
+<p><img src="coxkm.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> km &lt;- survfit(Surv(weeks, relapse) ~ treated, data=gehan)
 > sf &lt;- survfit(cm, newdata=list(treated=c(0, 1)))   
 > dsf &lt;- data.frame(time = rep(c(0,sf$time), 2),
@@ -126,7 +126,7 @@ file coxkm.png saved as PNG format
 +   scale_shape_manual(values = c(4, 1))  # x and o
 > ggsave("coxkmr.png", width=500/72, height=400/72, dpi=72) 
 </pre>
-<p><img src="coxkmr.png" class="r" /></p>
+<p><img src="coxkmr.png" class="img-responsive img-center r" /></p>
 <p>Another way to check proportionality of hazards is to plot the
 log-log transformation of the survival functions versus log time, that
 is <span
@@ -141,16 +141,15 @@ should then be parallel if the assumption holds.</p>
 . graph export coxphplot.png, width(500) replace
 file coxphplot.png saved as PNG format
 </pre>
-<p><img src="coxphplot.png" class="stata" /></p>
+<p><img src="coxphplot.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> dkm &lt;- mutate(dkm,  lls = -log(-log(survival)))
 > ggplot(dkm, aes(log(time), lls, color=group)) + geom_point() +
 +   geom_line() +  ylab("-log(-log(S(t)))")
 > ggsave("coxphplotr.png", width=500/72, height=400/72, dpi=72)
 </pre>
-<p><img src="coxphplotr.png" class="r" /></p>
+<p><img src="coxphplotr.png" class="img-responsive img-center r" /></p>
 <p>The two lines look quite parallel indeed, showing a good fit of the
 proportional hazards assumption.</p>
 <p>A more detailed treatment of these topics may be found in my <a
 href="/pop509">survival analysis course</a>. The discussion here is an
 excerpt from the pages dealing with Kaplan-Meier and Cox regression.</p>
-

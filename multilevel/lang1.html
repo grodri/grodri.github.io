@@ -203,7 +203,7 @@ is large (schools are informative). Let us calculate these ‘by hand’</p>
 . graph export langblup.png, width(500) replace    
 file langblup.png saved as PNG format
 </pre>
-<p><img src="langblup.png" class="stata" /></p>
+<p><img src="langblup.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> library(ggplot2)
 > schools3 &lt;- mutate(schools2, 
 +   R = s2u/(s2u + s2e/sn), 
@@ -213,7 +213,7 @@ file langblup.png saved as PNG format
 +   ggtitle("School Effects on Language Scores")
 > ggsave("langblupr.png", width=500/72, height=400/72, dpi=72)
 </pre>
-<p><img src="langblupr.png" class="r" /></p>
+<p><img src="langblupr.png" class="img-responsive img-center r" /></p>
 <p>BLUPS can be computed more easily using <code>xtmixed</code> in Stata
 or <code>ranef()</code> in R</p>
 <pre class='stata'>. xtmixed langpost || schoolnr: , mle 
@@ -278,4 +278,3 @@ LR test vs. linear model: chibar2(01) = 287.98        Prob >= chibar2 = 0.0000
 </pre>
 <p>We list a few cases to show that the two calculations yield the same
 result.</p>
-

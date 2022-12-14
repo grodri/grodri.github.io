@@ -58,7 +58,7 @@ function in each of the two groups.</p>
 . graph export kmg.png, width(500) replace
 file kmg.png saved as PNG format
 </pre>
-<p><img src="kmg.png" class="stata" /></p>
+<p><img src="kmg.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> kmg &lt;- survfit(Surv(weeks, relapse) ~ group, data=gehan)
 > #plot(kmg)
 > a = 1:kmg$strata[1]
@@ -68,7 +68,7 @@ file kmg.png saved as PNG format
 > ggplot(kmdf, aes(time, surv, color=group)) + geom_step()
 > ggsave("kmgr.png", width=500/72, height=400/72, dpi=72)
 </pre>
-<p><img src="kmgr.png" class="r" /></p>
+<p><img src="kmgr.png" class="img-responsive img-center r" /></p>
 <p>The graph shows that after 23 weeks all patients in the control group
 had relapsed, but about half those in the treated group remained in
 remission. We can list the survival function.</p>
@@ -161,4 +161,3 @@ just after <em>t</em>. The counts of censored observations after each
 death time (but before the next) are 1, 1, 2, 0, 3, 0 and 5. When the
 last observation is censored the K-M estimate is greater than zero, and
 is usually considered undefined after that.</p>
-

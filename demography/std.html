@@ -260,12 +260,12 @@ much)</p>
 . graph export swkzasmr.png, replace width(500) height(400)
 file swkzasmr.png saved as PNG format
 </pre>
-<p><img src="swkzasmr.png" class="stata" /></p>
+<p><img src="swkzasmr.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> library(ggplot2)
 > ggplot(p21, aes(x=age, y=log(rates), color=country)) + geom_line()
 > ggsave("swkzasmrr.png", width=500/72, height=400/72, dpi=72) 
 </pre>
-<p><img src="swkzasmrr.png" class="r" /></p>
+<p><img src="swkzasmrr.png" class="img-responsive img-center r" /></p>
 <p>We see clearly that mortality is higher in Kazakhstan than in Sweden
 at every age. The lines are not exactly parallel, in fact the relative
 difference seems to become smaller at older ages. (We will discuss later
@@ -390,4 +390,3 @@ age and country.</p>
 don’t worry. Just make a note to come back and read it again after
 taking a course on generalized linear models.</p>
 <p><small> Updated 22-Jan-2016. </small></p>
-

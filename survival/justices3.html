@@ -118,7 +118,7 @@ exact ages and mid years.)</p>
 . graph export justices-ciffg.png, width(500) replace
 file justices-ciffg.png saved as PNG format
 </pre>
-<p><img src="justices-ciffg.png" class="stata" /></p>
+<p><img src="justices-ciffg.png" class="img-responsive img-center stata" /></p>
 <p><span class="stata"><em>Aside</em>: It is instructive to compute
 these curves ‘by hand’. Because <code>predict</code> sets the covariates
 to zero, it will be advantageous to center age on 55.5 and year on
@@ -163,7 +163,7 @@ coefficient, and then transform back to probabilities.</span></p>
 > cifs[nrow(cifs),]
 [1] 34.4147844  0.3156297  0.2198049
 </pre>
-<p><img src="justices-ciffgr.png" class="r" /></p>
+<p><img src="justices-ciffgr.png" class="img-responsive img-center r" /></p>
 <p>We see that the probability of dying while serving in the court is
 declining over time net of age at appointment. For a justice appointed
 at age 55, the probability would be 31.6% if appointed in 1950 and 22.0%
@@ -175,4 +175,3 @@ href="justices2">here</a>. The Cox proportional hazards approach leads
 to estimated probabilities of death of 32.8% if appointed in 1950 and
 22.6% if appointed in 2000. Both methods agree in estimating the overall
 decline as about ten percentage points.</p>
-

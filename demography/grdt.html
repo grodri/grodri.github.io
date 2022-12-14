@@ -44,7 +44,7 @@ using absolute and log scales.</p>
 . graph export uspop.png, replace width(720) height(360)
 file uspop.png saved as PNG format
 </pre>
-<p><img src="uspop.png" class="stata" /></p>
+<p><img src="uspop.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> us &lt;- mutate(us, pm = pop/1000000)
 > g1 &lt;- ggplot(us, aes(x=year, y=pm)) + geom_line() + xlab("Year") + 
 +     ylab("Population (millions)")
@@ -53,7 +53,7 @@ file uspop.png saved as PNG format
 > g &lt;- arrangeGrob(g1,g2,ncol=2)
 > ggsave("uspopr.png", plot=g, width=10, height=5, dpi=72)
 </pre>
-<p><img src="uspopr.png" class="r" /></p>
+<p><img src="uspopr.png" class="img-responsive img-center r" /></p>
 <h2 id="growth-rates">Growth Rates</h2>
 <p>What was the growth rate in the last intercensal period? Let us list
 the population counts for the last two censuses. <span class="stata">We
@@ -204,7 +204,7 @@ class="math inline"><em>l</em><em>o</em><em>g</em>(2)/<em>r</em></span>.</p>
 . graph export usgrdt.png, width(720) height(360) replace
 file usgrdt.png saved as PNG format
 </pre>
-<p><img src="usgrdt.png" class="stata" /></p>
+<p><img src="usgrdt.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> usg &lt;- mutate(usg, doubling.time = log(2)/growth.rate)
 > tail(usg,1)
    year growth.rate doubling.time
@@ -213,11 +213,10 @@ file usgrdt.png saved as PNG format
 > g &lt;- arrangeGrob(g1,g2,ncol=2)
 > ggsave("usgrdtr.png", plot=g, width=10, height=5, dpi=72)
 </pre>
-<p><img src="usgrdtr.png" class="r" /></p>
+<p><img src="usgrdtr.png" class="img-responsive img-center r" /></p>
 <p>The U.S. population was doubling every 22-24 years in the first half
 of the 19th century, but the doubling time has increased steadily
 (except for a pre-war spike) and it now takes 75 years to double. Verify
 that in the previous intercensal period the growth rate was 0.0124 and
 the doubling time was 56 years.</p>
 <p><small>Updated 22-Jan-2016</small></p>
-

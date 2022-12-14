@@ -163,12 +163,11 @@ file pweSpline.png saved as PNG format
 > ggplot(xy, aes(duration, hazard)) + geom_line()
 > ggsave("pweSpliner.png", width=500/72, height=400/72, dpi=72)
 </pre>
-<p><img src="pweSpline.png" class="stata" /> <img src="pweSpliner.png"
-class="r" /></p>
+<p><img src="pweSpline.png" class="img-responsive img-center stata" /> 
+<img src="pweSpliner.png" class="img-responsive img-center r" /></p>
 <p>Showing once agan that the hazard appears to rise initially and then
 decline steadily, so a log-normal is not a bad fit. Note that plotting
 the spline would be a bit misleading, as we really didn’t fit a curve,
 but rather a piecewise constant hazard where the value in each
 three-month interval is taken from the curve. The graph above takes this
 into account.</p>
-

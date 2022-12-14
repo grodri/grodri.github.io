@@ -48,7 +48,7 @@ and the scale to <code>v</code>.</p>
 . graph export gfr.png, width(500) replace 
 file gfr.png saved as PNG format
 </pre>
-<p><img src="gfr.png" class="stata" /></p>
+<p><img src="gfr.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> v &lt;- exp( -1.5407144 )
 > theta &lt;- seq(0, 3, 0.02) 
 > density &lt;- dgamma(theta, shape = 1/v, scale = v)
@@ -58,7 +58,7 @@ file gfr.png saved as PNG format
 +     ggtitle("Gamma Density (mean 1, var 0.214)")
 > ggsave("gfrr.png", width = 500/72, height = 400/72, dpi = 72)
 </pre>
-<p><img src="gfrr.png" class="r" /></p>
+<p><img src="gfrr.png" class="img-responsive img-center r" /></p>
 <p>We can also compute quantiles. <span class="stata">Stata has a
 function <code>invgammap(a, p)</code> to compute quantiles of the
 standard gamma distribution with shape <code>a</code>, which has scale 1
@@ -412,4 +412,3 @@ log-normal frailty, which has the important advantage that it extends
 easily to multi-level models. Calculation of unconditional survival,
 however, requires numerical integration. The results are very similar to
 those presented here.</p>
-

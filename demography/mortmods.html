@@ -115,7 +115,7 @@ used to construct the table.</p>
 . graph export mrlogits.png, width(500) replace
 file mrlogits.png saved as PNG format
 </pre>
-<p><img src="mrlogits.png" class="stata" /></p>
+<p><img src="mrlogits.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> qfit &lt;- 1 - c(lfit, 0)/c(1, lfit)  # death probabilities
 > a &lt;- b31$a                         # nax
 > n &lt;- c(1, 4, rep(5,17))            # width of intervals
@@ -125,7 +125,7 @@ file mrlogits.png saved as PNG format
 +   geom_line(aes(age,log(mfit)))
 > ggsave("mrlogit.png", width=500/72, height=400/72, dpi=72)
 </pre>
-<p><img src="mrlogit.png" class="r" /></p>
+<p><img src="mrlogit.png" class="img-responsive img-center r" /></p>
 <p>The model gets infant mortality right and does an excellent job at
 age 30 and above, but has a bit of trouble in the 5 to 25 range.</p>
 <h3 id="the-log-quadratic-system">The Log-Quadratic System</h3>
@@ -212,13 +212,13 @@ the result.</p>
 . graph export logquads.png, width(500) replace
 file logquads.png saved as PNG format
 </pre>
-<p><img src="logquads.png" class="stata" /></p>
+<p><img src="logquads.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> fit &lt;- logquad(r$par[1], r$par[2], "male")$logmx[1:18]
 > lqfit &lt;- data.frame(age = b31$agem[-19], obs, fit)
 > p &lt;- ggplot(lqfit, aes(age, obs)) + geom_point() + geom_line(aes(age, fit))
 > ggsave("logquad.png", plot=p, width=500/72, height=400/72, dpi=72)
 </pre>
-<p><img src="logquads.png" class="r" /></p>
+<p><img src="logquads.png" class="img-responsive img-center r" /></p>
 <p>The fit is pretty good overall but, not unlike the previous model, it
 seems to have some difficulty at ages 10 to 25.</p>
 <h3 id="comparison">Comparison</h3>
@@ -233,7 +233,7 @@ seems to have some difficulty at ages 10 to 25.</p>
 . graph export mortmods.png, width(500) replace
 file mortmods.png saved as PNG format
 </pre>
-<p><img src="mortmods.png" class="stata" /></p>
+<p><img src="mortmods.png" class="img-responsive img-center stata" /></p>
 <pre class='r'>> fits &lt;- mutate(lqfit, fitm = log(mfit[-19]))
 > p &lt;- ggplot(fits, aes(age, obs)) + geom_point() +  
 +   geom_line(aes(age, fit, color="c1")) + 
@@ -243,7 +243,6 @@ file mortmods.png saved as PNG format
 +   theme(legend.position =c(.9, .12))
 > ggsave("mortmodsr.png", plot=p, width=500/72, height=400/72, dpi=72)
 </pre>
-<p><img src="mortmodsr.png" class="r" /></p>
+<p><img src="mortmodsr.png" class="img-responsive img-center r" /></p>
 <p>There seems to be some room for improvement, but in my opinion it
 will be hard to do much better without adding a third parameter.</p>
-
