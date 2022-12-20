@@ -1,13 +1,12 @@
 ---
 layout: default
 section: R
-tab: "Conclusion"
+tab: Conclusion
+mathjax: true
 git: true
 ---
 
-<style>
-div.csl-entry {margin-left:2em; text-indent:-2em; }  
-</style>
+{% include r.css %}
 
 <div id="next-steps" class="section level1">
 <h1>6 Next Steps</h1>
@@ -25,19 +24,24 @@ available to the research community in the form of R functions.</p>
 <code>ggplot2</code> package. To draw a plot you specify a data frame,
 aesthetics that map variables to aspects of the graph, and geometries
 that specify whether to use points, lines, or other primitives. You fill
-find more information at <a href="https://ggplot2.tidyverse.org/" class="uri">https://ggplot2.tidyverse.org/</a></p>
+find more information at <a href="https://ggplot2.tidyverse.org/"
+class="uri">https://ggplot2.tidyverse.org/</a></p>
 <p>For data management I recommend that you install the
 <code>dplyr</code> package, which includes tools for adding new
 variables, selecting cases or variables (rows or columns), as well as
-summarizing and re-arranging your data. Check the overview at <a href="https://dplyr.tidyverse.org/" class="uri">https://dplyr.tidyverse.org/</a>.</p>
-<p>You can also run <code>install.packages(&quot;tidyverse&quot;)</code> to
+summarizing and re-arranging your data. Check the overview at <a
+href="https://dplyr.tidyverse.org/"
+class="uri">https://dplyr.tidyverse.org/</a>.</p>
+<p>You can also run <code>install.packages("tidyverse")</code> to
 install all the packages in the tidyverse, including
 <code>ggplot2</code> and <code>dplyr</code>, as well as
 <code>tidyr</code> (for help tidying data), <code>readr</code> (for
 reading rectangular data like csv files), <code>purrr</code> (for an
 alternative to loops), <code>tibble</code> (for tidy data frames),
 <code>stringr</code> (for working with strings) and <code>forcats</code>
-(for working with factors). Learn more at <a href="https://www.tidyverse.org/packages/" class="uri">https://www.tidyverse.org/packages/</a>.</p>
+(for working with factors). Learn more at <a
+href="https://www.tidyverse.org/packages/"
+class="uri">https://www.tidyverse.org/packages/</a>.</p>
 <p>In addition, R is a full-fledged programming language, with a rich
 complement of mathematical functions, matrix operations and control
 structures. It is very easy to write your own functions. To learn more
@@ -52,11 +56,13 @@ approach.</p>
 <p>Last, but most certainly not least, you will want to learn about
 dynamic documents using R Markdown. The basic idea here is to combine a
 narrative written in Markdown with R code, an approach that has
-excellent support in R Studio. The definite book on the subject is <span class="citation">Xie, Allaire, and Grolemund (2019)</span>.</p>
+excellent support in R Studio. The definite book on the subject is <span
+class="citation">Xie, Allaire, and Grolemund (2019)</span>.</p>
 <p>This tutorial has been written in R Markdown. You can download the
 source code <code>introducingR.Rmd</code>, the bibliography file
 <code>introducingR.bib</code>, and the image file
-<code>RStudioIDE.png</code> from <a href="https://raw.githubusercontent.com/grodri/websrc/tree/main/R">GitHub</a>.
+<code>RStudioIDE.png</code> from <a
+href="https://raw.githubusercontent.com/grodri/websrc/tree/main/R">GitHub</a>.
 To reproduce the PDF document you also need <code>tweaks.tex</code> from
 the same source. To generate an HTML document instead, change the output
 specification near the top of the script.</p>
@@ -133,15 +139,18 @@ Fourth Edition. New York: Springer.
 </div>
 <div id="ref-wickham2016" class="csl-entry">
 Wickham, Hadley. 2016. <em><span class="nocase">ggplot2</span> Elegant
-Graphics for Data Analysis</em>. Second Edition. New York: Springer. <a href="https://ggplot2-book.org/">https://ggplot2-book.org/</a>.
+Graphics for Data Analysis</em>. Second Edition. New York: Springer. <a
+href="https://ggplot2-book.org/">https://ggplot2-book.org/</a>.
 </div>
 <div id="ref-wickham2019" class="csl-entry">
 ———. 2019. <em>Advanced <span>R</span></em>. Second Edition. Boca Raton,
-FL: CRC Press. <a href="https://adv-r.hadley.nz/">https://adv-r.hadley.nz/</a>.
+FL: CRC Press. <a
+href="https://adv-r.hadley.nz/">https://adv-r.hadley.nz/</a>.
 </div>
 <div id="ref-wickhamGrolemund2017" class="csl-entry">
 Wickham, Hadley, and Garret Grolemund. 2017. <em><span>R</span> for Data
-Science</em>. Sebastopol, CA: O’Reilly. <a href="https://r4ds.had.co.nz/">https://r4ds.had.co.nz/</a>.
+Science</em>. Sebastopol, CA: O’Reilly. <a
+href="https://r4ds.had.co.nz/">https://r4ds.had.co.nz/</a>.
 </div>
 <div id="ref-wilkinson2005" class="csl-entry">
 Wilkinson, Leland. 2005. <em>The Grammar of Graphics</em>. Second
@@ -149,7 +158,8 @@ Edition. New York: Springer.
 </div>
 <div id="ref-xieAllaireGrolemund2019" class="csl-entry">
 Xie, Yihui, J. J. Allaire, and Garrett Grolemund. 2019. <em>R Markdown:
-The Definitive Guide</em>. Boca Raton, FL: Chapman Hall/CRC. <a href="https://bookdown.org/yihui/rmarkdown/">https://bookdown.org/yihui/rmarkdown/</a>.
+The Definitive Guide</em>. Boca Raton, FL: Chapman Hall/CRC. <a
+href="https://bookdown.org/yihui/rmarkdown/">https://bookdown.org/yihui/rmarkdown/</a>.
 </div>
 </div>
 </div>
@@ -158,5 +168,6 @@ The Definitive Guide</em>. Boca Raton, FL: Chapman Hall/CRC. <a href="https://bo
 
 
 </div>
-</body>
-</html>
+<style>
+div.hanging-indent { margin-left: 1.5em; text-indent: -1.5em;}
+</style>

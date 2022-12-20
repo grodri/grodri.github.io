@@ -2,36 +2,36 @@
 layout: default
 section: R
 tab: "Getting Started"
+mathjax: true
 git: true
 ---
 
-<style>
-pre {background-color: white;} 
-pre.r {background-color: #fafafa;}
-</style>
+{% include r.css %}
 
 <div id="getting-started" class="section level1">
 <h1>2 Getting Started</h1>
 <p>Obviously the first thing you need to do is download a copy of R.
-This tutorial was last revised using version 4.2.1, released in June
-2022. New releases occur every six months or so. You will find the
-latest version and binaries for Windows, Mac OS X, and Linux in the <a href="https://cran.r-project.org/">Comprehensive R Archive Network</a>.
+This tutorial was updated using version 4.2.1, released in June 2022.
+New releases occur every six months or so. You will find the latest
+version and binaries for Windows, macOS, and Linux in the <a
+href="https://cran.r-project.org/">Comprehensive R Archive Network</a>.
 Find the mirror nearest you and follow the links. The Windows installer
 is fairly easy to use and, after agreeing to the license terms, lets you
 choose which components you want to install. Additional packages can
 always be installed directly from R at a later time.</p>
 <p>The next thing you should do is install R Studio, a nice Integrated
-Development Environment (IDE) for R, that is available for Windows, Mac
-OS X, and Linux. You can download the free open source edition of R
-Studio Desktop from <a href="https://rstudio.com/products/rstudio/" class="uri">https://rstudio.com/products/rstudio/</a>. Once the software
+Development Environment (IDE) for R, that is also available for Linux,
+macOS and Windows. You can download the free open source edition of R
+Studio Desktop from <a href="https://rstudio.com/products/rstudio/"
+class="uri">https://rstudio.com/products/rstudio/</a>. Once the software
 is installed, it will find and integrate your R installation.</p>
-<p><img src="RStudioIDE.png"/></p>
+<p><img src="RStudioIDE.png" class="img-responsive img-center"/> </p>
 <p>The panel on the lower-left corner of the IDE shows the console,
 which is described below. Graphs and help will appear on the bottom
 right panel. The panel on the top left can be used to type an R script
 to be run later.</p>
 <p>If you do not install R Studio, you can still run the R graphical
-user interface (GUI). I recommend that you create a shorcut on the
+user interface (GUI). I recommend that you create a shortcut on the
 desktop. When R starts you see a console. Graphs appear on a separate
 window.</p>
 <div id="the-console" class="section level2">
@@ -48,7 +48,7 @@ type the name followed by left and right parenthesis. (If you forget the
 parentheses and type just the name of the function, R will list the
 source code.) After typing <code>q()</code> you are asked whether you
 want to save the current work environment. You can skip this prompt by
-typing <code>q(&quot;no&quot;)</code>.</p>
+typing <code>q("no")</code>.</p>
 <p>You should also know about the <code>help()</code> function, which
 uses the window on the bottom right (opens a separate help window in R).
 The function can be called with arguments to obtain help about specific
@@ -85,18 +85,23 @@ functions, such as <code>sqrt()</code>, <code>exp()</code>, and
 <code>&gt;=</code> and <code>!=</code> for less than or equal, less
 than, equal, greater than, greater than or equal, and not equal. These
 can be used to create logical expressions that take values
-<code>TRUE</code> and <code>FALSE</code> (or <code>T</code> and
-<code>F</code> for short). Logical expressions may be combined with the
-logical operators <code>|</code> for OR and <code>&amp;</code> for AND,
-as shown further below.</p>
+<code>TRUE</code> and <code>FALSE</code>. (Or <code>T</code> and
+<code>F</code> for short, but these abbreviations are not recommended
+because it is possible to assign other values to them.) Logical
+expressions may be combined with the logical operators <code>|</code>
+for OR and <code>&amp;</code> for AND, as shown further below.</p>
 <p>The results of a calculation may be assigned to a named object. The
 assignment operator in R is <code>&lt;-</code>, read as “gets”, but by
 popular demand R now accepts the equal sign as well, so
 <code>x &lt;- 2</code> and <code>x = 2</code> both assign the value 2 to
-a variable (technically an object) named <code>x</code>.</p>
+a variable (technically an object) named <code>x</code>. I prefer using
+<code>&lt;-</code>, but you can use either. Note that <code>=</code> is
+also used for named arguments of functions.</p>
 <p>Typing a name prints its contents. The name <code>pi</code> is used
 for the constant <span class="math inline">\(\pi\)</span>. Thus,</p>
-<pre class="r"><code>&gt; s = pi/sqrt(3)</code></pre>
+<pre class="r"><code>&gt; s &lt;- pi/sqrt(3)
+&gt; s</code></pre>
+<pre><code>[1] 1.813799</code></pre>
 <p>assigns <span class="math inline">\(\pi/\sqrt{3}\)</span> to the
 variable <code>s</code> and prints its value.</p>
 <p>Names may contain letters, numbers or periods, and (starting with
@@ -166,8 +171,8 @@ double operators <code>||</code> for <em>or</em> and
 <code>&amp;&amp;</code> for <em>and</em> work only on the first element
 of each vector, and use shortcut evaluation; they are used mostly in
 writing R functions, and will not be discussed further.)</p>
-<pre class="r"><code>&gt; a = c(TRUE, TRUE, FALSE, FALSE)
-&gt; b = c(TRUE, FALSE, TRUE, FALSE)
+<pre class="r"><code>&gt; a &lt;- c(TRUE, TRUE, FALSE, FALSE)
+&gt; b &lt;- c(TRUE, FALSE, TRUE, FALSE)
 &gt; a &amp; b</code></pre>
 <pre><code>[1]  TRUE FALSE FALSE FALSE</code></pre>
 <p>The number of elements of a vector is returned by the function
@@ -196,19 +201,19 @@ natural.</p>
 <p>R also understands <strong>matrices</strong> and higher dimensional
 arrays. The following function creates a 3 by 4 matrix and fills it by
 columns with the numbers 1 to 12:</p>
-<pre class="r"><code>&gt; M = matrix(1:12, 3, 4)
+<pre class="r"><code>&gt; M &lt;- matrix(1:12, 3, 4)
 &gt; M</code></pre>
 <pre><code>     [,1] [,2] [,3] [,4]
 [1,]    1    4    7   10
 [2,]    2    5    8   11
 [3,]    3    6    9   12</code></pre>
 <p>The elements of a matrix may be addressed using the row and column
-subscripts in square brackets, separated by a command. Thus,
+subscripts in square brackets, separated by a comma. Thus,
 <code>M[1, 1]</code> is the first element of <code>M</code> (in row 1
 and column 1).</p>
 <p>A subscript may be left blank to select an entire row or column:
 <code>M[1,]</code> is the first row, and <code>M[,1]</code> is the first
-column. Any of the subscripts may be a vector, so
+column of <code>M</code>. Any of the subscripts may be a vector, so
 <code>M[1:2, 1:2]</code> is the upper-left 2 by 2 corner of
 <code>M</code>. Try it.</p>
 <p>The number of rows and columns of a matrix are returned by the
@@ -228,23 +233,23 @@ below we use <code>seq()</code> to create equally spaced points between
 at those points, we plot it, and add a title in a nice shade of blue.
 Note that we are able to add the title to the current plot in a separate
 call.</p>
-<pre class="r"><code>&gt; z = seq(-3, 3, 0.1)
-&gt; d = dnorm(z)</code></pre>
+<pre class="r"><code>&gt; z &lt;- seq(-3, 3, 0.1)
+&gt; d &lt;- dnorm(z)</code></pre>
 <pre class="r"><code>&gt; plot(z, d, type=&quot;l&quot;)
-&gt; title(&quot;The Standard Normal Density&quot;, col.main=&quot;#3366cc&quot;)</code></pre>
-<p><img src="data:image/png;base64,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" style="float:right; padding: 0 0 2rem 2rem" /></p>
+&gt; title(&quot;The Standard Normal Density&quot;, col.main=&quot;#3366CC&quot;)</code></pre>
+<p><img src="dnorm.png" style="float:right; padding: 0 0 2rem 2rem"/></p>
 <p>Arguments to a function can be specified by position or by name. The
 <code>plot()</code> function expects the first two arguments to be
 vectors giving the <code>x</code> and <code>y</code> coordinates of the
 points to be plotted. We also specified the <code>type</code> of plot.
 Since this is one of many optional parameters (type <code>?plot</code>
-for details), we specified it by name as <code>type=&quot;l&quot;</code> (the
+for details), we specified it by name as <code>type="l"</code> (the
 letter el). This indicates that we want the points joined to form a
 line, rather than the default which is to plot discrete points. Note
 that R uses the equal sign to specify named arguments to a function.</p>
 <p>The <code>title()</code> function expects a character string with the
 title as the first argument. We also specified the optional argument
-<code>col.main=&quot;#3366c&quot;</code> to set the color of the title. Here I
+<code>col.main="#3366CC"</code> to set the color of the title. Here I
 specified the red, green and blue components of the color in hexadecimal
 notation; this particular choice matches the headings on my website.
 There are also 657 named colors to choose from, type
@@ -255,15 +260,15 @@ and is simply meant to show off R’s use of colors. We use the
 are all the same width, but we fill them with different colors obtained
 using the <code>rainbow()</code> function.</p>
 <pre class="r"><code>&gt; pie(rep(1, 16), col = rainbow(16))</code></pre>
-<p><img src="data:image/png;base64,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" style="float:left; padding: 0 2rem 2rem 0" /></p>
+<p><img src="pie.png" style="float:left; padding: 0 2rem 2rem 0"/></p>
 <p>Note the use of the rep function to replicate the number one 16
 times. To see how one can specify colors and labels for the slices, try
 calling pie with arguments <code>1:4</code>,
-<code>c(&quot;r&quot;, &quot;g&quot;, &quot;b&quot;,&quot;w&quot;)</code> and
-<code>col =  c(&quot;red,&quot;green&quot;,&quot;blue&quot;,&quot;white&quot;)</code>.</p>
+<code>c("r", "g", "b","w")</code> and
+<code>col =  c("red,"green","blue","white")</code>.</p>
 <p>To save a graph in R Studio click on the “Export” button on the graph
 window. (In R make sure the focus is on the graph window and choose
-<code>File | Save as</code>, from the menu.) You can save as an Image or
+<code>File | Save as</code>, from the menu.) You can save as an image or
 a PDF file.</p>
 <p>One of the image formats is <code>png</code>, which makes it easy to
 include R graphs in web pages. R also supports <code>jpeg</code>, but I
@@ -275,10 +280,12 @@ plots. All graphs on the web version of this tutorial are in
 get a choice of two formats: bitmap and metafile. I recommend that you
 use the metafile format because it’s more flexible. You can then paste
 the graph into a word processing or spreadsheet document. (In R you can
-also print the graph using <code>File | Print</code>).</p>
+also print the graph using <code>File | Print</code>.)</p>
 <p><em>Exercise</em>: Simulate 20 observations from the regression model
 <span class="math inline">\(Y = \alpha + \beta x + e\)</span> using the
-<code>x</code> vector generated above. Set <span class="math inline">\(\alpha = 1\)</span> and <span class="math inline">\(\beta = 2\)</span>. Use standard normal errors
+<code>x</code> vector generated above. Set <span
+class="math inline">\(\alpha = 1\)</span> and <span
+class="math inline">\(\beta = 2\)</span>. Use standard normal errors
 generated as <code>rnorm(20)</code>, where 20 is the number of
 observations.</p>
 <p class="pull-right">Continue with <a href="readingData" class="btn btn-default">

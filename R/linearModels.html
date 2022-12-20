@@ -2,26 +2,24 @@
 layout: default
 section: R
 tab: "Linear Models"
+mathjax: true
 git: true
 ---
 
-<style>
-pre {background-color: white;} 
-pre.r {background-color: #fafafa;}
-</style>
-
+{% include r.css %}
 
 <div id="linear-models" class="section level1">
 <h1>4 Linear Models</h1>
 <p>Let us try some linear models, starting with multiple regression and
 analysis of covariance models, and then moving on to models using
 regression splines. In this section I will use the data read in Section
-3, so make sure the <code>fpe</code> data frame is still available.</p>
+3, so make sure the <code>fpe</code> data frame is still available (or
+read it again).</p>
 <div id="fitting-a-model" class="section level2">
 <h2>4.1 Fitting a Model</h2>
 <p>To fit an ordinary linear model with fertility change as the response
 and setting and effort as predictors, try</p>
-<pre class="r"><code>&gt; lmfit = lm( change ~ setting + effort, data = fpe )</code></pre>
+<pre class="r"><code>&gt; lmfit &lt;- lm( change ~ setting + effort, data = fpe )</code></pre>
 <p>Note first that <code>lm()</code> is a function, and we assign the
 result to an object that I choose to call <code>lmfit</code> (for linear
 model fit). This stores the results of the fit for later
@@ -30,9 +28,10 @@ examination.</p>
 the response on the left of the tilde <code>~</code> (read “is modeled
 as”), and a Wilkinson-Rogers model specification formula on the right. R
 uses</p>
-<p><code>+</code> to combine elementary terms, as in <code>A + B</code>
-<code>:</code> for interactions, as in <code>A:B</code>; <code>*</code>
-for both main effects and interactions, so
+<p><code>+</code> to combine elementary terms, as in
+<code>A + B</code><br />
+<code>:</code> for interactions, as in <code>A:B</code>;<br />
+<code>*</code> for both main effects and interactions, so
 <code>A * B = A + B + A:B</code></p>
 <p>A nice feature of R is that it lets you create interactions between
 categorical variables, between categorical and continuous variables, and
@@ -109,31 +108,30 @@ To go back to a single graph per window use
 <code>par(mfrow = c(1, 1))</code>. There are many other ways to
 customize your graphs by setting high-level parameters, type
 <code>?par</code> to learn more.</p>
-<p><img src="data:image/png;base64,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" style="margin:auto" /> </p>
+<p><img src="lmfit.png" class="img-responsive img-center"/> </p>
 <p><em>Technical Note</em>: You may have noticed that we have used the
 function <code>plot()</code> with all kinds of arguments: one or two
 variables, a data frame, and now a linear model fit. In R jargon,
-<code>plot()</code> is a generic function. It checks for the kind of
-object that you are plotting, and then calls the appropriate (more
-specialized) function to do the work. There are actually many plot
+<code>plot()</code> is a <em>generic</em> function. It checks for the
+kind of object that you are plotting, and then calls the appropriate
+(more specialized) function to do the work. There are actually many plot
 functions in R, including <code>plot.data.frame()</code> and
-<code>plot.lm()</code>. For most purposes, the generic function will do
-the right thing and you don’t need to be concerned about its inner
-workings.</p>
+<code>plot.lm()</code>, and you can let R figure out which one to
+call.</p>
 </div>
 <div id="extracting-results" class="section level2">
 <h2>4.3 Extracting Results</h2>
 <p>There are some specialized functions that allow you to extract
 elements from a linear model fit. For example</p>
 <pre class="r"><code>&gt; fitted(lmfit)</code></pre>
-<pre><code>       Bolivia         Brazil          Chile       Colombia      CostaRica           Cuba 
-     -2.004026       5.572452      25.114699      21.867637      28.600325      24.146986 
-  DominicanRep        Ecuador     ElSalvador      Guatemala          Haiti       Honduras 
-     17.496913      10.296380      14.364491       9.140694      -2.077359       6.122912 
-       Jamaica         Mexico      Nicaragua         Panama       Paraguay           Peru 
-     31.347518      11.878604       3.948921      26.664898       8.475593       5.301864 
-TrinidadTobago      Venezuela 
-     22.794043      16.946453 </code></pre>
+<pre><code>       Bolivia         Brazil          Chile       Colombia      CostaRica 
+     -2.004026       5.572452      25.114699      21.867637      28.600325 
+          Cuba   DominicanRep        Ecuador     ElSalvador      Guatemala 
+     24.146986      17.496913      10.296380      14.364491       9.140694 
+         Haiti       Honduras        Jamaica         Mexico      Nicaragua 
+     -2.077359       6.122912      31.347518      11.878604       3.948921 
+        Panama       Paraguay           Peru TrinidadTobago      Venezuela 
+     26.664898       8.475593       5.301864      22.794043      16.946453 </code></pre>
 <p>extracts the fitted values. In this case it will also print them,
 because we did not asign them to anything. (The longer form
 <code>fitted.values()</code> is an alias.)</p>
@@ -146,22 +144,23 @@ the longer form <code>coefficients()</code>)</p>
 longer form <code>residuals()</code>). There is a <code>type</code>
 argument that lets you choose several types of residuals, type
 <code>?residuals.lm</code> for information. I find more useful the
-<code>rstudent()</code> functions that returns standardized
+<code>rstudent()</code> function that returns standardized
 residuals:</p>
 <pre class="r"><code>&gt; rstudent(lmfit)</code></pre>
-<pre><code>       Bolivia         Brazil          Chile       Colombia      CostaRica           Cuba 
-    0.51666939     0.75316960     0.63588630     0.50233619     0.06666317     3.32236668 
-  DominicanRep        Ecuador     ElSalvador      Guatemala          Haiti       Honduras 
-    0.56318276    -1.76471053    -0.22267614    -0.85483603     0.39308668     0.14477900 
-       Jamaica         Mexico      Nicaragua         Panama       Paraguay           Peru 
-   -1.98177567    -0.47988042     0.50479726    -0.77508737    -0.40082283    -0.55507263 
-TrinidadTobago      Venezuela 
-    1.01832414    -1.03565220 </code></pre>
+<pre><code>       Bolivia         Brazil          Chile       Colombia      CostaRica 
+    0.51666939     0.75316960     0.63588630     0.50233619     0.06666317 
+          Cuba   DominicanRep        Ecuador     ElSalvador      Guatemala 
+    3.32236668     0.56318276    -1.76471053    -0.22267614    -0.85483603 
+         Haiti       Honduras        Jamaica         Mexico      Nicaragua 
+    0.39308668     0.14477900    -1.98177567    -0.47988042     0.50479726 
+        Panama       Paraguay           Peru TrinidadTobago      Venezuela 
+   -0.77508737    -0.40082283    -0.55507263     1.01832414    -1.03565220 </code></pre>
 <p>If you are curious to see exactly what a linear model fit produces,
 try the function</p>
 <pre class="r"><code>&gt; names(lmfit)</code></pre>
-<pre><code> [1] &quot;coefficients&quot;  &quot;residuals&quot;     &quot;effects&quot;       &quot;rank&quot;          &quot;fitted.values&quot; &quot;assign&quot;       
- [7] &quot;qr&quot;            &quot;df.residual&quot;   &quot;xlevels&quot;       &quot;call&quot;          &quot;terms&quot;         &quot;model&quot;        </code></pre>
+<pre><code> [1] &quot;coefficients&quot;  &quot;residuals&quot;     &quot;effects&quot;       &quot;rank&quot;         
+ [5] &quot;fitted.values&quot; &quot;assign&quot;        &quot;qr&quot;            &quot;df.residual&quot;  
+ [9] &quot;xlevels&quot;       &quot;call&quot;          &quot;terms&quot;         &quot;model&quot;        </code></pre>
 <p>which lists the named components of a linear fit. All of these
 objects may be extracted using the <code>$</code> operator. However, if
 there is a special extractor function such as <code>coef()</code> or
@@ -173,7 +172,7 @@ there is a special extractor function such as <code>coef()</code> or
 <em>covariates</em>. We can also use categorical variables or
 <em>factors</em>. Let us group family planning effort into three
 categories:</p>
-<pre class="r"><code>&gt; fpe$effortg = cut(fpe$effort, breaks = c(-1, 4, 14, 100), 
+<pre class="r"><code>&gt; fpe$effortg &lt;- cut(fpe$effort, breaks = c(-1, 4, 14, 100), 
 +   label = c(&quot;weak&quot;, &quot;moderate&quot;, &quot;strong&quot;))</code></pre>
 <p>The function <code>cut()</code> creates a factor or categorical
 variable. The first argument is an input vector, the second is a vector
@@ -184,13 +183,14 @@ greater than the <em>i</em>-th breakpoint and less than or equal to the
 values below the first breakpoint or above the last one are coded
 <code>NA</code> (a special R code for missing values). If the labels are
 omitted, R generates a suitable default of the form “(a, b]”. By default
-the intervals are closed on the right, so our intervals are <span class="math inline">\(\le 4\)</span>, 5 - 14, and 15+. To change this
+the intervals are closed on the right, so our intervals are <span
+class="math inline">\(\le 4\)</span>, 5-14, and 15+. To change this
 behavior, use the option <code>right = FALSE</code>.</p>
 <p>Note that by specifying <code>fpe$effortg</code> on the
 left-hand-side, we have effectively added a new column to the
 <code>fpe</code> data frame.</p>
 <p>Try fitting the analysis of covariance model:</p>
-<pre class="r"><code>&gt; covfit = lm( change ~ setting + effortg, data = fpe)
+<pre class="r"><code>&gt; covfit &lt;- lm( change ~ setting + effortg, data = fpe)
 &gt; covfit</code></pre>
 <pre><code>
 Call:
@@ -201,7 +201,7 @@ Coefficients:
         -5.9540           0.1693           4.1439          19.4476  </code></pre>
 <p>As you can see, <code>effortg</code> has been treated automatically
 as a factor, and R has generated the necessary dummy variables for
-“moderate” and “strong” programs, treating “weak”” as the reference
+“moderate” and “strong” programs, treating “weak” as the reference
 cell.</p>
 <p><em>Choice of Contrasts</em>: R codes unordered factors using the
 reference cell or “treatment contrast” method. The reference cell is
@@ -226,11 +226,11 @@ Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&
 <div id="regression-splines" class="section level2">
 <h2>4.5 Regression Splines</h2>
 <p>The real power of R begins to shine when you consider some of the
-other functions you can include in a model formula. First, you can
-include mathematical functions, for example <code>log(setting)</code> is
-a perfectly legal term in a model formula. You don’t have to create a
-variable representing the log of setting and then use it, R will create
-it ‘on the fly’, so you can type</p>
+other functions you can include in a model formula. For starters, you
+can include mathematical functions, for example
+<code>log(setting)</code> is a perfectly legal term in a model formula.
+You don’t have to create a variable representing the log of setting and
+then use it, R will create it ‘on the fly’, so you can type</p>
 <pre class="r"><code>&gt; lm( change ~ log(setting) + effort, data = fpe)</code></pre>
 <pre><code>
 Call:
@@ -245,9 +245,9 @@ you could include a term of the form <code>poly(setting, 3)</code>.</p>
 regression splines. First you must load the <code>splines</code>
 library.</p>
 <pre class="r"><code>&gt; library(splines)</code></pre>
-<p>This makes available the function `bs()~ to generate B-splines. For
-example the call</p>
-<pre class="r"><code>&gt; fpe$setting.bs = bs(fpe$setting, knots = c(66, 74, 84))</code></pre>
+<p>This makes available the function <code>bs()</code> to generate
+B-splines. For example the call</p>
+<pre class="r"><code>&gt; fpe$setting.bs &lt;- bs(fpe$setting, knots = c(66, 74, 84))</code></pre>
 <p>will generate cubic B-splines with interior knots placed at 66, 74
 and 84. This basis will use seven degrees of freedom, four corresponding
 to the constant, linear, quadratic and cubic terms, plus one for each
@@ -262,7 +262,7 @@ basis using the function <code>ns()</code>, which has exactly the same
 arguments as <code>bs()</code> except for <code>degree</code>, which is
 always three. To generate a natural spline with five degrees of freedom,
 use the call</p>
-<pre class="r"><code>&gt; fpe$setting.ns = ns(fpe$setting, df=5)</code></pre>
+<pre class="r"><code>&gt; fpe$setting.ns &lt;- ns(fpe$setting, df=5)</code></pre>
 <p>Natural cubic splines are better behaved than ordinary splines at the
 extremes of the range. The restrictions mean that you save four degrees
 of freedom. You will probably want to use two of them to place
@@ -271,7 +271,7 @@ two.</p>
 <p>To fit an additive model to fertility change using natural cubic
 splines on setting and effort with only one interior knot each, placed
 exactly at the median of each variable, try the following call:</p>
-<pre class="r"><code>&gt; splinefit = lm( change ~ ns(setting, knot=median(setting)) + 
+<pre class="r"><code>&gt; splinefit &lt;- lm( change ~ ns(setting, knot=median(setting)) + 
 +   ns(effort, knot=median(effort)), data = fpe )</code></pre>
 <p>Here we used the parameter <code>knot</code> to specify where we
 wanted the knot placed, and the function <code>median()</code> to
@@ -286,8 +286,11 @@ extremes.</p>
 <h2>4.6 Other Options</h2>
 <p>The <code>lm()</code> function has several additional parameters that
 we have not discussed. These include</p>
-<p><code>subset</code> to restrict the analysis to a subset of the data
-<code>weights</code> to do weighted least squares</p>
+<ul>
+<li><code>subset</code> to restrict the analysis to a subset of the
+data</li>
+<li><code>weights</code> to do weighted least squares</li>
+</ul>
 <p>and many others; see <code>help(lm)</code> for further details. The
 <code>args()</code> function lists the arguments used by any function,
 in case you forget them. Try <code>args(lm)</code>.</p>
