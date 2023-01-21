@@ -5,11 +5,10 @@ tab: "Stata Logs"
 pager: true
 ---
 
-<h3 class="first" id="c2s4">2.4 Simple Linear Regression</h3>
-<p>First we read the data again, so this script can be run independently
-of the previous one.</p>
+<h2 class="first" id="c2s4">2.4 Simple Linear Regression</h2>
 <p>We will start with the simplest possible model, the <em>null</em>
-model, which fits just a constant</p>
+model, which fits just a constant. But first we read the data again, so
+this script can be run independently of the previous one.</p>
 <pre class='stata'>. use https://grodri.github.io/datasets/effort, clear
 (Family Planning Effort Data)
 
@@ -36,7 +35,7 @@ at hand are not really a random sample of the countries of the world,
 see the discussion of model-based inference in the notes. Briefly, we
 view the data as a sample from the universe of all the outcomes we could
 have observed in these countries in the period 1965-1970.</p>
-<h4 id="fitting-a-linear-term">Fitting a Linear Term</h4>
+<h3 id="fitting-a-linear-term">Fitting a Linear Term</h3>
 <p>The next step is to try a linear regression of change on setting. We
 do not need to specify a constant because it is always included, unless
 we use the <code>noconstant</code> option</p>
@@ -58,10 +57,12 @@ we use the <code>noconstant</code> option</p>
 </pre>
 <p>Each point in the social setting scale is associated with a fertility
 decline of half a percent. Compare the parameter estimates with those in
-table 2.3 in the lecture notes. The anova table reproduces the results
-in Table 2.4.</p>
-<h4 id="computing-r-squared.">Computing R-Squared.</h4>
-<div class="stata">
+table 2.3 in the lecture notes.</p>
+<p>The anova table reproduces the results in Table 2.4.</p>
+<p>The total sum of squares of 2650.2 has been decomposed into 1201.1
+that can be attributed to social setting and 1449.1 that remains
+unexplained.</p>
+<h3 id="computing-r-squared.">Computing R-Squared.</h3>
 <p>Let us calculate the R-squared “by hand” as the ratio of the model
 sum of squares to the total sum of squares.</p>
 <pre class='stata'>. display 1201.08/2650.2
@@ -78,15 +79,13 @@ model and residual are saved as <code>e(mss)</code> and
 </pre>
 <p>I recommend using the stored quantities whenever possible, because
 the results are more accurate and the process is less error-prone.</p>
-</div>
 <p>Almost half the variation in fertility decline can be expressed as a
 linear effect of social setting.</p>
-<h4 id="plotting-observed-and-fitted-values.">Plotting Observed and
-Fitted Values.</h4>
+<h3 id="plotting-observed-and-fitted-values.">Plotting Observed and
+Fitted Values.</h3>
 <p>Let us try to reproduce Figure 2.3. We want to plot fertility change
 versus setting, labeling the points with the country names and
 superimposing the regression line.</p>
-<div class="stata">
 <p>This can be done using the <code>graph twoway</code> command to
 combine two plot types (using parentheses for each plot):
 <code>scatter</code> for the scatterplot, and <code>lfit</code> for the
@@ -113,7 +112,6 @@ shown in Figure 2.3:</p>
 . graph export fig23.png, width(500) replace
 file fig23.png saved as PNG format
 </pre>
-</div>
 <p><img src="fig23.png" class="img-responsive center-block stata" /></p>
 <p><em>Exercise</em>: Run the simple linear regression model for
 fertility change as a function of program effort and plot the

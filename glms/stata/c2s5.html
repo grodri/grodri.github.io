@@ -5,69 +5,64 @@ tab: "Stata Logs"
 pager: true
 ---
 
+<h2 class="first" id="c2s5">2.5 Multiple Regression</h2>
+<p>Let us try a multiple regression model with linear and additive
+effects of social setting and program effort:</p>
+<pre class='stata'>. use https://grodri.github.io/datasets/effort, clear
+(Family Planning Effort Data)
 
-<h3 class="first">2.5 Multiple Regression</h3> 
-<P>
-Let us try a multiple regression model with linear and additive 
-effects of social setting and program effort:
-<pre class='stata'>
+. quietly regress change setting // redone for comparison
+
+. scalar rss1 = e(rss)
+
 . regress change setting effort
 
-<table class='stata'><tr><td><table class='stata'>
-<tr class='bb'><td class='br'>      Source </td><td class='bl'>       SS       df       MS   </td></tr>
-<tr class='bt'><td class='br'>       Model </td><td class='bl'>  1956.19433     2  978.097163</td></tr>
-<tr class='bb'><td class='br'>    Residual </td><td class='bl'>  694.005675    17  40.8238632</td></tr>
-<tr class='bt'><td class='br'>       Total </td><td class='bl'>      2650.2    19  139.484211</td></tr>
-</table></td><td>           Number of obs =      20
-           F(  2,    17) =   23.96
-           Prob > F      =  0.0000
-           R-squared     =  0.7381
-           Adj R-squared =  0.7073
-           Root MSE      =  6.3894</td></tr></table>
+      Source │       SS           df       MS      Number of obs   =        20
+─────────────┼──────────────────────────────────   F(2, 17)        =     23.96
+       Model │  1956.19433         2  978.097163   Prob > F        =    0.0000
+    Residual │  694.005675        17  40.8238632   R-squared       =    0.7381
+─────────────┼──────────────────────────────────   Adj R-squared   =    0.7073
+       Total │      2650.2        19  139.484211   Root MSE        =    6.3894
 
-<table class='stata'>
-<tr class='bb bt'><td class='br'>      change </td><td class='bl'>      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]</td></tr>
-<tr class='bt'><td class='br'>     setting </td><td class='bl'>   .2705885   .1079405     2.51   0.023      .042854     .498323</td></tr>
-<tr><td class='br'>      effort </td><td class='bl'>   .9677137   .2250074     4.30   0.000     .4929895    1.442438</td></tr>
-<tr class='bb'><td class='br'>       _cons </td><td class='bl'>   -14.4511   7.093841    -2.04   0.058    -29.41779    .5155975</td></tr>
-</table></pre>
-<P>
-Compare the coefficients with Table 2.5 and the anova with Table 2.7.
-<P>
-The estimates suggest that fertility decline increases with social 
-setting, about a quarter of a percentage point per point of setting, 
-when we compare countries with the same effort. 
-Similarly, fertility declines about one percentage point more per 
-point of program effort, when we compare countries with the same 
-social setting. 
-<P>
-It is important to keep in mind that both conclusions are based on 
-the model, which assumes linearity and additivity. In fact we can't 
-really compare countries which differ exactly by one point in effort 
-and have the same setting, so goodness of fit will be a central 
-concern. 
-You may also note that I try to avoid using causal language when
-describing observational data.
-<P>
-<h4>Partial Correlations</h4> 
-<P>
-Make sure you know how to reproduce the hierarchical anova in 
-Table 2.8 in the notes. Let us check the partial correlation listed on 
-page 27.
-Here's the coefficient or change and effort controlling for setting:
-<pre class='stata'>
-. display "partial correlation = " sqrt((1449.1-694)/1449.1)
-partial correlation = .72186013</pre>
-<P>
-Squaring this coefficient we find that program effort is associated 
-with about half the variation left in fertility decline in
-countries with the same social setting. (It is common to say
-"after controlling for social setting", but of course we are not
-able to manipulate any of these variables.) 
-</p><p> 
-We could have computed the partial correlation using Stata's
-<code>pcor</code> command, which you might want to try to verify
-our result, but the calculation above shows more clearly what we are
-doing. Also, we could have used stored quantities, if only we had
-stored the residual sum of squares of the earlier model in a scalar.
-</p>
+─────────────┬────────────────────────────────────────────────────────────────
+      change │ Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+     setting │   .2705885   .1079405     2.51   0.023      .042854     .498323
+      effort │   .9677137   .2250074     4.30   0.000     .4929895    1.442438
+       _cons │   -14.4511   7.093841    -2.04   0.058    -29.41779    .5155975
+─────────────┴────────────────────────────────────────────────────────────────
+
+. scalar rss2 = e(rss)
+</pre>
+<p>Compare the coefficients with Table 2.5 and the anova with Table
+2.7.</p>
+<p>The estimates suggest that fertility decline increases with social
+setting, about a quarter of a percentage point per point of setting,
+when we compare countries with the same effort. Similarly, fertility
+declines about one percentage point more per point of program effort,
+when we compare countries with the same social setting.</p>
+<p>It is important to keep in mind that both conclusions are based on
+the model, which assumes linearity and additivity. In fact, we can’t
+really compare countries which differ exactly by one point in effort and
+have the same setting, so goodness of fit will be a central concern. You
+may also note that I try to avoid using causal language when dealing
+with observational data.</p>
+<p>The F-test for a linear effect of effort after taking into account
+setting is 18.5 on 1 and 17 d.f., and is the same as the square of the
+t-statistic of 4.3 on 17 d.f.</p>
+<h3 id="partial-correlations">Partial Correlations</h3>
+<p>Make sure you know how to reproduce the hierarchical anova in Table
+2.8 in the notes. Let us check the partial correlation listed on page
+27. Here’s the coefficient for change and effort controlling for
+setting:</p>
+<pre class='stata'>. display "partial correlation = " sqrt((rss1 - rss2)/rss1)
+partial correlation = .72186256
+</pre>
+<p>We could have use Stata’s <code>pcor</code>, which you may want to
+try to verify our result, but this shows more clearly what we are
+doing.</p>
+<p>Squaring this coefficient we find that program effort is associated
+with about half the variation left in fertility decline in countries
+with the same social setting. (It is common to say “after controlling
+for social setting”, but of course we are not able to manipulate any of
+these variables.)</p>

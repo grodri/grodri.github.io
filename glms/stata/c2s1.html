@@ -5,33 +5,20 @@ tab: "Stata Logs"
 pager: true
 ---
 
-
-<h2 class="first">2. Linear Models in Stata</h2> 
-<P>
-We start with the linear models in Chapter 2 of the lecture notes, 
-showing how to use the <code>regress</code> command in Stata to fit regression, 
-analysis of variance, and analysis of covariance models.
-<P>
-<h3>2.1 The Program Effort Data</h3> 
-<P>
-For a brief description of the program effort data see the lecture
-notes or point your browser to the 
-<a href='../datasets/default.html#effort'>datasets</a> page.  
-All datasets used in the course are now available as Stata files
-and can be read directly from the web:
-<pre class='stata'>
-. use http://data.princeton.edu/wws509/datasets/effort
-(Family Planning Effort Data)</pre>
-<P>
-The datasets remain available as plain text files that can be read 
-using almost any software. Please refer to the datasets page for 
-more information. The steps I followed to create this particular
-dataset are documented in my 
-<a href="/stata/dataManagement.html#s22">Stata Tutorial</a>.
-<P>
-Let us list the data to check that we got them OK:
-<pre class='stata'>
-. list country setting effort change, clean
+<h1 class="first" id="c2s1">2. Linear Models</h1>
+<p>We start with the linear models in Chapter 2 of the lecture notes,
+showing how to use the <code>regress</code> command in Stata to fit
+regression, analysis of variance, and analysis of covariance models.</p>
+<h2 id="the-program-effort-data">2.1 The Program Effort Data</h2>
+<p>For a brief description of the program effort data see the lecture
+notes or point your browser to the datasets page. All datasets used in
+the course are in plain text format, and they are also available as
+Stata system files. Both formats can be read directly from the web.</p>
+<pre class='stata'>. use https://grodri.github.io/datasets/effort, clear
+(Family Planning Effort Data)
+</pre>
+<p>Let us list the data to check that we got them OK.</p>
+<pre class='stata'>. list country setting effort change, clean
 
               country   setting   effort   change  
   1.          Bolivia        46        0        1  
@@ -53,45 +40,32 @@ Let us list the data to check that we got them OK:
  17.         Paraguay        74        3        6  
  18.             Peru        73        0        2  
  19.   TrinidadTobago        84       15       29  
- 20.        Venezuela        91        7       11</pre>
-<P>
-The next thing we want to do is plot the data for a closer look.
-The importance of becoming familiar with your data before
-undertaking sophisticated analyses cannot be over-emphasized.
-The following command creates scatterplots of all pairs of
-variables, reproducing Figure 2.1 in the notes.
-<pre class='stata'>
-. graph matrix change setting effort, ///
->         title("Figure 2.1: Scatterplot Matrix")
+ 20.        Venezuela        91        7       11  
+</pre>
+<p>As you can see, we have 20 observations on three variables: social
+<code>setting</code>, family planning <code>effort</code>, and fertility
+<code>change</code>.</p>
+<p>The next thing we want to do is plot the data for a closer look. The
+importance of becoming familiar with your data before undertaking
+sophisticated analyses cannot be over-emphasized. Let us create
+scatterplots of all pairs of variables, reproducing Figure 2.1 in the
+notes.</p>
+<pre class='stata'>. graph matrix change setting effort, ///
+>   title("Figure 2.1: Scatterplot Matrix")
 
 . graph export fig21.png, width(600) replace
-(file fig21.png written in PNG format)</pre>
-<P>
-<img src="fig21.png" class="img-responsive center-block"/>
-<P>
-After generating the graph you can print it using the command 
-<code>graph print</code>, 
-save it in Stata's own format using <code>graph save</code>,
-or export it into other formats using <code>grap export</code>.
-I exported the graph to <u>p</u>ortable <u>n</u>etwork 
-<u>g</u>raphics (PNG) format for inclusion on this web page. 
-<P>
-If you want to import the graph into a word processing program
-such as Word you are better off exporting to <u>w</u>indows
-<u>m</u>etafile <u>f</u>ormat (WMF) or the enhanced variant (EMF).
-The advantage of the metafile formats is that they are vector
-graphics that can be resized after inclusion in the document.
-<P>
-Windows interactive users can also print the graph by choosing 
-File|Print Graph on Stata's menu, 
-or save it in a variety of formats by choosing File|Save Graph.
-Alternatively, you can choose Edit|Copy to copy the graph to the 
-clipboard and then Edit|Paste to insert it into your favorite
-word processor.
-<P>
-Also, your graph may look slightly different than mine, depending
-on the <i>scheme</i> you use. The Stata default is called 
-<code>s2color</code>, but I tweaked it a bit to use a white
-background and match the color of the headings on this page.
-Type <code>help scheme</code> if you are interested in this subject.
-<P>
+file fig21.png saved as PNG format
+</pre>
+<p><img src="fig21.png" class="img-responsive center-block stata" /></p>
+<p>After generating the graph you can print it using the command
+<code>graph print</code>, save it in Stata’s own format using
+<code>graph save</code>, or export it into other formats using
+<code>grap export</code>. I exported the graph to <u>p</u>ortable
+<u>n</u>etwork <u>g</u>raphics (PNG) format for inclusion on this web
+page. Word users may be better off exporting to <u>w</u>indows
+<u>m</u>etafile <u>f</u>ormat (WMF) or the enhanced variant (EMF). LaTeX
+users may prefer to save directly into PDF format.</p>
+<p>Your graph may look slightly different than mine, depending on the
+<em>scheme</em> you use. The Stata default is called
+<code>s2color</code>, but these logs use <code>plottig</code>. Type
+<code>help scheme</code> if you are interested in this subject.</p>

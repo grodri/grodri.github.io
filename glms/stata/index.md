@@ -38,7 +38,7 @@ it. If nothing else, this will help document your work and ensure that you can
 reproduce your results. 
 
 Even better, use the [markstat](https://grodri.github.io/markstat) command
-to combine a narrative written in Markdown with Stata commands and output.  
+to combine a narrative written in Markdown with Stata commands and output. 
 These logs were all produced using `markstat`, and you will find the source 
 code on GitHub, just follow the link near the top-right of very log. 
 
@@ -47,4 +47,7 @@ version 3. Revisions were completed to target newer releases roughly every
 couple of years. The current edition was run using Stata 17 and was last 
 updated in the Fall of 2022.
 
+P.S. The Anscombe datasets are [here](anscombe)
+
 {% include toc.html %}
+

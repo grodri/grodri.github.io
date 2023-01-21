@@ -5,70 +5,65 @@ tab: "Stata Logs"
 pager: true
 ---
 
+<h2 class="first" id="c2s9">2.9 Regression Diagnostics</h2>
+<p>In this section we will be working with the additive analysis of
+covariance model of the previous section. As usual, we start by reading
+the data and recreating the variables we need. We then fit the
+model.</p>
+<pre class='stata'>. use https://grodri.github.io/datasets/effort, clear
+(Family Planning Effort Data)
 
-<h3 class="first">2.9 Regression Diagnostics</h3> 
-<P>
-All of the diagnostic measures discussed in the lecture notes can 
-be calculated in Stata, some in more than one way. 
-In particular, you may want to read about the command 
-<code>predict</code> after <code>regress</code> in the Stata manual.
-<P>
-In this section we will be working with the additive analysis of
-covariance model of the previous section. To save typing the
-model each time we need it, we can define a local macro
-<pre class='stata'>
-. local predictors "setting effort_mod effort_str"</pre>
-<P>
-Now we can fit our model using the following command
-<pre class='stata'>
-. regress change `predictors'
+. recode effort (0/4=1 "Weak") (5/14=2 "Moderate") ///
+>   (15/max=3 "Strong"), gen(effort_g) label(effort_g)
+(20 differences between effort and effort_g)
 
-<table class='stata'><tr><td><table class='stata'>
-<tr class='bb'><td class='br'>      Source </td><td class='bl'>       SS       df       MS   </td></tr>
-<tr class='bt'><td class='br'>       Model </td><td class='bl'>  2124.50633     3  708.168776</td></tr>
-<tr class='bb'><td class='br'>    Residual </td><td class='bl'>  525.693673    16  32.8558546</td></tr>
-<tr class='bt'><td class='br'>       Total </td><td class='bl'>      2650.2    19  139.484211</td></tr>
-</table></td><td>           Number of obs =      20
-           F(  3,    16) =   21.55
-           Prob > F      =  0.0000
-           R-squared     =  0.8016
-           Adj R-squared =  0.7644
-           Root MSE      =   5.732</td></tr></table>
+.  regress change setting i.effort_g
 
-<table class='stata'>
-<tr class='bb bt'><td class='br'>      change </td><td class='bl'>      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]</td></tr>
-<tr class='bt'><td class='br'>     setting </td><td class='bl'>   .1692677   .1055505     1.60   0.128    -.0544894    .3930247</td></tr>
-<tr><td class='br'>  effort_mod </td><td class='bl'>   4.143915   3.191179     1.30   0.213    -2.621082    10.90891</td></tr>
-<tr><td class='br'>  effort_str </td><td class='bl'>   19.44761   3.729295     5.21   0.000     11.54186    27.35336</td></tr>
-<tr class='bb'><td class='br'>       _cons </td><td class='bl'>  -5.954036    7.16597    -0.83   0.418    -21.14521    9.237141</td></tr>
-</table></pre>
-<P>
-Let us start with the residuals.
-The easiest way to get them is as options of the <code>predict</code> command. 
-Specify the option <code>res</code> for the raw residuals,
-<code>rstand</code> for the standardized residuals, and
-<code>rstud</code> for the studentized (or jackknifed) residuals.
-Let us obtain all three:
-<pre class='stata'>
-. predict ri, res
+      Source │       SS           df       MS      Number of obs   =        20
+─────────────┼──────────────────────────────────   F(3, 16)        =     21.55
+       Model │  2124.50633         3  708.168776   Prob > F        =    0.0000
+    Residual │  525.693673        16  32.8558546   R-squared       =    0.8016
+─────────────┼──────────────────────────────────   Adj R-squared   =    0.7644
+       Total │      2650.2        19  139.484211   Root MSE        =     5.732
+
+─────────────┬────────────────────────────────────────────────────────────────
+      change │ Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+     setting │   .1692677   .1055505     1.60   0.128    -.0544894    .3930247
+             │
+    effort_g │
+   Moderate  │   4.143915   3.191179     1.30   0.213    -2.621082    10.90891
+     Strong  │   19.44761   3.729295     5.21   0.000     11.54186    27.35336
+             │
+       _cons │  -5.954036    7.16597    -0.83   0.418    -21.14521    9.237141
+─────────────┴────────────────────────────────────────────────────────────────
+</pre>
+<p>All of the diagnostic measures discussed in the lecture notes can be
+calculated in Stata and R, some in more than one way.</p>
+<h3 id="residuals">Residuals</h3>
+<p>Let us start with the residuals. The easiest way to get them is as
+options of the <code>predict</code> command. Specify the option
+<code>res</code> for the raw residuals, <code>rstand</code> for the
+standardized residuals, and <code>rstud</code> for the studentized (or
+jackknifed) residuals. Let us obtain all three:</p>
+<pre class='stata'>. predict ri, res
 
 . predict si, rsta 
 
 . predict ti, rstu
 
-. label var ti "Jack-knifed residuals"</pre>
-<P>
-To get the diagonal elements of the hat matrix and Cook's distance we use two 
-more options of <code>predict</code>, <code>hat</code> and <code>cook</code>:
-<pre class='stata'>
-. predict hii, hat
+. label var ti "Jack-knifed residuals"
+</pre>
+<h3 id="leverage-and-influence">Leverage and Influence</h3>
+<p>To get the diagonal elements of the hat matrix and Cook’s distance we
+use two more options of <code>predict</code>, <code>hat</code> and
+<code>cook</code>: :::</p>
+<pre class='stata'>. predict hii, hat
 
-. predict di, cook</pre>
-<P>
-We are now ready to print 
-<a class="notes" href="../notes/c2s9.html#t:diag">Table 2.29</a> in the notes
-<pre class='stata'>
-. list country ri si ti hii di, clean
+. predict di, cook
+</pre>
+<p>We are now ready to print Table 2.29 in the notes.</p>
+<pre class='stata'>. list country ri si ti hii di, clean
 
               country          ri          si          ti        hii         di  
   1.          Bolivia   -.8322767   -.1689738   -.1637543   .2616128    .002529  
@@ -90,37 +85,35 @@ We are now ready to print
  17.         Paraguay   -.5717711    -.109629   -.1061877   .1720945   .0006246  
  18.             Peru   -4.402503   -.8410965   -.8330122   .1661363   .0352372  
  19.   TrinidadTobago    1.287944     .242732    .2354582   .1431063   .0024599  
- 20.        Venezuela   -2.593236   -.5752294   -.5628135   .3814295    .051009</pre>
-<P>
-Here is an easy way to find the cases highlighted in Table 2.29,
-those with standardized or jackknifed residuals greater than 2 in magnitude:
-<pre class='stata'>
-. list country ri si ti hii di if abs(si) > 2 | abs(ti) > 2, clean
+ 20.        Venezuela   -2.593236   -.5752294   -.5628135   .3814295    .051009  
+</pre>
+<p>Here is an easy way to find the cases highlighted in Table 2.29,
+those with standardized or jackknifed residuals greater than 2 in
+magnitude:</p>
+<pre class='stata'>. list country ri si ti hii di if abs(si) > 2 | abs(ti) > 2, clean
 
             country          ri          si          ti        hii         di  
   6.           Cuba    11.44161    2.163383    2.490349   .1486769   .2043412  
   7.   DominicanRep    11.29992    2.161597    2.487445   .1682585   .2363079  
-  8.        Ecuador   -10.03862   -1.925296   -2.126719   .1725536   .1932498</pre>
-<P>
-We will use a scalar to calculate the maximum acceptable leverage,
-which is <i>2p/n</i> in general,
-and then list the cases exceeding that value (if any).
-<pre class='stata'>
-. scalar hiimax = 2*4/20
+  8.        Ecuador   -10.03862   -1.925296   -2.126719   .1725536   .1932498  
+</pre>
+<p>We will calculate the maximum acceptable leverage, which is
+<em>2p/n</em> in general, and then list the cases exceeding that value
+(if any).</p>
+<pre class='stata'>. scalar hiimax = 2*4/20
 
-.  list country ri si ti hii di if hii > hiimax, clean 
+. list country ri si ti hii di if hii > hiimax, clean 
 
        country         ri         si         ti        hii         di  
- 11.     Haiti   .0296676   .0069303   .0067103   .4422478   9.52e-06</pre>
-<P>
-We find that Haiti has a lot of leverage, but very little actual influence.
-Let us list the six most influential countries. I will do
-this by sorting the data in <i>descending</i> order of influence
-and then listing the first six. Stata's regular <code>sort</code> 
-command sorts only in <i>ascending</i> order, but <code>gsort</code> 
-can do descending if you specify <code>-di</code>. 
-<pre class='stata'>
-. gsort -di
+ 11.     Haiti   .0296676   .0069303   .0067103   .4422478   9.52e-06  
+</pre>
+<p>We find that Haiti has a lot of leverage, but very little actual
+influence. Let us list the six most influential countries. I will do
+this by sorting the data in <em>descending</em> order of influence and
+then listing the first six. Stata’s regular <code>sort</code> command
+sorts only in <em>ascending</em> order, but <code>gsort</code> can do
+descending if you specify <code>-di</code>.</p>
+<pre class='stata'>. gsort -di
 
 . list country di in 1/6, clean
 
@@ -130,19 +123,15 @@ can do descending if you specify <code>-di</code>.
   3.        Ecuador   .1932498  
   4.        Jamaica   .0782469  
   5.      Venezuela    .051009  
-  6.         Panama   .0483857</pre>
-<P>
-Turns out that the D.R., Cuba, and Ecuador are fairly influential observations.
-Try refitting the model without the D.R. to verify what I say on
-page 57 of the lecture notes.
-<P>
-<h4>Residual Plots</h4> 
-<P>
-On to plots! 
-Here is the standard residual plot in Figure 2.6, produced using
-the following commands:
-<pre class='stata'>
-. predict yhat
+  6.         Panama   .0483857  
+</pre>
+<p>Turns out that the D.R., Cuba, and Ecuador are fairly influential
+observations. Try refitting the model without the D.R. to verify what I
+say on page 57 of the lecture notes.</p>
+<h3 id="residual-plots">Residual Plots</h3>
+<p>On to plots! Here is the standard residual plot in Figure 2.6,
+produced using the following code:</p>
+<pre class='stata'>. predict yhat
 (option xb assumed; fitted values)
 
 . label var yhat "Fitted values"
@@ -150,34 +139,30 @@ the following commands:
 . scatter ti yhat, title("Figure 2.6: Residual Plot for Ancova Model") 
 
 . graph export fig26.png, width(500) replace
-(file fig26.png written in PNG format)</pre>
-<P>
-<img src="fig26.png" class="img-responsive center-block"/> 
-<P>
-<h4> Q-Q Plots</h4> 
-<P>
-Now for that lovely Q-Q-plot in Figure 2.7 of the notes:
-<pre class='stata'>
-. qnorm ti, title("Figure 2.7: Q-Q Plot for Residuals of Ancova Model")
+file fig26.png saved as PNG format
+</pre>
+<p><img src="fig26.png" class="img-responsive center-block stata" /></p>
+<p><em>Exercise</em>: Can you label the points coresponding to Cuba, the
+D.R. and Ecuador?</p>
+<h3 id="q-q-plots">Q-Q Plots</h3>
+<p>Now for that lovely Q-Q-plot in Figure 2.7 of the notes:</p>
+<pre class='stata'>. qnorm ti, title("Figure 2.7: Q-Q Plot for Residuals of Ancova Model")
 
 . graph export fig27.png, width(500) replace
-(file fig27.png written in PNG format)</pre>
-<P>
-<img src="fig27.png" class="img-responsive center-block"/> 
-<P>
-Wasn't that easy?
-Stata's <code>qnorm</code> evaluates the inverse normal cdf at
-<i>i/(n+1)</i> rather than at <i>(i-3/8)/(n+1/4)</i> or some
-of the other approximations discussed in the notes.
-Of course you can use any approximation you want, at the
-expense of doing a bit more work.
-I will illustrate the general idea by calculating Filliben's
-approximation  to the expected order statistics or rankits,
-using Stata's built-in system variables
- <code>_n</code> for the observation number and
- <code>_N</code> for the number of cases.
-<pre class='stata'>
-. sort si
+file fig27.png saved as PNG format
+</pre>
+<p><img src="fig27.png" class="img-responsive center-block stata" /></p>
+<p>Wasn’t that easy? Stata’s <code>qnorm</code> evaluates the inverse
+normal cdf at <em>i/(n+1)</em> rather than at <em>(i-3/8)/(n+1/4)</em>
+or some of the other approximations discussed in the notes. Of course
+you can use any approximation you want, albeit at the expense of
+additional work.</p>
+<h3 id="filliben">Filliben</h3>
+<p>I will illustrate the general idea by calculating Filliben’s
+approximation to the expected order statistics or rankits. I will use
+Stata’s built-in system variables <code>_n</code> for the observation
+number and <code>_N</code> for the number of cases.</p>
+<pre class='stata'>. sort ti
 
 . gen pi = (_n-0.3175)/(_N+0.365)
 
@@ -189,16 +174,17 @@ using Stata's built-in system variables
 
 . gen filliben = invnorm(pi)
 
-. corr si filliben
+. corr ti si filliben          
 (obs=20)
 
-<table class='stata'>
-<tr class='bb'><td class='br'>             </td><td class='bl'>       si filliben</td></tr>
-<tr class='bt'><td class='br'>          si </td><td class='bl'>   1.0000         </td></tr>
-<tr><td class='br'>    filliben </td><td class='bl'>   0.9655   1.0000</td></tr>
-</table></pre>
-<P>
-Fortunately the Filliben correlation agrees with the value in the notes: 0
-.9655. I will skip the graph because it looks almost identical to the one
-produced by <code>qnorm</code>.
-</p>
+             │       ti       si filliben
+─────────────┼───────────────────────────
+          ti │   1.0000
+          si │   0.9984   1.0000
+    filliben │   0.9518   0.9655   1.0000
+</pre>
+<p>The correlation is 0.9518 using jack-knifed residuals, and 0.9655
+using standardized residuals. The latter is the value quoted in the
+notes. Both are above (if barely) the minimum correlation of 0.95 needed
+to accept normality. I will skip the graph because it looks almost
+identical to the one produced above.</p>
