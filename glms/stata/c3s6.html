@@ -5,37 +5,63 @@ tab: "Stata Logs"
 pager: true
 ---
 
+<h2 class="first" id="c3s6">3.6 Multi-factor Models: Model
+Selection</h2>
+<p>We now move to an analysis using all three predictors: age, desire
+for no more children, and education, which is grouped into two
+categories: lower primary or less, and upper primary or more. The data
+can be read from the datasets section. We will use the wider format,
+that has 16 rows; one for each combination of the three predictors, with
+columns for users and nonusers. (The last section shows how one can
+obtain the same results using the longer format, that has 32 rows: one
+for each combination of the three predictors and response, with a column
+for the frequency of that combination.)</p>
+<pre class='stata'>. use https://grodri.github.io/datasets/cusew, clear    
+(Contraceptive Use Data (Fiji, 1976))
 
-<h3 class="first">3.6 Multi-factor Models: Model Selection</h3>
-<P>
-We now move to an analysis using all three predictors: age, desire for 
-no more children, and education. We start by considering models that
-treat all variables as factors. Because we have only three variables 
-we are able to fit all possible models, which provides a nice check
-on the usual forward selection or backward elimination strategies.
-<P>
-<h4>The Deviance Table</h4>
-<P>
-Let us reproduce Table 3.13, which compares all possible one, two and
-three-factor  models.
-I will take advantage of Stata's factor variables to simplify specifying 
-these models. 
-I will also supress all output to save space, as we are only interested 
-in the deviances. 
-<P>
-(If you are using an earlier version 
-of Stata you can try the <code>xi</code> prefix, or build the dummy
-variables for the two and three-factor interactions by hand. 
-I recommend that you use macros to store the names of the dummies 
-corresponding to each interaction term, both for brevity and clarity.)
-<P>
-The first step will be to fit the model with the three-factor
-interaction, which is saturated for the 2x4x2x2 table of
-contraceptive use by age, education, and desire for more children.
-We will store the log-likelihood and d.f. in two scalars,
-and save the fitted values for later plotting 
-<pre class='stata'>
-. quietly logit cuse i.age##c.nomore##c.educ [fw=n]
+. gen n = users + nonusers
+
+. list, sep(4)
+
+     ┌────────────────────────────────────────────────────────────────────────┐
+     │   age                    educ          nomore   nonusers   users     n │
+     ├────────────────────────────────────────────────────────────────────────┤
+  1. │   &lt;25   Lower primary or less      Wants more         53       6    59 │
+  2. │   &lt;25   Lower primary or less   Wants no more         10       4    14 │
+  3. │   &lt;25   Upper primary or more      Wants more        212      52   264 │
+  4. │   &lt;25   Upper primary or more   Wants no more         50      10    60 │
+     ├────────────────────────────────────────────────────────────────────────┤
+  5. │ 25-29   Lower primary or less      Wants more         60      14    74 │
+  6. │ 25-29   Lower primary or less   Wants no more         19      10    29 │
+  7. │ 25-29   Upper primary or more      Wants more        155      54   209 │
+  8. │ 25-29   Upper primary or more   Wants no more         65      27    92 │
+     ├────────────────────────────────────────────────────────────────────────┤
+  9. │ 30-39   Lower primary or less      Wants more        112      33   145 │
+ 10. │ 30-39   Lower primary or less   Wants no more         77      80   157 │
+ 11. │ 30-39   Upper primary or more      Wants more        118      46   164 │
+ 12. │ 30-39   Upper primary or more   Wants no more         68      78   146 │
+     ├────────────────────────────────────────────────────────────────────────┤
+ 13. │ 40-49   Lower primary or less      Wants more         35       6    41 │
+ 14. │ 40-49   Lower primary or less   Wants no more         46      48    94 │
+ 15. │ 40-49   Upper primary or more      Wants more          8       8    16 │
+ 16. │ 40-49   Upper primary or more   Wants no more         12      31    43 │
+     └────────────────────────────────────────────────────────────────────────┘
+</pre>
+<p>We start by considering models that treat age as a factor with four
+categories, fertility preferences using an indicator for wanting no
+more, and educational level using an indicator for upper primary or
+more. Because we have only three variables we are able to fit all
+possible models, which provides a nice check on the usual model building
+strategies using forward selection and backward elimination.</p>
+<h3 id="the-deviance-table">The Deviance Table</h3>
+<p>Let us reproduce Table 3.13, which compares all possible one, two and
+three-factor models.</p>
+<p>The first step will be to fit the model with the three-factor
+interaction, which is saturated for the 2x4x2x2 table of contraceptive
+use by age, education, and desire for more children. We will store the
+log-likelihood and d.f. in two scalars, and save the fitted values for
+later plotting.</p>
+<pre class='stata'>. quietly glm users i.age##c.nomore##c.educ, family(binomial n)
 
 . scalar slogL = e(ll)
 
@@ -43,45 +69,45 @@ and save the fitted values for later plotting
 
 . predict obs3, xb   // 3-way model
 </pre>
-<P>
-Next we are going to fit 16 different models.
-Given the repetitive nature of the calculations it pays to plan in
-advance. I will create three variables to store the name, deviance and
-d.f. of each model, using a string of up to 36 characters for the
-model name
-<pre class='stata'>
+<p>::: Next we are going to fit 16 different models. Given the
+repetitive nature of the calculations it pays to plan in advance. I will
+create three variables to store the name, deviance and d.f. of each
+model, using a string of up to 36 characters for the model name. :::</p>
+<pre class='stata'>. set obs 17
+Number of observations (_N) was 16, now 17.
+
 . gen str36 model = ""
-(32 missing values generated)
+(17 missing values generated)
 
 . gen deviance = .
-(32 missing values generated)
+(17 missing values generated)
 
 . gen df = .
-(32 missing values generated)
+(17 missing values generated)
 </pre>
-<P>
-I will then write a simple command that takes as arguments the
-name and specification of the model, fits it, and stores the
-name, deviance and d.f. in the three variables just defined,
-using a global macro <code>n</code> to keep track of the 
-number of the row where the results will be stored
-<pre class='stata'>
-. program define mfit
-  1.         version 11
-  2.         args model formula
-  3.         quietly logit cuse `formula' [fw=n]
-  4.         global n = $n + 1
-  5.         quietly replace model = "`model'" in $n
-  6.         quietly replace deviance = 2*(slogL-e(ll)) in $n
-  7.         quietly replace df = sdf - e(df_m) in $n
+<p>We then write a simple command that takes as arguments the name and
+specification of the model, fits it, and stores the name, deviance and
+d.f. in the three variables just defined, using a global macro
+<code>n</code> to keep track of the number of the row where the results
+will be stored.</p>
+<pre class='stata'>. capture program drop mfit
+
+. program mfit
+  1. version 11
+  2. args model formula
+  3. quietly glm users `formula', family(binomial n)
+  4. global n = $n + 1
+  5. quietly replace model = "`model'" in $n
+  6. quietly replace deviance = e(deviance) in $n
+  7. quietly replace df = sdf - e(df_m) in $n
   8. end
 </pre>
-<P>
-Finally I initialize the row number to 0 and fit the models,
-taking care to enclose the model name and formula in quotes 
-to ensure that they are treated as just two arguments rather 
-than split into words
-<pre class='stata'>
+<p>Finally I initialize the row number to 0 and fit the models, taking
+care to enclose the model name and formula in quotes to ensure that they
+are treated as just two arguments rather than split into words</p>
+<pre class='stata'>. set obs 17
+Number of observations (_N) was 17, now 17.
+
 . global n = 0
 
 . // one-factor models
@@ -123,14 +149,12 @@ than split into words
 . mfit "NoMore * (Age + Education)" "i.age##c.nomore c.educ##c.nomore"
 
 . // three interactions
-. mfit "Age*Educ+Age*NoMore+Educ*NoMore" "i.age##c.nomore c.educ i.age#c.educ c
-> .educ#c.nomore"
+. mfit "Age*Educ+Age*NoMore+Educ*NoMore" ///
+>   "i.age##c.nomore c.educ i.age#c.educ c.educ#c.nomore"
 </pre>
-<P>
-Done, let's print the results, using only two decimal places for the 
-deviances
-<pre class='stata'>
-. format deviance %6.2f
+<p>Done, let’s print the results, using only two decimal places for the
+deviances</p>
+<pre class='stata'>. format deviance %6.2f
 
 . list model deviance df if !missing(deviance), clean
 
@@ -153,362 +177,477 @@ deviances
  16.        NoMore * (Age + Education)      10.82    6  
  17.   Age*Educ+Age*NoMore+Educ*NoMore       2.44    3  
 </pre>
-<P>
-Please refer to the notes for various tests based on these models.
-You should be able to test for net effects of each factor given the 
-other two, test each of the interactions, and test the goodness of 
-fit of each model. We now examine three models of interest.
-<P>
-<h4>The Three-factor Additive Model</h4>
-<P>
-We will fit again the three-factor additive model so we can show
-the parameter estimates reflecting the net effect of each factor.
-The gross effects of age and desire or no more children have been
-shown earlier in this log. I continue to use factor variables
-<pre class='stata'>
-. logit cuse i.age educ nomore [fw=n]
+<p>Please refer to the notes for various tests based on these models.
+You should be able to test for net effects of each factor given the
+other two, test each of the interactions, and test the goodness of fit
+of each model. We now examine three models of interest.</p>
+<h3 id="the-three-factor-additive-model">The Three-factor Additive
+Model</h3>
+<p>We fit again the three-factor additive model, so we can show the
+parameter estimates reflecting the net effect of each factor. The gross
+effects of age and desire or no more children have been shown in earlier
+sections.</p>
+<pre class='stata'>. glm users i.age educ nomore, family(binomial n)
 
-Iteration 0:   log likelihood = -1001.8468  
-Iteration 1:   log likelihood = -934.92579  
-Iteration 2:   log likelihood = -933.92045  
-Iteration 3:   log likelihood =  -933.9192  
-Iteration 4:   log likelihood =  -933.9192  
+Iteration 0:   log likelihood = -50.793156  
+Iteration 1:   log likelihood = -50.712573  
+Iteration 2:   log likelihood = -50.712565  
+Iteration 3:   log likelihood = -50.712565  
 
-Logistic regression                               Number of obs   =       1607
-                                                  LR chi2(5)      =     135.86
-                                                  Prob > chi2     =     0.0000
-Log likelihood =  -933.9192                       Pseudo R2       =     0.0678
+Generalized linear models                         Number of obs   =         16
+Optimization     : ML                             Residual df     =         10
+                                                  Scale parameter =          1
+Deviance         =  29.91722173                   (1/df) Deviance =   2.991722
+Pearson          =  28.28833641                   (1/df) Pearson  =   2.828834
 
-------------------------------------------------------------------------------
-        cuse |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-         age |
-          2  |   .3893816   .1758501     2.21   0.027     .0447219    .7340414
-          3  |   .9086135   .1646211     5.52   0.000     .5859621    1.231265
-          4  |   1.189239     .21443     5.55   0.000     .7689639    1.609514
-             |
-        educ |   .3249947   .1240355     2.62   0.009     .0818894    .5680999
-      nomore |   .8329548   .1174705     7.09   0.000     .6027169    1.063193
-       _cons |  -1.966169   .1720307   -11.43   0.000    -2.303343   -1.628995
-------------------------------------------------------------------------------
+Variance function: V(u) = u*(1-u/n)               [Binomial]
+Link function    : g(u) = ln(u/(n-u))             [Logit]
+
+                                                  AIC             =   7.089071
+Log likelihood   =  -50.7125647                   BIC             =   2.191335
+
+─────────────┬────────────────────────────────────────────────────────────────
+             │                 OIM
+       users │ Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+         age │
+      25-29  │   .3893816   .1758501     2.21   0.027     .0447219    .7340414
+      30-39  │   .9086135   .1646211     5.52   0.000     .5859621    1.231265
+      40-49  │   1.189239     .21443     5.55   0.000     .7689639    1.609514
+             │
+        educ │   .3249947   .1240355     2.62   0.009     .0818894    .5680999
+      nomore │   .8329548   .1174705     7.09   0.000     .6027169    1.063193
+       _cons │  -1.966169   .1720307   -11.43   0.000    -2.303343   -1.628995
+─────────────┴────────────────────────────────────────────────────────────────
 
 . di exp(_b[educ])
 1.3840232
 </pre>
-<P>
-Contraceptive use differs by each of these factors, even when we
-compare women who fall in the same categories of the other two.
-For example the odds of using contraception are  38% higher among
-women with some education than among women with no education 
-in the same age group and category of desire for more children.
-<P>
-The deviance of 29.92 on 10 d.f. tells us that this model does not
-fit the data, so the assumption that logit differences by one 
-variable are the same across categories of the other two is suspect.
-<P>
-<h4>The Model with One Interaction Effect</h4>
-<P>
-Of the three models with one interaction term, the one that achieves 
+<p>Contraceptive use differs by each of these factors, even when we
+compare women who fall in the same categories of the other two. For
+example the odds of using contraception are 38% higher among women with
+upper primary or more, compared to women with lower primary or less, in
+the same age group and category of desire for more children.</p>
+<p>The deviance of 29.92 on 10 d.f. tells us that this model does not
+fit the data, so the assumption that logit differences by one variable
+are the same across categories of the other two is suspect.</p>
+<h3 id="the-model-with-one-interaction-effect">The Model with One
+Interaction Effect</h3>
+<p>Of the three models with one interaction term, the one that achieves
 the largest improvement in fit compared to the additive model is the
-model with an age by no more interaction, where the difference in
-logits between women who want and do not want more children varies
-by age. 
-<P>
-The standard reference-cell parametrization can easily be obtained
-using factor variables:
-<pre class='stata'>
-. logit cuse i.age##c.nomore educ [fw=n]
+model with an age by no more interaction, where the difference in logits
+between women who want no more children and those who do varies by
+age.</p>
+<p>The standard reference-cell parametrization can easily be obtained
+using factor variables:</p>
+<pre class='stata'>. glm users educ i.age##c.nomore, family(binomial n)
 
-Iteration 0:   log likelihood = -1001.8468  
-Iteration 1:   log likelihood = -926.33767  
-Iteration 2:   log likelihood = -925.27593  
-Iteration 3:   log likelihood = -925.27536  
-Iteration 4:   log likelihood = -925.27536  
+Iteration 0:   log likelihood = -42.121099  
+Iteration 1:   log likelihood = -42.068742  
+Iteration 2:   log likelihood =  -42.06873  
+Iteration 3:   log likelihood =  -42.06873  
 
-Logistic regression                               Number of obs   =       1607
-                                                  LR chi2(8)      =     153.14
-                                                  Prob > chi2     =     0.0000
-Log likelihood = -925.27536                       Pseudo R2       =     0.0764
+Generalized linear models                         Number of obs   =         16
+Optimization     : ML                             Residual df     =          7
+                                                  Scale parameter =          1
+Deviance         =  12.62955292                   (1/df) Deviance =   1.804222
+Pearson          =  13.06280922                   (1/df) Pearson  =   1.866116
 
-------------------------------------------------------------------------------
-        cuse |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-         age |
-          2  |   .3946039   .2014504     1.96   0.050    -.0002315    .7894394
-          3  |   .5466635   .1984206     2.76   0.006     .1577663    .9355607
-          4  |   .5795235   .3474172     1.67   0.095    -.1014017    1.260449
-             |
-      nomore |   .0662197   .3307064     0.20   0.841    -.5819529    .7143922
-             |
-age#c.nomore |
-          2  |     .25918   .4097504     0.63   0.527    -.5439161    1.062276
-          3  |   1.112662   .3740433     2.97   0.003     .3795507    1.845773
-          4  |   1.361674   .4843256     2.81   0.005     .4124134    2.310935
-             |
-        educ |   .3406479   .1257653     2.71   0.007     .0941525    .5871432
-       _cons |  -1.803172   .1801786   -10.01   0.000    -2.156315   -1.450028
-------------------------------------------------------------------------------
+Variance function: V(u) = u*(1-u/n)               [Binomial]
+Link function    : g(u) = ln(u/(n-u))             [Logit]
+
+                                                  AIC             =   6.383591
+Log likelihood   = -42.06873029                   BIC             =  -6.778568
+
+─────────────┬────────────────────────────────────────────────────────────────
+             │                 OIM
+       users │ Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+        educ │   .3406479   .1257653     2.71   0.007     .0941525    .5871432
+             │
+         age │
+      25-29  │   .3946039   .2014504     1.96   0.050    -.0002315    .7894394
+      30-39  │   .5466635   .1984206     2.76   0.006     .1577663    .9355607
+      40-49  │   .5795235   .3474172     1.67   0.095    -.1014017    1.260449
+             │
+      nomore │   .0662197   .3307064     0.20   0.841    -.5819529    .7143922
+             │
+age#c.nomore │
+      25-29  │     .25918   .4097504     0.63   0.527    -.5439161    1.062276
+      30-39  │   1.112662   .3740433     2.97   0.003     .3795507    1.845773
+      40-49  │   1.361674   .4843256     2.81   0.005     .4124134    2.310935
+             │
+       _cons │  -1.803172   .1801786   -10.01   0.000    -2.156315   -1.450028
+─────────────┴────────────────────────────────────────────────────────────────
 
 . di exp(_b[nomore]), exp(_b[4.age#c.nomore]), ///
->    exp(_b[nomore] + _b[4.age#c.nomore]) 
+>   exp(_b[nomore] + _b[4.age#c.nomore]) 
 1.0684614 3.902721 4.1699068
 </pre>
-<P>
-Make sure you know how to interpret all of these coefficients. For
+<p>Make sure you know how to interpret all of these coefficients. For
 example the ratio of the odds of using contraception among women who
 want no more children relative to those who want more in the same
-category of education is 1.07 among women under age 25, but 3.9
-times more (giving an odds ratio of 4.1) among women in their forties.
-<P>
-To aid in interpretation and model criticism we can plot the
-observed and fitted logits, effectively reproducing Figure 3.4.
-Because we will need more than one plot I will encapsulate the
-calculations in a command <code>pof</code>, for <u>p</u>lot
-<u>o</u>bserved and <u>f</u>fitted. 
-So here's the command:
-<pre class='stata'>
-. capture program drop pof
+category of education is 1.07 among women under age 25, but 3.9 times
+more (giving an odds ratio of 4.1) among women in their forties.</p>
+<p>To aid in interpretation and model criticism we can plot the observed
+and fitted logits, effectively reproducing Figure 3.4. Because we will
+need more than one plot, I will encapsulate the calculations in a
+command <code>pof</code>, for <u>p</u>lot <u>o</u>bserved and
+<u>f</u>itted.</p>
+<pre class='stata'>. capture program drop pof
 
-. program define pof
-  1.         args obs fit more
-  2.         twoway ///
->         (scatter `obs' agem if educ==0 & nomore==0, ms(D) mc(green) ) ///
->         (scatter `obs' agem if educ==0 & nomore==1, ms(T) mc(red)) ///
->         (scatter `obs' agem if educ==1 & nomore==0, ms(C) mc(green)) ///
->         (scatter `obs' agem if educ==1 & nomore==1, ms(S) mc(red)) ///
->         (line `fit' agem if educ==0 & nomore==0, lp(dash) lc(green)) ///
->         (line `fit' agem if educ==0 & nomore==1, lp(dash) lc(red) ) ///
->         (line `fit' agem if educ==1 & nomore==0, lp(solid) lc(green)) ///
->         (line `fit' agem if educ==1 & nomore==1, lp(solid) lc(red))  ///
->         , title("Contraceptive Use by Age, Education, and Preferences") ///
->           xtitle(age) ytitle(logit) legend( rows(2) ///
->           order(1 "uned/" 2 "uned/"   3 "educ/" 4 "educ/" ///
->                 5 "more"  6 "no more" 7 "more"  8 "no more") ) `more'
-  3. end
+. program pof
+  1. args obs fit more
+  2. // build labels for the curves using fit at last age
+. local labels `""nomore/upper" "nomore/lower" "more/upper" "more/lower""'
+  3. local text 
+  4. forvalues i=1/16 {
+  5.     if age[`i'] != 4 continue
+  6.     local k =  4 - 2*nomore[`i'] - educ[`i'] 
+  7.     local label: word `k' of `labels'
+  8.     local value = round(`fit'[`i'], 0.01)
+  9.     local text `text' `value' 45.5 "`label'"
+ 10. }
+ 11. // plot observed and fitted logits
+. twoway ///
+>   (scatter `obs' agem if educ==1 &amp; nomore==1, ms(S) mc(red)) ///
+>   (scatter `obs' agem if educ==0 &amp; nomore==1, ms(T) mc(red)) ///
+>   (scatter `obs' agem if educ==1 &amp; nomore==0, ms(O) mc(green)) ///
+>   (scatter `obs' agem if educ==0 &amp; nomore==0, ms(D) mc(green) ) ///      
+>   (line `fit' agem if educ==1 &amp; nomore==1, lp(solid) lc(red))  ///
+>   (line `fit' agem if educ==0 &amp; nomore==1, lp(dash) lc(red) ) ///
+>   (line `fit' agem if educ==1 &amp; nomore==0, lp(solid) lc(green)) ///
+>   (line `fit' agem if educ==0 &amp; nomore==0, lp(dash) lc(green)) ///
+>   , title("Contraceptive Use by Age, Education, and Preferences") ///      
+>     xtitle(age) ytitle(logit)  legend(off) `more' ///
+>     xsc(range(15 50)) text(`text', placement(r) size(vsmall)) 
+ 12. end
 </pre>
-<P>
-The plot combines four scatterplots and four line plots, one for
-each subgroup defined by education and desire for more children.
-The command takes as arguments the names of variables with the 
-observed and fitted value and an optional string to be passed along 
-as an option to the graph twoway command. It uses the same
-markers as in the notes, but with what I hope is a better legend 
-<P>
-So here's our first plot
-<pre class='stata'>
-. predict lfit31, xb
+<p>The plot combines four scatterplots and four line plots, one for each
+subgroup defined by education and desire for more children. The command
+takes as arguments the names of variables with the observed and fitted
+value and an optional string to be passed along as an option to the
+graph twoway command. I use the same markers as in the notes, but with
+what I hope is a better legend.</p>
+<p>So here’s our first plot</p>
+<pre class='stata'>. recode age (1=20) (2=27.5) (3=35) (4=45), gen(agem)
+(16 differences between age and agem)
 
-. pof obs3 lfit31 "subtitle(Model with Age by Preferences Interaction)"
-(note:  named style C not found in class symbol, default attributes used
+. gen obs = log(users/nonusers)
+(1 missing value generated)
+
+. predict lfit31, xb
+(1 missing value generated)
+
+. pof obs lfit31 "subtitle(Model with Age by Preferences Interaction)"
 
 . graph export fig34.png, width(500) replace
-(file fig34.png written in PNG format)
+file fig34.png saved as PNG format
 </pre>
-<P>
-<img src="fig34.png" class="img-responsive center-block"/>
-<P>
-I often find interpretation of the interactions is more direct if
-I combine them with the main effects. Here is the same model showing
-the difference in logits by desire for more children in each age  group, 
-reproducing the results in Table 3.15
-<pre class='stata'>
-. gen nomo_at1524 = nomore * (age==1)
+<p><img src="fig34.png" class="img-responsive center-block stata" /></p>
+<p>I often find that interpretation of the interactions is more direct
+if I combine them with the main effects. Here is the same model showing
+the difference in logits by desire for more children in each age group,
+reproducing the results in Table 3.15</p>
+<pre class='stata'>. glm users i.age i.age#c.nomore educ, family(binomial n)
 
-. gen nomo_at2529 = nomore * (age==2)
+Iteration 0:   log likelihood = -42.121099  
+Iteration 1:   log likelihood = -42.068742  
+Iteration 2:   log likelihood =  -42.06873  
+Iteration 3:   log likelihood =  -42.06873  
 
-. gen nomo_at3039 = nomore * (age==3)
+Generalized linear models                         Number of obs   =         16
+Optimization     : ML                             Residual df     =          7
+                                                  Scale parameter =          1
+Deviance         =  12.62955292                   (1/df) Deviance =   1.804222
+Pearson          =  13.06280922                   (1/df) Pearson  =   1.866116
 
-. gen nomo_at4049 = nomore * (age==4)
+Variance function: V(u) = u*(1-u/n)               [Binomial]
+Link function    : g(u) = ln(u/(n-u))             [Logit]
 
-. logit cuse i.age educ nomo_at* [fw=n]
+                                                  AIC             =   6.383591
+Log likelihood   = -42.06873029                   BIC             =  -6.778568
 
-Iteration 0:   log likelihood = -1001.8468  
-Iteration 1:   log likelihood = -926.33767  
-Iteration 2:   log likelihood = -925.27593  
-Iteration 3:   log likelihood = -925.27536  
-Iteration 4:   log likelihood = -925.27536  
+─────────────┬────────────────────────────────────────────────────────────────
+             │                 OIM
+       users │ Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+         age │
+      25-29  │   .3946039   .2014504     1.96   0.050    -.0002315    .7894394
+      30-39  │   .5466635   .1984206     2.76   0.006     .1577663    .9355607
+      40-49  │   .5795235   .3474172     1.67   0.095    -.1014017    1.260449
+             │
+age#c.nomore │
+        &lt;25  │   .0662197   .3307064     0.20   0.841    -.5819529    .7143922
+      25-29  │   .3253996   .2419217     1.35   0.179    -.1487581    .7995574
+      30-39  │   1.178882   .1748169     6.74   0.000      .836247    1.521517
+      40-49  │   1.427894   .3538467     4.04   0.000     .7343668    2.121421
+             │
+        educ │   .3406479   .1257653     2.71   0.007     .0941525    .5871432
+       _cons │  -1.803172   .1801786   -10.01   0.000    -2.156315   -1.450028
+─────────────┴────────────────────────────────────────────────────────────────
 
-Logistic regression                               Number of obs   =       1607
-                                                  LR chi2(8)      =     153.14
-                                                  Prob > chi2     =     0.0000
-Log likelihood = -925.27536                       Pseudo R2       =     0.0764
-
-------------------------------------------------------------------------------
-        cuse |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-         age |
-          2  |   .3946039   .2014504     1.96   0.050    -.0002315    .7894394
-          3  |   .5466635   .1984206     2.76   0.006     .1577663    .9355607
-          4  |   .5795235   .3474172     1.67   0.095    -.1014017    1.260449
-             |
-        educ |   .3406479   .1257653     2.71   0.007     .0941525    .5871432
- nomo_at1524 |   .0662197   .3307064     0.20   0.841    -.5819529    .7143922
- nomo_at2529 |   .3253996   .2419217     1.35   0.179    -.1487581    .7995574
- nomo_at3039 |   1.178882   .1748169     6.74   0.000      .836247    1.521517
- nomo_at4049 |   1.427894   .3538467     4.04   0.000     .7343668    2.121421
-       _cons |  -1.803172   .1801786   -10.01   0.000    -2.156315   -1.450028
-------------------------------------------------------------------------------
+. estimates store mint
 
 . di exp(_b[educ])
 1.4058581
 
-. mata exp( st_matrix("e(b)")[6..9])
+. mata exp(st_matrix("e(b)")[5..8])
                  1             2             3             4
-    +---------------------------------------------------------+
-  1 |  1.068461402   1.384583879   3.250737129   4.169906768  |
-    +---------------------------------------------------------+
+    ┌─────────────────────────────────────────────────────────┐
+  1 │  1.068461402   1.384583879   3.250737129   4.169906768  │
+    └─────────────────────────────────────────────────────────┘
+
+.     
 </pre>
-<P>
-Note how we can freely mix factor variables for age with hand coded
-dummies for the effects of wanting no more children at each age.
-We find 34% higher odds of using contraception among women with some
-education compared to women with no education in the same age group
-and category of desire. We also see that the odds of using contraception
+<p>We find 34% higher odds of using contraception among women with some
+education, compared to women with no education in the same age group and
+category of desire. We also see that the odds of using contraception
 among women who want no more children are higher than among women who
-want more children in the same age and category of education,
- 7% higher under age 25,  38% higher at age 25-29, three times as high
-for women in their thirties and four times as high among women in 
-their forties. 
-<P>
-(In case you are wondering why the coefficients for no more at various 
-ages are in positions 6 to 9 rather than 5 to 8, note that When you use 
-factor variables Stata stores the coefficient for the reference cell, 
-with a value of zero, as part of <code>e(b)</code>.)
-<P>
-This model passes the conventional goodness of fit test and therefore
-provides a reasonable description of contraceptive use by age, 
-education, and desire for more children. 
-<P>
-<h4>All Three Two-Factor Interactions</h4>
-<P>
-As explained in the notes, there is some evidence that education may 
-interact with the other two variables. 
-The model with all three two-factor interactions provides the best fit,
-with a deviance of 2.44 on three d.f., but is substantially more complex. 
-<P>
-Rather than present parameter estimates, I will reproduce Figure 3.5, 
-which provides some hints on how the model could be simplified.
-Thanks to our <code>pof</code> command this is now an easy task:
-<P>
-<!--
-I calculate observed logits for each of the 16 groups of women and
-fitted logits based on the model with all the two-factor interactions,
-and then plot them. The observed logit can be calculated from the
-saturated model for the data table by I will obtain them "by hand"
-//bysort age educ nomore (cuse): gen obs = log(n[2]/n[1]) if cuse==1
--->
-<pre class='stata'>
-. quietly logit cuse i.age educ nomore ///
->   i.age#c.educ i.age#c.nomore c.educ#c.nomore [fw=n]
+want more children in the same age and category of education, 7% higher
+under age 25, 38% higher at age 25-29, three times as high for women in
+their thirties, and four times as high among women in their forties.</p>
+<p>This model passes the conventional goodness of fit test and therefore
+provides a reasonable description of contraceptive use by age,
+education, and desire for more children.</p>
+<h3 id="all-three-two-factor-interactions">All Three Two-Factor
+Interactions</h3>
+<p>As explained in the notes, there is some evidence that education may
+interact with the other two variables. The model with all three
+two-factor interactions provides the best fit, with a deviance of 2.44
+on three d.f., but is substantially more complex.</p>
+<p>Rather than present parameter estimates, I will reproduce Figure 3.5,
+which provides some hints on how the model could be simplified. Thanks
+to our <code>pof</code> command this is now an easy task:</p>
+<pre class='stata'>. quietly glm users i.age educ nomore ///
+> i.age#c.educ i.age#c.nomore c.educ#c.nomore, family(binomial n)
 
 . predict lfit32, xb 
+(1 missing value generated)
 
-. pof obs3 lfit32 "subtitle(All Two-Factor Interactions)"
-(note:  named style C not found in class symbol, default attributes used
+. pof obs lfit32 "subtitle(All Two-Factor Interactions)"
 
 . graph export fig35.png, width(500) replace        
-(file fig35.png written in PNG format)
+file fig35.png saved as PNG format
 </pre>
-<P>
-<img src="fig35.png" alt="Figure 3.5" class="img-responsive center-block"/>
-<P>
-A picture is indeed worth a thousand words. We see that among women
-who want no more children contraceptive use increases almost linearly 
-with age (in the logit scale) with no differences by education except 
-in the oldest age group where use flattens for women with no education. 
-Among women who do want more children contraceptive use is generally 
-lower, increases more slowly with age, there are some differences by 
-education, and these are higher among older women. There's also a hint 
-of curvature by age for women with no education who want more children. 
-<P>
-<h4>A Parsimonious Model</h4>
-<P>
-These observations suggest ways to simplify the model. The age
-interactions are quite simple: the increase with age is steeper
-among women who want no more children, and the difference by education
-is larger among women in their forties. Similarly, the educational
-difference is larger in use for spacing and among older women. 
-<P>
-One way to capture these features is to use a quadratic on age,
-allow the slope (but not the curvature) to vary by desire for
-more children, and introduce effects of education only for 
-spacing and after age 40 (and thus not for limiting before age 40). 
-To facilitate interpretation of the resulting parameters I center
-age around 30: 
-<pre class='stata'>
-. gen agemc   = agem-30
+<p><img src="fig35.png" class="img-responsive center-block stata" /></p>
+<p>A picture is indeed worth a thousand words. We see that among women
+who want no more children, contraceptive use increases almost linearly
+(in the logit scale) with age, with no differences by education except
+in the oldest age group, where use flattens for women with no education.
+Among women who do want more children, contraceptive use is generally
+lower, and increases more slowly with age; there are some differences by
+education, and these are higher among older women. There’s also a hint
+of curvature by age for women with no education who want more
+children.</p>
+<h3 id="a-parsimonious-model">A Parsimonious Model</h3>
+<p>These observations suggest ways to simplify the model. The age
+interactions are quite simple: the increase with age is steeper among
+women who want no more children, and the difference by education is
+larger among women in their forties. Similarly, the educational
+difference is larger in use for spacing and among older women.</p>
+<p>One way to capture these features is to use a quadratic on age, allow
+the slope (but not the curvature) to vary by desire for more children,
+and introduce effects of education only for spacing and after age 40
+(and thus not for limiting before age 40). To facilitate interpretation
+of the resulting parameters I center age around 30:</p>
+<pre class='stata'>. gen agemc   = agem - 30
+(1 missing value generated)
 
 . gen agemcsq = agemc^2
+(1 missing value generated)
 
-. gen educ_spacing = educ * (1-nomore)
+. gen educ_spacers = educ * (1-nomore)
+(1 missing value generated)
 
-. gen educ_at40p   = educ * (age==4)
+. gen educ_forties = educ * (age==4)
+(1 missing value generated)
 </pre>
-<P>
-So here is a more parsimonious model
-<pre class='stata'>
-. logit cuse c.agemc##c.nomore agemcsq c.educ_spacing educ_at40p [fw=n]
+<p>So here is a more parsimonious model</p>
+<pre class='stata'>. glm users c.agemc##c.nomore agemcsq c.educ_spacers educ_forties, ///
+>   family(binomial n)    
 
-Iteration 0:   log likelihood = -1001.8468  
-Iteration 1:   log likelihood = -923.04064  
-Iteration 2:   log likelihood = -921.89423  
-Iteration 3:   log likelihood = -921.89297  
-Iteration 4:   log likelihood = -921.89297  
+Iteration 0:   log likelihood = -38.692269  
+Iteration 1:   log likelihood = -38.686338  
+Iteration 2:   log likelihood = -38.686338  
 
-Logistic regression                               Number of obs   =       1607
-                                                  LR chi2(6)      =     159.91
-                                                  Prob > chi2     =     0.0000
-Log likelihood = -921.89297                       Pseudo R2       =     0.0798
+Generalized linear models                         Number of obs   =         16
+Optimization     : ML                             Residual df     =          9
+                                                  Scale parameter =          1
+Deviance         =  5.864768279                   (1/df) Deviance =   .6516409
+Pearson          =  5.950841275                   (1/df) Pearson  =   .6612046
 
-------------------------------------------------------------------------------
-        cuse |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-       agemc |   .0247552   .0118884     2.08   0.037     .0014543    .0480561
-      nomore |   .9804174   .1790475     5.48   0.000     .6294907    1.331344
-             |
-     c.agemc#|
-    c.nomore |    .058961   .0183799     3.21   0.001     .0229371    .0949849
-             |
-     agemcsq |  -.0034306   .0010318    -3.32   0.001    -.0054529   -.0014083
-educ_spacing |    .432112   .1808991     2.39   0.017     .0775563    .7866677
-  educ_at40p |   .9798156   .3462926     2.83   0.005     .3010945    1.658537
-       _cons |  -1.339265   .1578254    -8.49   0.000    -1.648597   -1.029933
-------------------------------------------------------------------------------
+Variance function: V(u) = u*(1-u/n)               [Binomial]
+Link function    : g(u) = ln(u/(n-u))             [Logit]
 
-. di "deviance=" 2*(slogL - e(ll))  " on " (sdf-e(df_m)) " df"
-deviance=5.8647683 on 9 df
+                                                  AIC             =   5.710792
+Log likelihood   = -38.68633797                   BIC             =  -19.08853
+
+─────────────┬────────────────────────────────────────────────────────────────
+             │                 OIM
+       users │ Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+       agemc │   .0247552   .0118884     2.08   0.037     .0014543    .0480561
+      nomore │   .9804174   .1790475     5.48   0.000     .6294907    1.331344
+             │
+     c.agemc#│
+    c.nomore │    .058961   .0183799     3.21   0.001     .0229371    .0949849
+             │
+     agemcsq │  -.0034306   .0010318    -3.32   0.001    -.0054529   -.0014083
+educ_spacers │    .432112   .1808991     2.39   0.017     .0775563    .7866677
+educ_forties │   .9798156   .3462926     2.83   0.005     .3010945    1.658537
+       _cons │  -1.339265   .1578254    -8.49   0.000    -1.648597   -1.029933
+─────────────┴────────────────────────────────────────────────────────────────
 </pre>
-<P>
-This model has only seven parameters and a deviance of 5.9 on 9 d.f.,
+<p>This model has only seven parameters and a deviance of 5.9 on 9 d.f.,
 so it is much simpler than the previous model and fits pretty well.
-Obviously we can't take the test seriously because we didn't specify
-these terms in advance, but the exercise shows how one can simplify 
-a model capturing its essential features.  Before we interpret the
-coefficients let us check the fitted values
-<pre class='stata'>
-. predict lfit33, xb
+Obviously we can’t take the test seriously because we didn’t specify
+these terms in advance, but the exercise shows how one can simplify a
+model by capturing its essential features. Before we interpret the
+coefficients let us check the fitted values</p>
+<pre class='stata'>. predict lfit33, xb
+(1 missing value generated)
 
-. pof obs3 lfit33 "subtitle(A Simplified Model)"
-(note:  named style C not found in class symbol, default attributes used
+. pof obs lfit33 "subtitle(A Simplified Model)"
 
 . graph export fig35b.png, width(500) replace
-(file fig35b.png written in PNG format)
+file fig35b.png saved as PNG format
 </pre>
-<P>
-<img src="fig35b.png" alt-"Figure 3.5-b" class="img-responsive center-block"/>
-<P>
-We see that the model provides almost the same fit as the much more
-complex model of the previous subsection. Returning to the parameter
-estimates, we see that contraceptive use generally increases with age, 
-with an increment in the odds of about 2.5 percent at age 30 (less at 
-younger and older ages, with differences noted below after age 40).
-Use is much higher among women who want more children, with an
-odds ratio of 2.7 at age 30, increasing about six percent per year 
-of age. Women with some education are more likely to use contraception
-for spacing purposes, with an odds ratio of 1.5, and are also more
-likely to use for either spacing or limiting after age 40, with an 
-odds ratio of 2.7 (which makes the odds ratio by education for 
-spacers after age 40 just above four).
-<P>
-Alternative model simplifications are given in the notes. 
-</p>
+<p><img src="fig35b.png"
+class="img-responsive center-block stata" /></p>
+<p>We see that the model provides almost the same fit as the much more
+complex model of the previous subsection.</p>
+<pre class='stata'>. di exp(_b[agemc])
+1.0250641
+
+. di exp(_b[nomore]), exp(_b[c.agemc#c.nomore])
+2.6655686 1.0607339
+
+. di exp(_b[educ_spacers]), exp(_b[educ_forties])
+1.5405076 2.6639649
+</pre>
+<p>Returning to the parameter estimates, we see that contraceptive use
+generally increases with age, with an increment in the odds of about 2.5
+percent per year at age 30 (less at younger and older ages, with
+differences noted below after age 40). Use is much higher among women
+who want no more children, with an odds ratio of 2.7 at age 30,
+increasing about six percent per year of age. Women with some education
+are more likely to use contraception for spacing purposes, with an odds
+ratio of 1.5, and are also more likely to use for either spacing or
+limiting after age 40, with an odds ratio of 2.7 (which makes the odds
+ratio by education for spacers after age 40 just above four).</p>
+<p>Alternative model simplifications are given in the notes.</p>
+<h3 id="weighted-individual-data">Weighted Individual Data</h3>
+<p>As promised, we show briefly how one can obtain the same results
+using a dataset with one row for each combination of predictors and
+response, with a column indicating the frequency of that combination,
+effectively simulating individual data. This lets us use the
+<code>logit</code> or <code>logistic</code> commands in Stata.</p>
+<p>We will illustrate the equivalence using the model with a main effect
+of education and an interaction between age and wanting no more
+children, which we kept as <code>mint</code>.</p>
+<pre class='stata'>. //    use https://grodri.github.io/datasets/cuse, clear
+. use cuse, clear
+(Contraceptive Use Data (Fiji, 1976))
+
+. gen nomore = desire==1
+
+. list in 1/4
+
+     ┌──────────────────────────────────────────────────────────────────┐
+     │ age                    educ          desire   cuse    n   nomore │
+     ├──────────────────────────────────────────────────────────────────┤
+  1. │ &lt;25   Lower primary or less      Wants more     No   53        0 │
+  2. │ &lt;25   Lower primary or less      Wants more    Yes    6        0 │
+  3. │ &lt;25   Lower primary or less   Wants no more     No   10        1 │
+  4. │ &lt;25   Lower primary or less   Wants no more    Yes    4        1 │
+     └──────────────────────────────────────────────────────────────────┘
+
+. logit cuse educ i.age i.age#c.nomore [fw=n]
+
+Iteration 0:   log likelihood = -1001.8468  
+Iteration 1:   log likelihood = -926.33767  
+Iteration 2:   log likelihood = -925.27593  
+Iteration 3:   log likelihood = -925.27536  
+Iteration 4:   log likelihood = -925.27536  
+
+Logistic regression                                     Number of obs =  1,607
+                                                        LR chi2(8)    = 153.14
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -925.27536                             Pseudo R2     = 0.0764
+
+─────────────┬────────────────────────────────────────────────────────────────
+        cuse │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+        educ │   .3406479   .1257653     2.71   0.007     .0941525    .5871432
+             │
+         age │
+      25-29  │   .3946039   .2014504     1.96   0.050    -.0002315    .7894394
+      30-39  │   .5466635   .1984206     2.76   0.006     .1577663    .9355607
+      40-49  │   .5795235   .3474172     1.67   0.095    -.1014017    1.260449
+             │
+age#c.nomore │
+        &lt;25  │   .0662197   .3307064     0.20   0.841    -.5819529    .7143922
+      25-29  │   .3253996   .2419217     1.35   0.179    -.1487581    .7995574
+      30-39  │   1.178882   .1748169     6.74   0.000      .836247    1.521517
+      40-49  │   1.427894   .3538467     4.04   0.000     .7343668    2.121421
+             │
+       _cons │  -1.803172   .1801786   -10.01   0.000    -2.156315   -1.450028
+─────────────┴────────────────────────────────────────────────────────────────
+
+. estimates store mintlong
+
+. estimates table mint mintlong, equation(1) se 
+
+─────────────┬──────────────────────────
+    Variable │    mint       mintlong   
+─────────────┼──────────────────────────
+         age │
+      25-29  │  .39460393    .39460393  
+             │  .20145036    .20145036  
+      30-39  │  .54666349    .54666349  
+             │  .19842057    .19842057  
+      40-49  │  .57952354    .57952354  
+             │  .34741724    .34741724  
+             │
+age#c.nomore │
+        &lt;25  │  .06621967    .06621967  
+             │  .33070636    .33070636  
+      25-29  │  .32539965    .32539965  
+             │  .24192168    .24192168  
+      30-39  │  1.1788818    1.1788818  
+             │  .17481688    .17481688  
+      40-49  │  1.4278937    1.4278937  
+             │  .35384674    .35384674  
+             │
+        educ │  .34064785    .34064785  
+             │  .12576526    .12576526  
+       _cons │ -1.8031718   -1.8031718  
+             │  .18017863    .18017863  
+─────────────┴──────────────────────────
+                            Legend: b/se
+</pre>
+<p>As you can see, the estimates and standard errors are exactly the
+same as before. The deviance is different because in this dataset the
+saturated model would have a separate parameter for each woman. We can
+reproduce the deviance of 12.63 on 7 d.f. given earlier, by computing
+the difference in deviances (or twice the difference in log-likelihoods)
+between the model with a three factor interaction and this model:</p>
+<pre class='stata'>. quietly logit cuse i.educ##i.age##c.nomore [fw=n]
+
+. lrtest mintlong .
+
+Likelihood-ratio test
+Assumption: mintlong nested within .
+
+ LR chi2(7) =  12.63
+Prob > chi2 = 0.0817
+</pre>
+<p>Thus, working with grouped data gives exactly the same estimates as
+working with individual data, except of course for the deviances. Recall
+that deviances can be interpreted as goodness of fit tests only with
+grouped data, but differences in deviances between nested models can
+always be interpreted as likelihood ratio tests. We discuss how to test
+goodness of fit with individual data in <a href="c3s8">Section
+3.8</a>.</p>
+<p><small>Updated fall 2022</small></p>

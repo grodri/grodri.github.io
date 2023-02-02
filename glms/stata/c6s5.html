@@ -5,295 +5,316 @@ tab: "Stata Logs"
 pager: true
 ---
 
-
-<h3 class='first'>6.5 Ordered Logit Models</h3> 
-<P> 
-<P> 
-We now turn our attention to models for <i>ordered</i> categorical
-outcomes. Obviously the multinomial and sequential logit models
-can be applied as well, but they make no explicit use of the fact
-that the categories are ordered. The models considered here are
-specifically designed for ordered data.
-<P> 
-<h4>Housing Conditions in Copenhagen</h4> 
-<P> 
-We will use data from 1681 residents of twelve areas in Copenhagen, 
-classified in terms of 
-the type of housing they have 
-(tower blocks, apartments, atrium houses and terraced houses), 
-their feeling of influence on apartment management (low, medium, high), 
-their degree of contact with the neighbors (low, high), and 
-their satisfaction with housing conditions (low, medium, high).
-<P> 
-The data are available in the datasets page and can be read directly 
-from there:
-<pre class='stata'>
-. use http://data.princeton.edu/wws509/datasets/copen, clear
+<h2 class="first" id="c6s5">6.5 Ordered Logit Models</h2>
+<p>We now turn our attention to models for <em>ordered</em> categorical
+outcomes. Obviously the multinomial and sequential logit models can be
+applied as well, but they make no explicit use of the fact that the
+categories are ordered. The models considered here are specifically
+designed for ordered data.</p>
+<h3 id="housing-conditions-in-copenhagen">Housing Conditions in
+Copenhagen</h3>
+<p>We will use data from 1681 residents of twelve areas in Copenhagen,
+classified in terms of the type of housing that they have (tower blocks,
+apartments, atrium houses and terraced houses), their feeling of
+influence on apartment management (low, medium, high), their degree of
+contact with the neighbors (low, high), and their satisfaction with
+housing conditions (low, medium, high).</p>
+<p>The data are available in the datasets section and can be read
+directly from there.</p>
+<pre class='stata'>. use https://grodri.github.io/datasets/copen, clear
 (Housing Conditions in Copenhagen)
-</pre> 
-<P> 
-We will treat satisfaction as the outcome and type of housing,
-feeling of influence and contact with the neighbors as 
-categorical predictors.
-<P> 
-It will be useful for comparison purposes to fit the saturated
-multinomial logit model, where each of the 24 combinations of
-housing type, influence and contact, has its own distribution.
-The group code can easily be generated from the observation number,
-and the easiest way to fit the model is to treat the code as a
-<i>factor variable</i>. If you are running an earlier version of
-Stata try the <code>xi:</code> prefix.
-<pre class='stata'>
-. gen group = int((_n-1)/3)+1
- 
+
+. list in 1/6
+
+     ┌────────────────────────────────────────────────────────┐
+     │ id        housing   influe~e   contact   satisf~n    n │
+     ├────────────────────────────────────────────────────────┤
+  1. │  1   Tower blocks        Low       low        Low   21 │
+  2. │  2   Tower blocks        Low       low     Medium   21 │
+  3. │  3   Tower blocks        Low       low       High   28 │
+  4. │  4   Tower blocks        Low      high        Low   14 │
+  5. │  5   Tower blocks        Low      high     Medium   19 │
+     ├────────────────────────────────────────────────────────┤
+  6. │  6   Tower blocks        Low      high       High   37 │
+     └────────────────────────────────────────────────────────┘
+</pre>
+<p>We will treat satisfaction as the outcome and type of housing,
+feeling of influence and contact with the neighbors as categorical
+predictors.</p>
+<p>It will be useful for comparison purposes to fit the saturated
+multinomial logit model, where each of the 24 combinations of housing
+type, influence and contact, has its own multinomial distribution. The
+group code can easily be generated from the observation number, and the
+easiest way to fit the model is to treat the code as a
+<em>factor</em>.</p>
+<pre class='stata'>. gen group = int((_n-1)/3)+1
+
 . quietly mlogit satisfaction i.group [fw=n]
- 
+
 . estimates store sat
- 
+
 . di e(ll)
 -1715.7108
-</pre> 
-<P> 
-The log likelihood is -1715.7.
-<P> 
-<h4>The Proportional Odds Model</h4> 
-<P> 
-The next task is to fit the additive ordered logit model from
-Table 6.5 in the notes.  We could use factor variables for
-simplicity, but will construct dummy variables instead
-<pre class='stata'>
-. gen apart   = housing == 2
- 
-. gen atrium  = housing == 3
- 
-. gen terrace = housing == 4
- 
-. local housing apart atrium terrace
- 
-. gen influenceMed  = influence == 2
- 
-. gen influenceHi   = influence == 3
- 
-. local influence influenceMed influenceHi
- 
-. gen contactHi    = contact == 2
-</pre> 
-<P> 
-With that done, here's the additive model
-<pre class='stata'>
-. local housing apart atrium terrace
- 
-. local influence influenceMed influenceHi
- 
-. ologit satis `housing' `influence' contactHi [fw=n]
- 
+</pre>
+<p>The log likelihood is -1715.7. You can verify that this is
+sum(n*log(p)), where n are the counts and p the proportions for the
+categories of satisfaction within each of the 24 groups.</p>
+<h3 id="the-proportional-odds-model">The Proportional Odds Model</h3>
+<p>The next task is to fit the additive ordered logit model from Table
+6.5 in the notes.</p>
+<pre class='stata'>. ologit satis i.housing  i.influence i.contact [fw=n]
+
 Iteration 0:   log likelihood = -1824.4388  
 Iteration 1:   log likelihood = -1739.8163  
 Iteration 2:   log likelihood = -1739.5747  
 Iteration 3:   log likelihood = -1739.5746  
- 
-Ordered logistic regression                       Number of obs   =       1681
-                                                  LR chi2(6)      =     169.73
-                                                  Prob > chi2     =     0.0000
-Log likelihood = -1739.5746                       Pseudo R2       =     0.0465
- 
-------------------------------------------------------------------------------
-satisfaction |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-       apart |  -.5723499    .119238    -4.80   0.000    -.8060521   -.3386477
-      atrium |  -.3661863   .1551733    -2.36   0.018    -.6703205   -.0620522
-     terrace |  -1.091015    .151486    -7.20   0.000    -1.387922   -.7941074
-influenceMed |   .5663937   .1046528     5.41   0.000      .361278    .7715093
- influenceHi |   1.288819   .1271561    10.14   0.000     1.039597     1.53804
-   contactHi |    .360284   .0955358     3.77   0.000     .1730372    .5475307
--------------+----------------------------------------------------------------
-       /cut1 |   -.496135   .1248472                     -.7408311   -.2514389
-       /cut2 |   .6907081   .1254719                      .4447876    .9366286
-------------------------------------------------------------------------------
- 
+
+Ordered logistic regression                             Number of obs =  1,681
+                                                        LR chi2(6)    = 169.73
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -1739.5746                             Pseudo R2     = 0.0465
+
+──────────────┬────────────────────────────────────────────────────────────────
+ satisfaction │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+──────────────┼────────────────────────────────────────────────────────────────
+      housing │
+  Apartments  │  -.5723499    .119238    -4.80   0.000    -.8060521   -.3386477
+Atrium hou..  │  -.3661863   .1551733    -2.36   0.018    -.6703205   -.0620522
+Terraced h..  │  -1.091015    .151486    -7.20   0.000    -1.387922   -.7941074
+              │
+    influence │
+      Medium  │   .5663937   .1046528     5.41   0.000      .361278    .7715093
+        High  │   1.288819   .1271561    10.14   0.000     1.039597     1.53804
+              │
+      contact │
+        high  │    .360284   .0955358     3.77   0.000     .1730372    .5475307
+──────────────┼────────────────────────────────────────────────────────────────
+        /cut1 │   -.496135   .1248472                     -.7408311   -.2514389
+        /cut2 │   .6907081   .1254719                      .4447876    .9366286
+──────────────┴────────────────────────────────────────────────────────────────
+
 . estimates store additive
- 
+
 . lrtest . sat, force
- 
-Likelihood-ratio test                                  LR chi2(40) =     47.73
-(Assumption: additive nested in sat)                   Prob > chi2 =    0.1874
-</pre> 
-<P> 
-The log-likelihood is -1739.6, so the deviance for this model 
-compared to the saturated multinomial model is 47.7 on 40 d.f.  
-This is a perfectly valid test because the models are nested, 
-but Stata is cautious and if you type <code>lrtest . sat</code> 
-it will complain that the <span style="color:red"> 
-test involves different estimators: mlogit vs. ologit</span>.
-Fortunately we can insist with the <code>force</code> option,
-which is what I have done.  Use cautiously!
-<P> 
-The bottom line is that the deviance is not much more than
-one would expect when saving 40 parameters, so we have no
-evidence against the additive model. To be thorough, however,
-we will explore individual interactions just in case the
-deviance is concentrated on a few d.f.
-<P> 
-<h4>Models with Interactions</h4> 
-<P> 
-The next step is to explore two-factor interactions.
-We can use factor variables to simplify our search:
-<pre class='stata'>
-. quietly ologit satis i.housing#i.influence i.contact [fw=n]
- 
+
+Likelihood-ratio test
+Assumption: additive nested within sat
+
+LR chi2(40) =  47.73
+Prob > chi2 = 0.1874
+</pre>
+<p>The log-likelihood is -1739.6, so the deviance for this model
+compared to the saturated multinomial model is 47.7 on 40 d.f. This is a
+perfectly valid test because the models are nested, but Stata is
+cautious; if you type <code>lrtest . sat</code> it will complain that
+the <span style="color:red">test involves different estimators: mlogit
+vs. ologit</span>. Fortunately we can insist with the <code>force</code>
+option, which is what I have done. Use cautiously!</p>
+<p>The bottom line is that the deviance is not much more than one would
+expect when saving 40 parameters, so we have no evidence against the
+additive model. To be thorough, however, we will explore individual
+interactions just in case the deviance is concentrated on a few d.f.</p>
+<h3 id="models-with-interactions">Models with Interactions</h3>
+<p>The next step is to explore two-factor interactions.</p>
+<pre class='stata'>. quietly ologit satis i.housing#i.influence i.contact [fw=n]
+
 . lrtest . sat, force
- 
-Likelihood-ratio test                                  LR chi2(34) =     25.22
-(Assumption: . nested in sat)                          Prob > chi2 =    0.8623
- 
+
+Likelihood-ratio test
+Assumption: . nested within sat
+
+LR chi2(34) =  25.22
+Prob > chi2 = 0.8623
+
 . quietly ologit satis i.housing#i.contact i.influence [fw=n]
- 
+
 . lrtest . sat, force
- 
-Likelihood-ratio test                                  LR chi2(37) =     39.06
-(Assumption: . nested in sat)                          Prob > chi2 =    0.3773
- 
+
+Likelihood-ratio test
+Assumption: . nested within sat
+
+LR chi2(37) =  39.06
+Prob > chi2 = 0.3773
+
 . quietly ologit satis i.housing i.influence#i.contact [fw=n]
- 
+
 . lrtest . sat, force
- 
-Likelihood-ratio test                                  LR chi2(38) =     47.52
-(Assumption: . nested in sat)                          Prob > chi2 =    0.1385
-</pre> 
-<P> 
-The interaction between housing and influence reduces the 
-deviance by about half at the expense of only six d.f., 
-so it is worth a second look.
-The interaction between housing and contact makes a much
-smaller dent, 
-and the interaction between influence and contact
-adds practically nothing. 
-(we could have compared each of these models to the additive
-model, thus testing the interaction directly. We would get 
-chi2 of 22.51 on 6 d.f., 8.67 on 3 d.f. and 0.21 on 2 d.f.)
-<P> 
-Clearly the interaction to add is the first one, allowing 
-the association between satisfaction with housing and a feeling 
-of influence on management net of contact with neighbors 
-to depend on the type of housing. 
-To examine parameter estimates
-we build the dummy variables and refit the model:
-<pre class='stata'>
-. gen apartXinfMed = apart * influenceMed
- 
-. gen apartXinfHi  = apart * influenceHi
- 
-. gen atriuXinfMed = atrium * influenceMed
- 
-. gen atriuXinfHi  = atrium * influenceHi
- 
-. gen terrXinfMed  = terrace * influenceMed
- 
-. gen terrXinfHi   = terrace * influenceHi
- 
-. local housingXinf apartXinfMed-terrXinfHi
- 
-. ologit satis `housing' `influence' `housingXinf' contactHi [fw=n] 
- 
+
+Likelihood-ratio test
+Assumption: . nested within sat
+
+LR chi2(38) =  47.52
+Prob > chi2 = 0.1385
+</pre>
+<p>The interaction between housing and influence reduces the deviance by
+about half, at the expense of only six d.f., so it is worth a second
+look. The interaction between housing and contact makes a much smaller
+dent, and the interaction between influence and contact adds practically
+nothing.</p>
+<p>We could also compare each of these models to the additive model,
+thus testing the interaction directly. We would get chisquareds of 22.51
+on 6 d.f., 8.67 on 3 d.f. and 0.21 on 2 d.f.</p>
+<p>Clearly the interaction to add is the first one, allowing the
+association between satisfaction with housing and a feeling of influence
+on management, net of contact with neighbors, to depend on the type of
+housing. <span class="stata">To examine parameter estimates we refit the
+model:</span></p>
+<pre class='stata'>. ologit satis i.housing##i.influence i.contact [fw=n] 
+
 Iteration 0:   log likelihood = -1824.4388  
 Iteration 1:   log likelihood = -1728.6182  
 Iteration 2:   log likelihood = -1728.3201  
 Iteration 3:   log likelihood =   -1728.32  
- 
-Ordered logistic regression                       Number of obs   =       1681
-                                                  LR chi2(12)     =     192.24
-                                                  Prob > chi2     =     0.0000
-Log likelihood =   -1728.32                       Pseudo R2       =     0.0527
- 
-------------------------------------------------------------------------------
-satisfaction |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-       apart |  -1.188494   .1972418    -6.03   0.000    -1.575081   -.8019072
-      atrium |  -.6067061   .2445664    -2.48   0.013    -1.086047   -.1273647
-     terrace |  -1.606231   .2409971    -6.66   0.000    -2.078576   -1.133885
-influenceMed |  -.1390175   .2125483    -0.65   0.513    -.5556044    .2775694
- influenceHi |   .8688638   .2743369     3.17   0.002     .3311733    1.406554
-apartXinfMed |   1.080868   .2658489     4.07   0.000     .5598135    1.601922
- apartXinfHi |   .7197816   .3287309     2.19   0.029     .0754809    1.364082
-atriuXinfMed |     .65111   .3450048     1.89   0.059    -.0250869    1.327307
- atriuXinfHi |  -.1555515   .4104826    -0.38   0.705    -.9600826    .6489795
- terrXinfMed |   .8210056   .3306666     2.48   0.013      .172911      1.4691
-  terrXinfHi |   .8446195   .4302698     1.96   0.050     .0013062    1.687933
-   contactHi |    .372082   .0959868     3.88   0.000     .1839514    .5602126
--------------+----------------------------------------------------------------
-       /cut1 |  -.8881686   .1671554                     -1.215787     -.56055
-       /cut2 |   .3126319   .1656627                      -.012061    .6373249
-------------------------------------------------------------------------------
- 
+
+Ordered logistic regression                             Number of obs =  1,681
+                                                        LR chi2(12)   = 192.24
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -1728.32                               Pseudo R2     = 0.0527
+
+──────────────┬────────────────────────────────────────────────────────────────
+ satisfaction │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+──────────────┼────────────────────────────────────────────────────────────────
+      housing │
+  Apartments  │  -1.188494   .1972418    -6.03   0.000    -1.575081   -.8019072
+Atrium hou..  │  -.6067061   .2445664    -2.48   0.013    -1.086047   -.1273647
+Terraced h..  │  -1.606231   .2409971    -6.66   0.000    -2.078576   -1.133885
+              │
+    influence │
+      Medium  │  -.1390175   .2125483    -0.65   0.513    -.5556044    .2775694
+        High  │   .8688638   .2743369     3.17   0.002     .3311733    1.406554
+              │
+      housing#│
+    influence │
+  Apartments #│
+      Medium  │   1.080868   .2658489     4.07   0.000     .5598135    1.601922
+  Apartments #│
+        High  │   .7197816   .3287309     2.19   0.029     .0754809    1.364082
+Atrium hou.. #│
+      Medium  │     .65111   .3450048     1.89   0.059    -.0250869    1.327307
+Atrium hou.. #│
+        High  │  -.1555515   .4104826    -0.38   0.705    -.9600826    .6489795
+Terraced h.. #│
+      Medium  │   .8210056   .3306666     2.48   0.013      .172911      1.4691
+Terraced h.. #│
+        High  │   .8446195   .4302698     1.96   0.050     .0013062    1.687933
+              │
+      contact │
+        high  │    .372082   .0959868     3.88   0.000     .1839514    .5602126
+──────────────┼────────────────────────────────────────────────────────────────
+        /cut1 │  -.8881686   .1671554                     -1.215787     -.56055
+        /cut2 │   .3126319   .1656627                      -.012061    .6373249
+──────────────┴────────────────────────────────────────────────────────────────
+
 . lrtest . sat, force
- 
-Likelihood-ratio test                                  LR chi2(34) =     25.22
-(Assumption: . nested in sat)                          Prob > chi2 =    0.8623
- 
+
+Likelihood-ratio test
+Assumption: . nested within sat
+
+LR chi2(34) =  25.22
+Prob > chi2 = 0.8623
+
 . lrtest additive .
- 
-Likelihood-ratio test                                  LR chi2(6)  =     22.51
-(Assumption: additive nested in .)                     Prob > chi2 =    0.0010
-</pre> 
-<P> 
-The model deviance of 25.2 on 34 d.f. is not significant. 
-To test for the interaction effect we compare this model
-with the additive, obtaining a chi-squared statistic of
-22.5 on six d.f., which is significant at the 0.001 level.
-<P> 
-At this point one might consider adding a second interaction.
-The obvious choice is to allow the association between
-satisfaction and contact with neighbors to depend on the
-type of housing. This would reduce the deviance by 7.95
-at the expense of three d.f., a gain that just makes the
-conventional 5% cutoff with a p-value of 0.047. 
-In the interest of simplicity we will not pursue this addition.
-<P> 
-<P> 
-<h4>Interpretation of Parameter Estimates</h4> 
-<P> 
-The estimates indicate that respondents who have high contact 
-with their neighbors are more satisfied than respondents with
-low contact who live in the same type of housing and have the same 
-feeling of influence on management.
-The difference is estimated as 0.372 units in the underlying
-logistic scale. Dividing by the standard deviation of the
-(standard) logistic distribution we obtain
-<pre class='stata'>
-. display _b[contactHi]/(_pi/sqrt(3))
+
+Likelihood-ratio test
+Assumption: additive nested within .
+
+ LR chi2(6) =  22.51
+Prob > chi2 = 0.0010
+</pre>
+<p>The model deviance of 25.2 on 34 d.f. is not significant. To test for
+the interaction effect we compare this model with the additive model,
+obtaining a chi-squared statistic of 22.5 on six d.f., which is
+significant at the 0.001 level.</p>
+<p>At this point one might consider adding a second interaction. The
+obvious choice is to allow the association between satisfaction and
+contact with neighbors to depend on the type of housing. This would
+reduce the deviance by 7.95 at the expense of three d.f., a gain that
+just makes the conventional 5% cutoff with a p-value of 0.047. In the
+interest of simplicity, however, we will not pursue this addition.</p>
+<h3 id="interpretation-of-parameter-estimates">Interpretation of
+Parameter Estimates</h3>
+<p>The estimates indicate that respondents who have high contact with
+their neighbors are more satisfied than respondents with low contact who
+live in the same type of housing and have the same feeling of influence
+on management. The difference is estimated as 0.372 units in the
+underlying logistic scale. Dividing by the standard deviation of the
+(standard) logistic distribution we obtain</p>
+<pre class='stata'>. display _b[2.contact]/(_pi/sqrt(3))
 .20513955
-</pre> 
-<P> 
-So the difference in satisfaction between high and low contact 
-with neighbors among respondents with the same housing and
-influence is 0.205 standard deviations. 
-<P> 
-Alternatively, we can exponentiate the coefficient:
-<pre class='stata'>
-. di exp(_b[contactHi])
+</pre>
+<p>So the difference in satisfaction between high and low contact with
+neighbors, among respondents with the same housing and influence, is
+0.205 standard deviations.</p>
+<p>Alternatively, we can exponentiate the coefficient:</p>
+<pre class='stata'>. di exp(_b[2.contact])
 1.4507519
-</pre> 
-<P> 
-The odds of reporting high satisfaction (relative to medium or low), 
-are 45% higher among respondents who have high contact with 
-the neighbors than among  tenants with low contact in the same
-type of housing and influence. The odds of reporting medium or high
-satisfaction (as opposed to low) are also 45% higher in this group.
-<P> 
-Interpretation of the effects of housing type and influence requires
-taking into account the interaction effect. In the notes we
-describe differences by housing type among those who feel they
-have little influence in management, and the effects of influence
-in each type of housing. 
-<p>
-Let us do something a bit different here, and focus on 
-the joint effects of housing and influence,
-combining the main effects and interactions. The easiest way to do this is
-to refit the model omitting the main effects, which causes Stata to fold them into
-the interaction. We then plot them. I also divide the coefficients by &pi;/&radic;(3)
-to express them in standard deviation units.
-<pre class="stata">
-. gen coef = .
+</pre>
+<p>The odds of reporting high satisfaction (relative to medium or low),
+are 45% higher among tenants who have high contact with the neighbors
+than among tenants with low contact and have the same type of housing
+and influence. The odds of reporting medium or high satisfaction (as
+opposed to low) are also 45% higher in this comparison.</p>
+<p>Interpretation of the effects of housing type and influence requires
+taking into account the interaction effect. In the notes we describe
+differences by housing type among those who feel they have little
+influence in management, and the effects of influence in each type of
+housing.</p>
+<p>Let us do something a bit different here, and focus on the joint
+effects of housing and influence, combining the main effects and
+interactions. The easiest way to do this is to refit the model omitting
+the main effects, which causes them to be folded into the interaction. I
+also divide the estimates by π/√3 to express them in standard deviation
+units in a latent satisfaction scale.</p>
+<pre class='stata'>. ologit satis i.housing#i.influence i.contact [fw=n]
+
+Iteration 0:   log likelihood = -1824.4388  
+Iteration 1:   log likelihood = -1728.6182  
+Iteration 2:   log likelihood = -1728.3201  
+Iteration 3:   log likelihood =   -1728.32  
+
+Ordered logistic regression                             Number of obs =  1,681
+                                                        LR chi2(12)   = 192.24
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -1728.32                               Pseudo R2     = 0.0527
+
+──────────────┬────────────────────────────────────────────────────────────────
+ satisfaction │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+──────────────┼────────────────────────────────────────────────────────────────
+      housing#│
+    influence │
+Tower blocks #│
+      Medium  │  -.1390175   .2125483    -0.65   0.513    -.5556044    .2775694
+Tower blocks #│
+        High  │   .8688638   .2743369     3.17   0.002     .3311733    1.406554
+  Apartments #│
+         Low  │  -1.188494   .1972418    -6.03   0.000    -1.575081   -.8019072
+  Apartments #│
+      Medium  │  -.2466437   .1913323    -1.29   0.197     -.621648    .1283607
+  Apartments #│
+        High  │   .4001515   .2104573     1.90   0.057    -.0123373    .8126403
+Atrium hou.. #│
+         Low  │  -.6067061   .2445664    -2.48   0.013    -1.086047   -.1273647
+Atrium hou.. #│
+      Medium  │  -.0946136   .2536286    -0.37   0.709    -.5917165    .4024894
+Atrium hou.. #│
+        High  │   .1066063   .2896558     0.37   0.713    -.4611086    .6743212
+Terraced h.. #│
+         Low  │  -1.606231   .2409971    -6.66   0.000    -2.078576   -1.133885
+Terraced h.. #│
+      Medium  │  -.9242424   .2391896    -3.86   0.000    -1.393045   -.4554395
+Terraced h.. #│
+        High  │   .1072528    .320668     0.33   0.738    -.5212449    .7357505
+              │
+      contact │
+        high  │    .372082   .0959868     3.88   0.000     .1839514    .5602126
+──────────────┼────────────────────────────────────────────────────────────────
+        /cut1 │  -.8881686   .1671554                     -1.215787     -.56055
+        /cut2 │   .3126319   .1656627                      -.012061    .6373249
+──────────────┴────────────────────────────────────────────────────────────────
+
+. capture drop coef hc ic
+
+. gen z = .
 (72 missing values generated)
 
 . gen hc = .
@@ -304,7 +325,7 @@ to express them in standard deviation units.
 
 . mata b = st_matrix("e(b)")
 
-. mata st_store(1::12, "coef", b[2::13]':/(pi()/sqrt(3)))
+. mata st_store(1::12, "z", b[1::12]':/(pi()/sqrt(3)))
 
 . mata st_store(1::12, "hc",  (1::4) # (1\1\1))
 
@@ -314,260 +335,248 @@ to express them in standard deviation units.
 
 . label values ic lowmedhi
 
-. keep in 1/12
-(60 observations deleted)
+. set scheme grlog
 
-. graph bar coef, over(ic,  gap(0)) over(hc) asyvar ///
->         bar(1, color("221 238 255")) bar(2, color("128 170 230")) ///
->         bar(3, color("51 102 204")) ytitle(Satisfaction) ///
->         legend(ring(0) pos(7) cols(1) region(lwidth(none)))
+. graph bar z, over(ic,  gap(0)) over(hc) asyvar ///
+>   bar(1, color("221 238 255")) bar(2, color("128 170 230")) ///
+>   bar(3, color("51 102 204")) ytitle(Satisfaction) ///
+>   legend(ring(0) pos(7) cols(1) region(lwidth(none))) ///
+>   title(Satisfaction by Housing Type and Influence)
 
 . graph export fig63.png, replace width(500)
-(file fig63.png written in PNG format)
+file fig63.png saved as PNG format
 </pre>
-<img  src="fig63.png" class="img-responsive center-block"/>
-<p>
-Satisfaction with housing conditions is highest for 
-residents of tower blocks who feel they have high influence,
-and lowest for residents of terraced houses with low influence.
-Satisfaction increases with influence in each type of housing,
-but the difference is largest for terraced houses and apartments
-than atrium houses and towers. 
-</p>
-<p>
-Another way to present the results is by focusing on the effects of 
-influence within each type of housing or, alternatively, on the
-effects of housing type within each category of influence. 
-All we need to do is substract the first row (or the first colum)
-from our predicted values:
-</p>
-<pre class="stata">
-. // I
-. gen coef_i = coef
+<p><img src="fig63.png" class="img-responsive center-block stata" /></p>
+<p>Satisfaction with housing conditions is highest for residents of
+tower blocks who feel they have high influence, and lowest for residents
+of terraced houses with low influence. Satisfaction increases with
+influence in each type of housing, but the difference is largest for
+terraced houses and apartments than fower blocks and atrium houses.</p>
+<p>Another way to present the results is by focusing on the effects of
+influence within each type of housing or, alternatively, on the effects
+of housing type within each category of influence. All we need to do is
+substract the values for the reference cell of the control variable.</p>
+<pre class='stata'>. // I
+. capture drop zi zh
 
-. replace coef_i = coef_i - coef_i[_n - ic + 1]
-(4 real changes made)
+. gen zi = z - z[3*hc - 2]
+(60 missing values generated)
 
-. graph bar coef_i, over(ic,  gap(0)) over(hc) asyvar ///
->         bar(1, color("221 238 255")) bar(2, color("128 170 230")) ///
->         bar(3, color("51 102 204")) ytitle(Satisfaction) ///
->         legend(ring(0) pos(7) cols(1) region(lwidth(none))) name(i, replace)
+. graph bar zi, over(ic,  gap(0)) over(hc) asyvar ///
+>   bar(1, color("221 238 255")) bar(2, color("128 170 230")) ///
+>   bar(3, color("51 102 204")) ytitle(Satisfaction)  ///
+>   legend(ring(0) pos(11) cols(1) region(lwidth(none))) name(i, replace) ///
+>   title(Effect of influence within categories of housing)
 
 . // H
-. gen coef_h = coef
+. gen zh = z - z[ic]
+(60 missing values generated)
 
-. replace coef_h = coef_h - coef_h[_n  - 3*(hc-1)]
-(2 real changes made)
-
-. graph bar coef_h, over(hc,  gap(0) ///
->         relabel(1 "Tower" 2 "Apart" 3 "Atrium" 4 "Terrace")) over(ic) asyvar ///
->         bar(1, color("221 238 255")) bar(2, color("157 193 238")) ///
->         bar(3, color("101 147 221")) bar(4, color("51 102 204")) ///
->         legend(rows(1) region(lwidth(none))) ytitle(Satisfaction) name(h, replace)
+. graph bar zh, over(hc,  gap(0) ///
+>   relabel(1 "Tower" 2 "Apart" 3 "Atrium" 4 "Terrace")) over(ic) asyvar ///
+>   bar(1, color("221 238 255")) bar(2, color("157 193 238")) ///
+>   bar(3, color("101 147 221")) bar(4, color("51 102 204")) ///
+>   legend(rows(1) region(lwidth(none))) ytitle(Satisfaction) name(h, replace) /
+> //
+>   title(Effect of housing within categories of influence)
 
 . // both
-. graph combine h i, xsize(6) ysize(3)
+. graph combine i h, xsize(6) ysize(3)
 
 . graph export fig64.png, replace width(750)
-(file fig64.png written in PNG format)
+file fig64.png saved as PNG format
 </pre>
-<img  src="fig64.png" class="img-responsive center-block"/>
-<p>
-On the left panel we see more clearly the differences by influence in each
-type of housing. As noted above having influence is good, particularly of
-you live in a terraced house or apartments.
-The right panel shows differences by type of housing within categories of
-influence. Tower residents are generally speaking more satisfied than
-residents of other types of housing, and the differences tend to be larger
-when influence is low.
-</p>
-
-<h4>Estimation of Probabilities</h4> 
-<P> 
-Let us consider predicted probabilities. 
-Just as in multinomial logit models, the <code>predict</code> command 
-computes predicted probabilities (the default) or logits.
-With probabilities you need to specify an output variable for each
-response category. 
-With logits you specify just one variable which stores the linear
-predictor x'&beta;, without the cutpoints. 
-Let us predict the probabilities for everyone
-<pre class='stata'>
-. predict pSatLow pSatMed pSatHigh
+<p><img src="fig64.png" class="img-responsive center-block stata" /></p>
+<p>On the left panel we see more clearly the differences by influence in
+each type of housing. As noted above, having influence is good,
+particularly of you live in a terraced house or apartment. The right
+panel shows differences by type of housing within categories of
+influence. Tower residents are, generally speaking, more satisfied than
+residents of other types of housing, and the differences tend to be
+larger when influence is low.</p>
+<h3 id="estimation-of-probabilities">Estimation of Probabilities</h3>
+<p>Let us consider predicted probabilities. Just as in multinomial logit
+models, the <code>predict</code> command computes predicted
+probabilities (the default) or logits. With probabilities you need to
+specify an output variable for each response category. With logits you
+specify just one variable which stores the linear predictor x’β, without
+the cutpoints. Let us predict the probabilities for everyone.</p>
+<pre class='stata'>. predict pSatLow pSatMed pSatHigh
 (option pr assumed; predicted probabilities)
-</pre> 
-<P> 
-We'll look at these results for tower block dwellers with 
-little influence and with high and low contact with neighbors.
-The first of these groups is, of course, the reference cell.
-In the listing I add the condition <code>sat==1</code> to 
-list the probabilities just once for each group:
-<pre class='stata'>
-. list contact pSatLow pSatMed pSatHigh ///
->   if housing==1 & influence==1 & sat==1, clean
- 
+</pre>
+<p>We’ll look at these results for tower block dwellers with little
+influence and with high and low contact with neighbors. The first of
+these groups is, of course, the reference cell. I add the condition
+<code>sat==1</code> to list the probabilities just once for each
+group:</p>
+<pre class='stata'>. list contact pSatLow pSatMed pSatHigh ///
+>     if housing==1 &amp; influence==1 &amp; sat==1, clean 
+
        contact    pSatLow    pSatMed   pSatHigh  
   1.       low   .2914879   .2860397   .4224724  
   4.      high   .2209308   .2642111   .5148581  
-</pre> 
-<P> 
-We see that among tower tenants with low influence, 
-those with high contact with their neighbors have a
-higher probability of high satisfaction 
-and a lower probability  of medium or low satisfaction,
-than those with low contact with the neighbors.
-<P> 
-It is instructive to reproduce these calculations 'by hand'.
-For the reference cell all we need are the cutpoints.
-Remember that the model predicts cumulative probabilities,
-which is why we difference the results.
-<pre class='stata'>
-. scalar c1 = _b[/cut1]
- 
+</pre>
+<p>We see that among tower tenants with low influence, those with high
+contact with their neighbors have a higher probability of high
+satisfaction and a lower probability of medium or low satisfaction, than
+those with low contact with the neighbors.</p>
+<p>It is instructive to reproduce these calculations “by hand”. For the
+reference cell all we need are the cutpoints. Remember that the model
+predicts cumulative probabilities, which is why we difference the
+results.</p>
+<pre class='stata'>. scalar c1 = _b[/cut1]
+
 . scalar c2 = _b[/cut2]
- 
+
 . di invlogit(c1), invlogit(c2)-invlogit(c1),1-invlogit(c2)
 .2914879 .28603966 .42247244
-</pre> 
-<P> 
-For the group with high contact we need to <i>subtract</i> the
-corresponding coefficient from the cutpoints. The change of sign 
-is needed to convert coefficients from the latent variable to 
-the cumulative probability formulations (or from upper to
-lower tails).
-<pre class='stata'>
-. scalar h1 = c1 - _b[contactHi]
- 
-. scalar h2 = c2 - _b[contactHi]
- 
+</pre>
+<p>For the group with high contact we need to <em>subtract</em> the
+corresponding coefficient from the cutpoints. The change of sign is
+needed to convert coefficients from the latent variable to the
+cumulative probability formulations (or from upper to lower tails).</p>
+<pre class='stata'>. scalar h1 = c1 - _b[2.contact]
+
+. scalar h2 = c2 - _b[2.contact]
+
 . di invlogit(h1), invlogit(h2)-invlogit(h1),1-invlogit(h2)
 .22093075 .26421111 .51485814
-</pre> 
-<P> 
-Results agree exactly with the outpout of the <code>predict</code> 
-command.
-<P> 
-<h4> The Ordered Probit Model</h4> 
-<P> 
-We now consider ordered probit models, 
-starting with the additive model in Table 6.6:
-<pre class='stata'>
-. oprobit satis `housing' `influence' contactHi [fw=n]
- 
+</pre>
+<p>Results agree exactly with the earlier predicted probabilities.</p>
+<h3 id="the-ordered-probit-model">The Ordered Probit Model</h3>
+<p>We now consider ordered probit models, starting with the additive
+model in Table 6.6:</p>
+<pre class='stata'>. oprobit satis i.housing i.influence i.contact [fw=n]
+
 Iteration 0:   log likelihood = -1824.4388  
 Iteration 1:   log likelihood = -1739.9254  
 Iteration 2:   log likelihood = -1739.8444  
 Iteration 3:   log likelihood = -1739.8444  
- 
-Ordered probit regression                         Number of obs   =       1681
-                                                  LR chi2(6)      =     169.19
-                                                  Prob > chi2     =     0.0000
-Log likelihood = -1739.8444                       Pseudo R2       =     0.0464
- 
-------------------------------------------------------------------------------
-satisfaction |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-       apart |  -.3475367   .0722909    -4.81   0.000    -.4892244   -.2058491
-      atrium |  -.2178875   .0947661    -2.30   0.021    -.4036256   -.0321495
-     terrace |  -.6641735      .0918    -7.24   0.000    -.8440983   -.4842487
-influenceMed |   .3464228   .0641371     5.40   0.000     .2207164    .4721291
- influenceHi |   .7829146   .0764262    10.24   0.000      .633122    .9327072
-   contactHi |   .2223858   .0581227     3.83   0.000     .1084675    .3363042
--------------+----------------------------------------------------------------
-       /cut1 |  -.2998279   .0761537                     -.4490865   -.1505693
-       /cut2 |   .4267208   .0764043                      .2769711    .5764706
-------------------------------------------------------------------------------
- 
-. lrtest . sat, force
- 
-Likelihood-ratio test                                  LR chi2(40) =     48.27
-(Assumption: . nested in sat)                          Prob > chi2 =    0.1734
-</pre> 
-<P> 
-The model has a log-likelihood of -1739.8, a little bit below that
-of the additive ordered logit. 
-This is also reflected in the slightly higher deviance.
-<P> 
-Next we add the housing by influence interaction
-<pre class='stata'>
-. oprobit satis `housing' `influence' `housingXinf' contactHi [fw=n]
- 
+
+Ordered probit regression                               Number of obs =  1,681
+                                                        LR chi2(6)    = 169.19
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -1739.8444                             Pseudo R2     = 0.0464
+
+──────────────┬────────────────────────────────────────────────────────────────
+ satisfaction │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+──────────────┼────────────────────────────────────────────────────────────────
+      housing │
+  Apartments  │  -.3475367   .0722909    -4.81   0.000    -.4892244   -.2058491
+Atrium hou..  │  -.2178875   .0947661    -2.30   0.021    -.4036256   -.0321495
+Terraced h..  │  -.6641735      .0918    -7.24   0.000    -.8440983   -.4842487
+              │
+    influence │
+      Medium  │   .3464228   .0641371     5.40   0.000     .2207164    .4721291
+        High  │   .7829146   .0764262    10.24   0.000      .633122    .9327072
+              │
+      contact │
+        high  │   .2223858   .0581227     3.83   0.000     .1084675    .3363042
+──────────────┼────────────────────────────────────────────────────────────────
+        /cut1 │  -.2998279   .0761537                     -.4490865   -.1505693
+        /cut2 │   .4267208   .0764043                      .2769711    .5764706
+──────────────┴────────────────────────────────────────────────────────────────
+
+. lrtest . sat, force 
+
+Likelihood-ratio test
+Assumption: . nested within sat
+
+LR chi2(40) =  48.27
+Prob > chi2 = 0.1734
+</pre>
+<p>The model has a log-likelihood of -1739.8, a little bit below that of
+the additive ordered logit. This is also reflected in the slightly
+higher deviance.</p>
+<p>Next we add the housing by influence interaction</p>
+<pre class='stata'>. oprobit satis i.housing##i.influence i.contact [fw=n]
+
 Iteration 0:   log likelihood = -1824.4388  
 Iteration 1:   log likelihood = -1728.7767  
 Iteration 2:   log likelihood = -1728.6654  
 Iteration 3:   log likelihood = -1728.6654  
- 
-Ordered probit regression                         Number of obs   =       1681
-                                                  LR chi2(12)     =     191.55
-                                                  Prob > chi2     =     0.0000
-Log likelihood = -1728.6654                       Pseudo R2       =     0.0525
- 
-------------------------------------------------------------------------------
-satisfaction |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-       apart |  -.7280621   .1205029    -6.04   0.000    -.9642434   -.4918808
-      atrium |  -.3720768   .1510259    -2.46   0.014    -.6680821   -.0760716
-     terrace |  -.9789998   .1455862    -6.72   0.000    -1.264343   -.6936561
-influenceMed |  -.0863672    .130327    -0.66   0.508    -.3418033     .169069
- influenceHi |   .5164514   .1639345     3.15   0.002     .1951457    .8377571
-apartXinfMed |   .6600102   .1625787     4.06   0.000     .3413618    .9786586
- apartXinfHi |   .4479134   .1970667     2.27   0.023     .0616698     .834157
-atriuXinfMed |   .4108389   .2133778     1.93   0.054     -.007374    .8290517
- atriuXinfHi |  -.0779656   .2496472    -0.31   0.755    -.5672652    .4113339
- terrXinfMed |    .496378   .2016362     2.46   0.014     .1011783    .8915777
-  terrXinfHi |   .5216698   .2587276     2.02   0.044     .0145731    1.028767
-   contactHi |   .2284567   .0583151     3.92   0.000     .1141612    .3427522
--------------+----------------------------------------------------------------
-       /cut1 |  -.5439821   .1023487                     -.7445818   -.3433824
-       /cut2 |    .189167   .1018442                     -.0104438    .3887779
-------------------------------------------------------------------------------
- 
+
+Ordered probit regression                               Number of obs =  1,681
+                                                        LR chi2(12)   = 191.55
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -1728.6654                             Pseudo R2     = 0.0525
+
+──────────────┬────────────────────────────────────────────────────────────────
+ satisfaction │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+──────────────┼────────────────────────────────────────────────────────────────
+      housing │
+  Apartments  │  -.7280621   .1205029    -6.04   0.000    -.9642434   -.4918808
+Atrium hou..  │  -.3720768   .1510259    -2.46   0.014    -.6680821   -.0760716
+Terraced h..  │  -.9789998   .1455862    -6.72   0.000    -1.264343   -.6936561
+              │
+    influence │
+      Medium  │  -.0863672    .130327    -0.66   0.508    -.3418033     .169069
+        High  │   .5164514   .1639345     3.15   0.002     .1951457    .8377571
+              │
+      housing#│
+    influence │
+  Apartments #│
+      Medium  │   .6600102   .1625787     4.06   0.000     .3413618    .9786586
+  Apartments #│
+        High  │   .4479134   .1970667     2.27   0.023     .0616698     .834157
+Atrium hou.. #│
+      Medium  │   .4108389   .2133778     1.93   0.054     -.007374    .8290517
+Atrium hou.. #│
+        High  │  -.0779656   .2496472    -0.31   0.755    -.5672652    .4113339
+Terraced h.. #│
+      Medium  │    .496378   .2016362     2.46   0.014     .1011783    .8915777
+Terraced h.. #│
+        High  │   .5216698   .2587276     2.02   0.044     .0145731    1.028767
+              │
+      contact │
+        high  │   .2284567   .0583151     3.92   0.000     .1141612    .3427522
+──────────────┼────────────────────────────────────────────────────────────────
+        /cut1 │  -.5439821   .1023487                     -.7445818   -.3433824
+        /cut2 │    .189167   .1018442                     -.0104438    .3887779
+──────────────┴────────────────────────────────────────────────────────────────
+
 . lrtest . sat, force
- 
-Likelihood-ratio test                                  LR chi2(34) =     25.91
-(Assumption: . nested in sat)                          Prob > chi2 =    0.8387
-</pre> 
-<P> 
-We now have a log-likelihood of -1728.7 and a deviance of 25.9.
-which is almost indistinguishable from the corresponding 
-ordered logit model.
-<P> 
-The estimates indicate that tenants with high contact with the 
-neighbors are 0.228 standard deviations higher in the latent  
-satisfaction scale than tenants with low contact, who live in 
-the same type of housing and have the same feeling of influence 
-in management. Recall that the comparable logit estimate was 0.205.
-<P> 
-The probabilities for the two groups compared earlier can be
-computed using the <code>predict</code> command or more
-instructively 'by hand', using exactly the same code as before but 
-with the <code>normal()</code> c.d.f. instead of the logistic c.d.f.
-<code>invlogit()</code> 
-<pre class='stata'>
-. scalar z1 = _b[/cut1]
- 
+
+Likelihood-ratio test
+Assumption: . nested within sat
+
+LR chi2(34) =  25.91
+Prob > chi2 = 0.8387
+</pre>
+<p>We now have a log-likelihood of -1728.7 and a deviance of 25.9. which
+is almost indistinguishable from the corresponding ordered logit
+model.</p>
+<p>The estimates indicate that tenants with high contact with the
+neighbors are 0.228 standard deviations higher in the latent
+satisfaction scale than tenants with low contact, who live in the same
+type of housing and have the same feeling of influence in management.
+Recall that the comparable logit estimate was 0.205.</p>
+<p>The probabilities for the two groups compared earlier can be computed
+using the <code>predict</code> command or more instructively “by hand”,
+using exactly the same code as before but with the <code>normal()</code>
+c.d.f. instead of the logistic c.d.f. <code>invlogit()</code>.</p>
+<pre class='stata'>. scalar z1 = _b[/cut1]
+
 . scalar z2 = _b[/cut2]
- 
+
 . di normal(z1), normal(z2)-normal(z1),1-normal(z2)
 .29322689 .28179216 .42498095
- 
-. scalar h1 = z1 - _b[contactHi]
- 
-. scalar h2 = z2 - _b[contactHi]
- 
+
+. scalar h1 = z1 - _b[2.contact]
+
+. scalar h2 = z2 - _b[2.contact]
+
 . di normal(h1), normal(h2)-normal(h1),1-normal(h2)
 .21992729 .26440244 .51567027
-</pre> 
-<P> 
-The main thing to note here is that the results are very close
-to the corresponding predictions based on the ordered logit model.
-<P> 
-<h4>The Proportional Hazards Model</h4> 
-<P> 
-The third model mentioned in the lecture notes uses a complementary 
-log-log link and has a proportional hazards interpretation. 
-Unfortunately, this model can not be fit to ordered multinomial data 
-using Stata. It is, of course, possible to fit c-log-log models
-to binary data, and proportional hazards models to survival data,
-as we will see in the next chapter.
-</p>
+</pre>
+<p>The main thing to note here is that the results are very close to the
+corresponding predictions based on the ordered logit model.</p>
+<h3 id="the-proportional-hazards-model">The Proportional Hazards
+Model</h3>
+<p>The third model mentioned in the lecture notes uses a complementary
+log-log link and has a proportional hazards interpretation.
+Unfortunately, this model can not be fit to ordered multinomial data
+using Stata. It is, of course, possible to fit c-log-log models to
+binary data, and proportional hazards models to survival data, as we
+will see in the next chapter.</p>
+<p><small>Updated fall 2022</small></p>

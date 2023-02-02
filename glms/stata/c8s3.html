@@ -5,7 +5,7 @@ tab: "Stata Logs"
 pager: true
 ---
 
-<h3 id="longitudinal-logits">8.3 Longitudinal Logits</h3>
+<h2 id="longitudinal-logits">8.3 Longitudinal Logits</h2>
 <p>We will work with a dataset on union membership used in the Stata
 manuals and in my own paper on intra-class correlation for binary data.
 This is a subsample of the National Longitudinal Survey of Youth (NLSY)
@@ -14,7 +14,7 @@ and has union membership information from 1970-88 for 4,434 women aged
 <pre class='stata'>. use https://www.stata-press.com/data/r14/union, clear
 (NLS Women 14-24 in 1968)
 </pre>
-<h4 id="logits">Logits</h4>
+<h3 id="logits">Logits</h3>
 <p>Here is a logit model</p>
 <pre class='stata'>. gen southXt = south*year
 
@@ -48,7 +48,7 @@ south#c.year │
 
 . estimates store logit
 </pre>
-<h4 id="fixed-effects">Fixed-Effects</h4>
+<h3 id="fixed-effects">Fixed-Effects</h3>
 <p>Let us try a fixed-effects model first.</p>
 <pre class='stata'>. xtlogit union age grade not_smsa south##c.year, i(id) fe
 note: multiple positive outcomes within groups encountered.
@@ -89,7 +89,7 @@ south#c.year │
 <p>Note how we lost 62% of our sample, down from 4434 to 1690 women. The
 2744 drop outs are women who didn’t have variation in union membership
 over time. We will compare the estimates later.</p>
-<h4 id="random-effects">Random-Effects</h4>
+<h3 id="random-effects">Random-Effects</h3>
 <p>Now we fit a random-effects model:</p>
 <pre class='stata'>. xtlogit union age grade not_smsa south##c.year, i(id) re nolog
 
@@ -129,10 +129,10 @@ LR test of rho=0: chibar2(01) = 6004.43                Prob >= chibar2 = 0.000
 
 . estimates store random
 </pre>
-<h4 id="comparisons">Comparisons</h4>
-<p>Here’s a table comparing the estimates for logit, fixed and
-random-effects models. We use the <code>equation</code> option so Stata
-can find the correct estimates.</p>
+<h3 id="comparisons">Comparisons</h3>
+<p>Here’s a table comparing the estimates for logit, random and
+fixed-effects models. We use the <code>equation</code> option so Stata
+can match the estimates.</p>
 <pre class='stata'>. estimates table logit random fixed, equation(1)
 
 ─────────────┬───────────────────────────────────────
@@ -165,7 +165,7 @@ that these women differ from the rest.</p>
 <p>The random-effect coefficients are larger in magnitude than the
 ordinary logit coefficients. This is almost always the case. Omission of
 the random effect biases the coefficients towards zero.</p>
-<h4 id="intra-class-correlation">Intra-class Correlation</h4>
+<h3 id="intra-class-correlation">Intra-class Correlation</h3>
 <p>The intra-class correlation of 0.636 in the random-effects model
 indicates a high correlation between a woman’s propensity to be a union
 member in different years, after controlling for education and
@@ -173,17 +173,16 @@ residence.</p>
 <p>My paper with Elo in the Stata journal shows how this coefficient can
 be interpreted in terms of an odds ratio, and translated into measures
 of manifest correlation such as Pearson’s r and Yule’s Q.</p>
-<div class="stata">
 <p>These measures can be calculated using <code>xtrho</code>, a
 post-estimation command available from the Stata journal website. In
 Stata type <code>search xtrho</code>, or
-<code>net describe st0031, from(http://www.stata-journal.com/software/sj3-1)</code>.
+<code>net describe st0031, from(https://www.stata-journal.com/software/sj3-1)</code>.
 For the average woman the correlation between actual union membership in
 any two years is 0.42 using Pearson’s r and 0.78 using Yule’s Q.</p>
-</div>
 <h3 id="reference">Reference</h3>
 <p>Rodríguez, G. and Elo, I. (2003). “Intra-class correlation in
 random-effects models for binary data”. <em>The Stata
 Journal</em>,<strong>3</strong>(1):32-46. <a
 href="https://journals.sagepub.com/doi/pdf/10.1177/1536867X0300300102"
 class="uri">https://journals.sagepub.com/doi/pdf/10.1177/1536867X0300300102</a></p>
+<p><small>Updated fall 2022</small></p>

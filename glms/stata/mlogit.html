@@ -1,0 +1,241 @@
+---
+layout: default
+section: glms
+tab: "Stata Logs"
+pager: true
+---
+
+<h2 class="first" id="mlogit">6.A Interpreting Multinomial Logit
+Coefficients</h2>
+<p>Let us consider Example 16.1 in Wooldridge (2010), concerning school
+and employment decisions for young men. The data contain information on
+employment and schooling for young men over several years. We will work
+with the data for 1987.</p>
+<p>The outcome is status, coded 1=in school, 2=at home (meaning not in
+school and not working), and 3=working. The predictors are education, a
+quadratic on work experience, and an indicator for black.</p>
+<p>We read the data from the Stata website, keep the year 1987, drop
+missing values, label the outcome, and fit the model.</p>
+<pre class='stata'>. use https://www.stata.com/data/jwooldridge/eacsap/keane, clear
+
+. keep if year == 87
+(10,985 observations deleted)
+
+. drop if missing(status)
+(21 observations deleted)
+
+. label define status 1 "school" 2 "home" 3 "work"
+
+. label values status status
+
+. mlogit status educ exper expersq black, base(1)
+
+Iteration 0:   log likelihood = -1199.7182  
+Iteration 1:   log likelihood = -960.26272  
+Iteration 2:   log likelihood =  -908.7673  
+Iteration 3:   log likelihood = -907.85992  
+Iteration 4:   log likelihood = -907.85723  
+Iteration 5:   log likelihood = -907.85723  
+
+Multinomial logistic regression                         Number of obs =  1,717
+                                                        LR chi2(8)    = 583.72
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -907.85723                             Pseudo R2     = 0.2433
+
+─────────────┬────────────────────────────────────────────────────────────────
+      status │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+school       │  (base outcome)
+─────────────┼────────────────────────────────────────────────────────────────
+home         │
+        educ │  -.6736313   .0698999    -9.64   0.000    -.8106325     -.53663
+       exper │  -.1062149    .173282    -0.61   0.540    -.4458414    .2334116
+     expersq │  -.0125152   .0252291    -0.50   0.620    -.0619633     .036933
+       black │   .8130166   .3027231     2.69   0.007     .2196902    1.406343
+       _cons │   10.27787   1.133336     9.07   0.000     8.056578    12.49917
+─────────────┼────────────────────────────────────────────────────────────────
+work         │
+        educ │  -.3146573   .0651096    -4.83   0.000    -.4422699   -.1870448
+       exper │   .8487367   .1569856     5.41   0.000     .5410507    1.156423
+     expersq │  -.0773003   .0229217    -3.37   0.001    -.1222261   -.0323746
+       black │   .3113612   .2815339     1.11   0.269     -.240435    .8631574
+       _cons │   5.543798   1.086409     5.10   0.000     3.414475    7.673121
+─────────────┴────────────────────────────────────────────────────────────────
+</pre>
+<p>The results agree exactly with Table 16.1 in Wooldridge (2010, page
+645).</p>
+<h3 id="relative-probabilities">Relative Probabilities</h3>
+<p>Let us focus on the coefficient of black in the work equation, which
+is 0.311. Exponentiating we obtain</p>
+<pre class='stata'>. di exp( _b[work:black] )
+1.3652822
+</pre>
+<p>Thus, the relative probability of working rather than being in school
+is 37% higher for blacks than for non-blacks with the same education and
+work experience. (Relative probabilities are also called relative
+odds.)</p>
+<p>A common mistake is to interpret this coefficient as meaning that the
+probability of working is higher for blacks. It is only the
+<em>relative</em> probability of work over school that is higher. To
+obtain a fuller picture we need to consider the second equation as well.
+The coefficient of black in the home equation is 0.813. Exponentiating,
+we obtain</p>
+<pre class='stata'>. di exp(_b[home:black] )
+2.2546993
+</pre>
+<p>Thus, the relative probability of being at home rather than in school
+for blacks is more than double the corresponding relative probability
+for non blacks with the same education and work experience.</p>
+<p>In short, black is associated with an increase in the relative
+probability of work over school, but also a much large increase in the
+relative probability of home over school. What happens with the actual
+probability of working depends on how these two effects balance out.</p>
+<h3 id="marginal-effects-continuous">Marginal Effects (Continuous)</h3>
+<p>To determine the effect of black in the probability scale we need to
+compute marginal effects, which can be done using continuous or discrete
+calculations.</p>
+<p>The continuous calculation is based on the derivative of the
+probability of working with respect to a predictor. Let <span
+class="math inline"><em>π</em><sub><em>i</em><em>j</em></sub> = Pr {<em>Y</em><sub><em>i</em></sub> = <em>j</em>}</span>
+denote the probability that the i-th observation follows on the j-th
+category, which is given by <span class="math display">$$
+\pi_{ij} = \frac{e^{x_i'\beta_j}}{\sum_r e^{x_i'\beta_r}}
+$$</span> where <span
+class="math inline"><em>β</em><sub><em>j</em></sub> = 0</span> when j is
+the baseline or reference outcome, in this case school.</p>
+<p>Taking derivatives w.r.t. the k-th predictor we obtain, after some
+simplification <span
+class="math display"><em>f</em><em>r</em><em>a</em><em>c</em>∂<em>π</em>_<em>i</em><em>j</em>∂<em>x</em><sub><em>i</em><em>k</em></sub> = <em>π</em><sub><em>i</em><em>j</em></sub>(<em>β</em>_<em>j</em><em>k</em>−∑<sub><em>r</em></sub><em>π</em><sub><em>i</em><em>r</em></sub><em>β</em><sub><em>r</em><em>k</em></sub>)</span>
+noting again that the coefficient is zero for the baseline outcome.</p>
+<p>To compute these we predict the probabilities and then apply the
+formula.</p>
+<pre class='stata'>. predict p1 p2 p3, pr
+
+. gen me1 = p1*(            -(p2*_b[2:black] + p3*_b[3:black]))
+
+. gen me2 = p2*(_b[2:black] -(p2*_b[2:black] + p3*_b[3:black]))
+
+. gen me3 = p3*(_b[3:black] -(p2*_b[2:black] + p3*_b[3:black]))
+
+. sum me*
+
+    Variable │        Obs        Mean    Std. dev.       Min        Max
+─────────────┼─────────────────────────────────────────────────────────
+         me1 │      1,717   -.0183811    .0241438  -.1011232  -.0007906
+         me2 │      1,717     .058979    .0355181   .0073935   .1402041
+         me3 │      1,717   -.0405979    .0404273  -.1246674   .0587828
+</pre>
+<p>We find that the average marginal effect of black on work is actually
+negative: -0.0406. This means that the probability of working is on
+average about four percentage points lower for blacks than for
+non-blacks with the same education and experience.</p>
+<p>Stata can do this calculation using the <code>dydx()</code> option of
+the <code>margins</code> command. Here’s the marginal effect for
+work:</p>
+<pre class='stata'>. margins, dydx(black) pr(out(3))         
+
+Average marginal effects                                 Number of obs = 1,717
+Model VCE: OIM
+
+Expression: Pr(status==work), predict(out(3))
+dy/dx wrt:  black
+
+─────────────┬────────────────────────────────────────────────────────────────
+             │            Delta-method
+             │      dy/dx   std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+       black │  -.0405979   .0197356    -2.06   0.040     -.079279   -.0019168
+─────────────┴────────────────────────────────────────────────────────────────
+</pre>
+<p>This agrees exactly with our hand calculation. Note that Stata uses
+the derivative for continuous variables, and a discrete difference for
+factor variables, which we consider next.</p>
+<h3 id="marginal-effects-discrete">Marginal Effects (Discrete)</h3>
+<p>For the discrete calculation we compute predicted probabilities by
+setting ethnicity to black and then to non-black and averaging:</p>
+<pre class='stata'>. gen keep_black = black
+
+. quietly replace black = 1
+
+. predict p11 p12 p13, pr
+
+. sum p1?
+
+    Variable │        Obs        Mean    Std. dev.       Min        Max
+─────────────┼─────────────────────────────────────────────────────────
+         p11 │      1,717    .0450738    .0712937   .0015405   .4842191
+         p12 │      1,717    .2274114    .2114531   .0237205   .9368684
+         p13 │      1,717    .7275148    .2156368   .0615363   .9393418
+
+. scalar w1 = r(mean) 
+
+. quietly replace black = 0 
+
+. predict p01 p02 p03, pr 
+
+. sum p0?
+
+    Variable │        Obs        Mean    Std. dev.       Min        Max
+─────────────┼─────────────────────────────────────────────────────────
+         p01 │      1,717    .0630648    .0941436   .0025128   .5787593
+         p02 │      1,717    .1659493    .1861749    .014167   .8990285
+         p03 │      1,717    .7709859    .1986715   .0975198   .9462531
+
+. di w1 - r(mean)
+-.04347105
+
+. quietly replace black = keep_black
+</pre>
+<p>We find that the average probability of working is 0.7275 if black
+and 0.7710 if not black, a difference of -0.0435, so the probability of
+working is on average just over four percentage points lower for
+blacks.</p>
+<p>Stata can calculate the predictive margins if you specify black as a
+factor variable when you fit the model, and then issue the command
+<code>margins black</code>. This only works for factor variables.</p>
+<pre class='stata'>. quietly mlogit status educ exper expersq i.black, base(1)
+
+. margins black, pr(out(3))         
+
+Predictive margins                                       Number of obs = 1,717
+Model VCE: OIM
+
+Expression: Pr(status==work), predict(out(3))
+
+─────────────┬────────────────────────────────────────────────────────────────
+             │            Delta-method
+             │     Margin   std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+       black │
+          0  │   .7709859   .0119827    64.34   0.000     .7475001    .7944716
+          1  │   .7275148   .0154176    47.19   0.000     .6972968    .7577328
+─────────────┴────────────────────────────────────────────────────────────────
+</pre>
+<p>The marginal effect can then be obtained as a discrete
+difference.</p>
+<pre class='stata'>. margins, dydx(black) pr(out(3))
+
+Average marginal effects                                 Number of obs = 1,717
+Model VCE: OIM
+
+Expression: Pr(status==work), predict(out(3))
+dy/dx wrt:  1.black
+
+─────────────┬────────────────────────────────────────────────────────────────
+             │            Delta-method
+             │      dy/dx   std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+     1.black │   -.043471   .0199503    -2.18   0.029     -.082573   -.0043691
+─────────────┴────────────────────────────────────────────────────────────────
+Note: dy/dx for factor levels is the discrete change from the base level.
+</pre>
+<p>These results agree exactly with our hand calculations.</p>
+<p>The take away conclusion here is that multinomial logit coefficients
+can only be interpreted in terms of relative probabilities. To reach
+conclusions about actual probabilities we need to calculate continuous
+or discrete marginal effects.</p>
+<h3 id="reference">Reference</h3>
+<p>Wooldridge, J. M. (2010). <em>Econometric Analysis of Cross Section
+and Panel Data</em>. Second Edition. Cambridge, Massachussets: The MIT
+Press.</p>
+<p><small>Updated fall 2022</small></p>

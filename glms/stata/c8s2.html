@@ -5,7 +5,7 @@ tab: "Stata Logs"
 pager: true
 ---
 
-<h3 id="longitudinal-linear-model">8.2 Longitudinal Linear Model</h3>
+<h2 id="longitudinal-linear-model">8.2 Longitudinal Linear Model</h2>
 <p>Here’s an interesting example where fixed-effects gives a very
 different answer from OLS and random-effects models. The data come from
 Wooldridge’s text and concern state-level data on the percentage of
@@ -14,7 +14,7 @@ population in the AFDC welfare program in 1987 and 1990. The data are
 available from the Stata website.</p>
 <pre class='stata'>. use https://www.stata.com/data/jwooldridge/eacsap/lowbirth, clear
 </pre>
-<h4 id="ols">OLS</h4>
+<h3 id="ols">OLS</h3>
 <p>Here’s a regression of low birth weight on AFDC with a dummy for 1990
 (time trends) and controls for log physicians per capita, log beds per
 capita, log per capita income, and log population.</p>
@@ -44,13 +44,14 @@ percent in AFDC is associated with an extra 1/10-th of one percent with
 low birth weight. A scatterplot shows a positive correlation:</p>
 <pre class='stata'>. twoway (scatter lowbrth afdcprc if year==1987, mcolor(blue) ) ///
 >   (scatter lowbrth afdcprc if year==1990, mcolor(red)  ) , ///
->   legend( lab(1 "1987") lab(2 "1990") ring(0) pos(5) )
+>   legend( lab(1 "1987") lab(2 "1990") ring(0) pos(5) ) ///
+>   title(Low Birth Weight and AFDC Participation)
 
 .   graph export afdc1.png, width(500) replace
 file afdc1.png saved as PNG format
 </pre>
 <p><img src="afdc1.png" class="img-responsive center-block stata" /></p>
-<h4 id="random-effects">Random-Effects</h4>
+<h3 id="random-effects">Random-Effects</h3>
 <p>Fitting a random-effects model improves things a bit. I first
 <code>encode</code> the state abbreviation to have a numeric id
 variable. For this dataset the results with <code>xtreg</code> and
@@ -114,7 +115,7 @@ significant. The intra-state correlation over the two years is a
 remarkable 0.96; persistent state characteristics account for most of
 the variation in the percent with low birth weight after controlling for
 AFDC participation and all other variables.</p>
-<h4 id="fixed-effects">Fixed-Effects</h4>
+<h3 id="fixed-effects">Fixed-Effects</h3>
 <p>Fitting a fixed-effects model gives much more reasonable results:</p>
 <pre class='stata'>. xtreg lowbrth d90 afdcprc lphypc lbedspc lpcinc lpopul, i(stateid) fe
 
@@ -194,13 +195,14 @@ reshape to wide, but I will keep the data in long format:</p>
 (50 real changes made, 50 to missing)
 
 . twoway (scatter dlowbrth dafdcprc) (lfit dlowbrth dafdcprc), ///
->   legend(off) xtitle(Change in AFDC) ytitle (Change in low birth weight)
+>   legend(off) xtitle(Change in AFDC) ytitle (Change in low birth weight) ///
+>   title(Changes in Low Birth Weight and in AFDC Participation)
 
 . graph export afdc2.png, width(500) replace
 file afdc2.png saved as PNG format
 </pre>
 <p><img src="afdc2.png" class="img-responsive center-block stata" /></p>
-<h4 id="fe-and-differencing">FE and Differencing</h4>
+<h3 id="fe-and-differencing">FE and Differencing</h3>
 <p>Let us verify that we get the same results using regression on the
 differences. The constant is the coefficient of <code>d90</code> and the
 slope is the coefficient of <code>afdcprc</code>:</p>
@@ -220,21 +222,22 @@ slope is the coefficient of <code>afdcprc</code>:</p>
        _cons │   .2124736   .0542377     3.92   0.000     .1034214    .3215259
 ─────────────┴────────────────────────────────────────────────────────────────
 </pre>
-<h4 id="fe-and-dummy-variables">FE and Dummy Variables</h4>
+<h3 id="fe-and-dummy-variables">FE and Dummy Variables</h3>
 <p>Finally we verify that we get the same results using state
 dummies.</p>
-<pre class='stata'>. quietly reg lowbrth afdcprc d90 i.stateid
+<pre class='stata'>. quietly reg lowbrth d90 afdcprc i.stateid
 
-. estimates table, keep(afdcprc d90) se
+. estimates table, keep(d90 afdcprc ) se
 
 ─────────────┬─────────────
     Variable │   Active    
 ─────────────┼─────────────
-     afdcprc │ -.16859799  
-             │  .09079865  
          d90 │  .21247362  
              │  .05423772  
+     afdcprc │ -.16859799  
+             │  .09079865  
 ─────────────┴─────────────
                Legend: b/se
 </pre>
 <p>I just omitted from the listing the state dummies</p>
+<p><small>Updated fall 2022</small></p>

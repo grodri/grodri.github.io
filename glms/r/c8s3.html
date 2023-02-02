@@ -5,27 +5,26 @@ tab: "R Logs"
 pager: true
 ---
 
-<style>
-pre {background-color: white;}  
-pre.r {background-color: #f5f5f5;}  
-</style>
+{% include r.css %}
 
 
-<div id="longitudinal-logits" class="section level3">
-<h3>8.3 Longitudinal Logits</h3>
+
+
+<div id="longitudinal-logits" class="section level2">
+<h2>8.3 Longitudinal Logits</h2>
 <p>We will work with a dataset on union membership used in the Stata
 manuals and in my own paper on intra-class correlation for binary data.
 This is a subsample of the National Longitudinal Survey of Youth (NLSY)
 and has union membership information from 1970-88 for 4,434 women aged
 14-26 in 1968. The data are available in the Stata website</p>
-<pre class="r"><code>&gt;   library(haven)
-&gt;   union = read_dta(&quot;https://www.stata-press.com/data/r14/union.dta&quot;)</code></pre>
-<div id="logits" class="section level4">
-<h4>Logits</h4>
+<pre class="r"><code>&gt; library(haven)
+&gt; union = read_dta(&quot;https://www.stata-press.com/data/r14/union.dta&quot;)</code></pre>
+<div id="logits" class="section level3">
+<h3>Logits</h3>
 <p>Here is a logit model</p>
-<pre class="r"><code>&gt;   logit &lt;- glm(union ~ age + grade + not_smsa + south*year, 
-+     data = union, family = binomial)
-&gt;   summary(logit)</code></pre>
+<pre class="r"><code>&gt; logit &lt;- glm(union ~ age + grade + not_smsa + south*year, 
++   data = union, family = binomial)
+&gt; summary(logit)</code></pre>
 <pre><code>
 Call:
 glm(formula = union ~ age + grade + not_smsa + south * year, 
@@ -55,19 +54,19 @@ AIC: 27099
 
 Number of Fisher Scoring iterations: 4</code></pre>
 </div>
-<div id="fixed-effects" class="section level4">
-<h4>Fixed-Effects</h4>
+<div id="fixed-effects" class="section level3">
+<h3>Fixed-Effects</h3>
 <p>Let us try a fixed-effects model first. My preferred way to fit this
-model in R is using the <code>clogit</code>’ function in the
-<code>survival</code>’ package, which requires specifying the group as
+model in R is using the <code>clogit</code> function in the
+<code>survival</code> package, which requires specifying the group as
 <code>strata()</code>. Alternatives are the packages <code>gplm</code>
 and <code>glmmML</code>. I was able to verify that I get exactly the
-same results with <code>glmmboot()</code>’ in the <code>glmmML</code>’
+same results with <code>glmmboot()</code> in the <code>glmmML</code>
 package.</p>
-<pre class="r"><code>&gt;   library(survival)
-&gt;   fe &lt;- clogit(union ~ age + grade + not_smsa + south*year + 
-+     strata(idcode) , data=union)
-&gt;   summary(fe)</code></pre>
+<pre class="r"><code>&gt; library(survival)
+&gt; fe &lt;- clogit(union ~ age + grade + not_smsa + south*year + 
++   strata(idcode) , data=union)
+&gt; summary(fe)</code></pre>
 <pre><code>Call:
 coxph(formula = Surv(rep(1, 26200L), union) ~ age + grade + not_smsa + 
     south * year + strata(idcode), data = union, method = &quot;exact&quot;)
@@ -96,20 +95,20 @@ Concordance= 0.556  (se = 0.009 )
 Likelihood ratio test= 78.6  on 6 df,   p=7e-15
 Wald test            = 75.71  on 6 df,   p=3e-14
 Score (logrank) test = 77.38  on 6 df,   p=1e-14</code></pre>
-<pre class="r"><code>&gt;   library(dplyr)
-&gt;   group_by(union, idcode) |&gt; summarize(v=var(union)) |&gt;
-+     filter(v &gt; 0) |&gt; nrow()</code></pre>
+<pre class="r"><code>&gt; library(dplyr)
+&gt; group_by(union, idcode) |&gt; summarize(v=var(union)) |&gt;
++   filter(v &gt; 0) |&gt; nrow()</code></pre>
 <pre><code>[1] 1690</code></pre>
 <p>It is not immediately obvious from the output that we lost 62% of our
 sample, down from 4434 to 1690 women. The 2744 drop outs are women who
 didn’t have variation in union membership over time. We will compare the
 estimates later.</p>
 </div>
-<div id="random-effects" class="section level4">
-<h4>Random-Effects</h4>
+<div id="random-effects" class="section level3">
+<h3>Random-Effects</h3>
 <p>Now we fit a random-effects model:</p>
-<p>I tried to fit this model using <code>glmer()</code>’ in the
-<code>lme4</code>’ package, but it didn’t converge, either with the
+<p>I tried to fit this model using <code>glmer()</code> in the
+<code>lme4</code> package, but it didn’t converge, either with the
 default settings, which uses the Laplace approximation, nor when I
 specified 8-point adaptive quadrature. In all fairness this is a tough
 dataset, with very high intra-woman correlation.</p>
@@ -117,12 +116,12 @@ dataset, with very high intra-woman correlation.</p>
 same name, for which the default family is binomial, and it converged
 using the default Laplace approximation, as well as 8-point and 12-point
 Gauss-Hermite quadrature. (Adaptive Gauss Hermite is not available.)</p>
-<pre class="r"><code>&gt;   library(glmmML)
-&gt;   model = union ~ age + grade + not_smsa + south*year
-&gt;   re1  &lt;- glmmML(model, cluster = idcode, data = union)
-&gt;   re8  &lt;- glmmML(model, cluster = idcode, data = union, method = &quot;ghq&quot;)
-&gt;   re12 &lt;- glmmML(model, cluster = idcode, data = union, method = &quot;ghq&quot;, n.points=12)
-&gt;   cbind(coef(re1), coef(re8), coef(re12))</code></pre>
+<pre class="r"><code>&gt; library(glmmML)
+&gt; model = union ~ age + grade + not_smsa + south*year
+&gt; re1  &lt;- glmmML(model, cluster = idcode, data = union)
+&gt; re8  &lt;- glmmML(model, cluster = idcode, data = union, method = &quot;ghq&quot;)
+&gt; re12 &lt;- glmmML(model, cluster = idcode, data = union, method = &quot;ghq&quot;, n.points=12)
+&gt; cbind(coef(re1), coef(re8), coef(re12))</code></pre>
 <pre><code>                    [,1]        [,2]         [,3]
 (Intercept) -3.179390645 -3.00295603 -3.007554943
 age          0.015532428  0.01566587  0.015672980
@@ -131,7 +130,7 @@ not_smsa    -0.259972325 -0.25199100 -0.252399196
 south       -2.780348545 -2.84303513 -2.850827982
 year        -0.006348971 -0.00685331 -0.006901788
 south:year   0.022970270  0.02388622  0.023958360</code></pre>
-<pre class="r"><code>&gt;   re12</code></pre>
+<pre class="r"><code>&gt; re12</code></pre>
 <pre><code>
 Call:  glmmML(formula = model, data = union, cluster = idcode, method = &quot;ghq&quot;,      n.points = 12) 
 
@@ -151,19 +150,19 @@ Std. Error:                              0.05607
 
 Residual deviance: 21080 on 26192 degrees of freedom    AIC: 21100 </code></pre>
 </div>
-<div id="comparisons" class="section level4">
-<h4>Comparisons</h4>
-<p>Here’s a table comparing the estimates for logit, fixed and
-random-effects models.</p>
-<pre class="r"><code>&gt;   cbind(coef(logit), c(NA,coef(fe)), coef(re12))</code></pre>
-<pre><code>                   [,1]        [,2]         [,3]
-(Intercept) -1.06652576          NA -3.007554943
-age          0.02076564  0.07109727  0.015672980
-grade        0.04891210  0.08161106  0.087342300
-not_smsa    -0.21951628  0.02248093 -0.252399196
-south       -1.53074268 -2.85648775 -2.850827982
-year        -0.01456067 -0.06368531 -0.006901788
-south:year   0.01105767  0.02641356  0.023958360</code></pre>
+<div id="comparisons" class="section level3">
+<h3>Comparisons</h3>
+<p>Here’s a table comparing the estimates for logit, random and
+fixed-effects models.</p>
+<pre class="r"><code>&gt; cbind(coef(logit), coef(re12), c(NA,coef(fe)))</code></pre>
+<pre><code>                   [,1]         [,2]        [,3]
+(Intercept) -1.06652576 -3.007554943          NA
+age          0.02076564  0.015672980  0.07109727
+grade        0.04891210  0.087342300  0.08161106
+not_smsa    -0.21951628 -0.252399196  0.02248093
+south       -1.53074268 -2.850827982 -2.85648775
+year        -0.01456067 -0.006901788 -0.06368531
+south:year   0.01105767  0.023958360  0.02641356</code></pre>
 <p>The main change is in the coefficient of <code>not_smsa</code>. You
 might think this indicates something wrong with the logit and
 random-effects models, but note that only women who have <em>moved</em>
@@ -174,19 +173,19 @@ that these women differ from the rest.</p>
 ordinary logit coefficients. This is almost always the case. Omission of
 the random effect biases the coefficients towards zero.</p>
 </div>
-<div id="intra-class-correlation" class="section level4">
-<h4>Intra-class Correlation</h4>
+<div id="intra-class-correlation" class="section level3">
+<h3>Intra-class Correlation</h3>
 <p>The scale parameter of 2.395, available as <code>sigma</code>, can be
 translated into an intraclass correlation as shown below:</p>
-<pre class="r"><code>&gt;   re12$sigma^2/(re12$sigma^2 + pi^2/3)</code></pre>
+<pre class="r"><code>&gt; re12$sigma^2/(re12$sigma^2 + pi^2/3)</code></pre>
 <pre><code>[1] 0.635541</code></pre>
-<p>This value indicates a high correlation between a woman’s propensity
-to be a union member in different years, after controlling for education
-and residence.</p>
+<p>The intra-class correlation of 0.636 in the random-effects model
+indicates a high correlation between a woman’s propensity to be a union
+member in different years, after controlling for education and
+residence.</p>
 <p>My paper with Elo in the Stata journal shows how this coefficient can
 be interpreted in terms of an odds ratio, and translated into measures
 of manifest correlation such as Pearson’s r and Yule’s Q.</p>
-</div>
 </div>
 <div id="reference" class="section level3">
 <h3>Reference</h3>
@@ -195,4 +194,6 @@ random-effects models for binary data”. <em>The Stata
 Journal</em>,<strong>3</strong>(1):32-46. <a
 href="https://journals.sagepub.com/doi/pdf/10.1177/1536867X0300300102"
 class="uri">https://journals.sagepub.com/doi/pdf/10.1177/1536867X0300300102</a></p>
+<p><small>Updated fall 2022</small></p>
+</div>
 </div>

@@ -5,380 +5,364 @@ tab: "R Logs"
 pager: true
 ---
 
+{% include r.css %}
 
-<h2 class='first'>7.  Survival Models in R</h2> 
-<p>
-  R has extensive facilities for fitting survival models. 
-We will discuss only the use of Poisson regression to fit 
-piece-wise exponential survival models.
-</p>
- <h3>7.5  Infant and Child Mortality in Colombia</h3> 
-<p>
-  The datasets page has the original tabulation of children by sex, 
-cohort, age and survival status (dead or still alive at interview),
-as analyzed by Somoza (1980). 
-</p>
-<p>
-  As is often the case with survival data, a good part of the
-effort is to convert the raw data into the counts of events
-and exposure needed for analysis.
-</p>
-  <h4>Data Preparation</h4> 
-<p>
-  We will start by reading the data and collapsing over sex,
-and will then compute events and exposure to reproduce 
-Table 7.1 in the lecture notes.
-</p>
-<pre class='r'>
-> require(foreign)
 
-> somoza <- read.dta("http://data.princeton.edu/wws509/datasets/somoza.dta")
 
-> s <- aggregate(dead ~ cohort + age, data=somoza, FUN=sum)
 
-> s$alive <- aggregate(alive ~ cohort + age, data=somoza, FUN=sum)[,"alive"]
+<div id="c7s1" class="section level1 first">
+<h1 class="first">7. Survival Models</h1>
+<p>Stata and R have extensive facilities for fitting survival models. In
+this course we discuss only the use of Poisson regression to fit
+piece-wise exponential survival models. For other approaches see the <a
+href="/survival">survival analysis course</a>.</p>
+<div id="infant-and-child-mortality-in-colombia" class="section level2">
+<h2>7.5 Infant and Child Mortality in Colombia</h2>
+<p>The datasets section has the original tabulation of children by sex,
+cohort, age and survival status (dead or still alive at interview), as
+analyzed by Somoza (1980).</p>
+<p>As is often the case with survival data, a good part of the effort is
+to convert the raw data into the counts of events and exposure needed
+for analysis.</p>
+<div id="data-preparation" class="section level3">
+<h3>Data Preparation</h3>
+<p>We will start by reading the data and collapsing over sex, and will
+then compute events and exposure to reproduce Table 7.1 in the lecture
+notes.</p>
+<pre class="r"><code>&gt; library(haven)
+&gt; library(dplyr)
+&gt; somoza &lt;- read_dta(&quot;https://grodri.github.io/datasets/somoza.dta&quot;) |&gt;
++   mutate(age=as_factor(age), cohort=as_factor(cohort))
+&gt; somoza &lt;- group_by(somoza, cohort, age) |&gt; 
++   summarize(deaths=sum(dead), survivors=sum(alive))</code></pre>
+<pre><code>`summarise()` has grouped output by &#39;cohort&#39;. You can override using the `.groups`
+argument.</code></pre>
+<p>We take advantage of the fact that the data have been grouped by
+`cohort’. We compute the number who start each age as the total number
+of cases minus the number of deaths and survivors in all subsequent
+intervals. We add the width of the age interval in month, and then
+compute exposure as the number who start minus half the number who die
+or at alive in that age intervals, dividing by 12 to express exposure in
+years. Finally we drop age 5-10 years.</p>
+<pre class="r"><code>&gt; somoza &lt;- mutate(somoza, 
++   start = sum(deaths+survivors) - c(0, cumsum(deaths+survivors)[-8]),
++   width = c(1,2,3,6,12,36,60,NA)[as.numeric(age)],       
++   exposure = width * (start -0.5*(deaths+survivors))/12) |&gt;
++ filter(as.numeric(age) &lt;= 7)</code></pre>
+<p>We then list the results, which coincide with Table 7.1 in the
+notes.</p>
+<pre class="r"><code>&gt; library(tibble) # to format exposure for printing
+&gt; select(somoza, cohort, age, deaths, exposure) |&gt;
++   mutate(exposure = num(exposure, digits=1))</code></pre>
+<pre><code># A tibble: 21 × 4
+# Groups:   cohort [3]
+   cohort  age         deaths  exposure
+   &lt;fct&gt;   &lt;fct&gt;        &lt;dbl&gt; &lt;num:.1!&gt;
+ 1 1941-59 0-1 months     168     278.4
+ 2 1941-59 1-3 months      48     538.8
+ 3 1941-59 3-6 months      63     794.4
+ 4 1941-59 6-12 months     89    1550.8
+ 5 1941-59 1-2 years      102    3006.0
+ 6 1941-59 2-5 years       81    8743.5
+ 7 1941-59 5-10 years      40   14270.0
+ 8 1960-67 0-1 months     197     403.2
+ 9 1960-67 1-3 months      48     786.0
+10 1960-67 3-6 months      62    1165.2
+# … with 11 more rows</code></pre>
+<p>Table 7.1 is also available as a Stata file called
+<code>somoza2.dta</code> in the datasets section.</p>
+</div>
+<div id="offset-and-predictors" class="section level3">
+<h3>Offset and Predictors</h3>
+<p>In preparation for modeling, let us calculate the logarithm of
+exposure time, to be used as an <em>offset</em>.</p>
+<pre class="r"><code>&gt; somoza &lt;- mutate(somoza, os=log(exposure))</code></pre>
+</div>
+<div id="exponential-survival" class="section level3">
+<h3>Exponential Survival</h3>
+<p>Let us fit the null model, which is equivalent to a simple
+exponential survival model.</p>
+<pre class="r"><code>&gt; mexp &lt;- glm(deaths ~ 1, offset=os, family=poisson, data=somoza)
+&gt; summary(mexp)</code></pre>
+<pre><code>
+Call:
+glm(formula = deaths ~ 1, family = poisson, data = somoza, offset = os)
 
-> s <- s[order(s$cohort, s$age),]
-</pre>
-<p>
-  The next step is to compute exposure time. We proceed by cohort,
-sum all dead and alive to get the total number in the cohort, and
-then proceed by age subtract those dying or still alive in each
-each group to obtain the number entering and exiting each age
-group. Exposure is then the number in the mid-point times the 
-width of the age group, and I chose to express it in years.
-</p>
-<pre class='r'>
-> w <- c(1,2,3,6,12,36,60,0)/12
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-21.602   -6.959    5.532    8.679   30.220  
 
-> s$exposure <- 0
+Coefficients:
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept) -3.99645    0.02372  -168.5   &lt;2e-16 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
-> for(cohort in levels(s$cohort)) {
-+   i <- which(s$cohort == cohort)
-+   data <- s[i,]
-+   n <- sum(data$alive + data$dead)
-+   exit <- n - cumsum(data$alive + data$dead)
-+   enter <- c(n, exit[-length(exit)])
-+   s[i,"exposure"] <- w*(enter+exit)/2
-+ }
+(Dispersion parameter for poisson family taken to be 1)
 
-> co <- subset(s, age != "10+ years")
+    Null deviance: 4239.9  on 20  degrees of freedom
+Residual deviance: 4239.9  on 20  degrees of freedom
+AIC: 4370.2
 
-> co$age <- factor(co$age) # dropping level 10+
+Number of Fisher Scoring iterations: 6</code></pre>
+<p>Note the astronomical deviance. The estimate of the constant happens
+to be the log of the overall mortality rate. Let’s verify this fact</p>
+<pre class="r"><code>&gt; exp(coef(mexp))</code></pre>
+<pre><code>(Intercept) 
+  0.0183808 </code></pre>
+<pre class="r"><code>&gt; data.frame(&quot;observed.rate&quot;= sum(somoza$deaths)/sum(somoza$exposure))</code></pre>
+<pre><code>  observed.rate
+1     0.0183808</code></pre>
+<p>We have an overall mortality rate of 18.4 deaths per thousand
+child-years of exposure.</p>
+</div>
+<div id="three-exponentials" class="section level3">
+<h3>Three Exponentials</h3>
+<p>On to the one-factor models. We start with the cohort model, which is
+equivalent to a separate exponential survival model for each cohort:</p>
+<pre class="r"><code>&gt; mcoh &lt;- glm(deaths ~ cohort, offset=os, family=poisson, data=somoza)
+&gt; summary(mcoh)</code></pre>
+<pre><code>
+Call:
+glm(formula = deaths ~ cohort, family = poisson, data = somoza, 
+    offset = os)
 
-> names(co)[3] <- "deaths"
-</pre>
-<p>
-After calculating exposure I dropped kids older than ten, as we 
-are only interested in survival  to age ten. 
-I also renamed "dead" to "deaths", which makes more sense.
-The data are now ready for analysis.
-</p>
-<pre class='r'>
-> co
-    cohort         age deaths alive   exposure
-1  1941-59  0-1 months    168     0   278.4167
-4  1941-59  1-3 months     48     0   538.8333
-7  1941-59  3-6 months     63     0   794.3750
-10 1941-59 6-12 months     89     0  1550.7500
-13 1941-59   1-2 years    102     0  3006.0000
-16 1941-59   2-5 years     81     0  8743.5000
-19 1941-59  5-10 years     40     0 14270.0000
-2  1960-67  0-1 months    197     0   403.2083
-5  1960-67  1-3 months     48     0   786.0000
-8  1960-67  3-6 months     62     0  1165.2500
-11 1960-67 6-12 months     81     0  2294.7500
-14 1960-67   1-2 years     97     0  4500.5000
-17 1960-67   2-5 years    103     0 13201.5000
-20 1960-67  5-10 years     39   849 19525.0000
-3  1968-76  0-1 months    195    25   495.2500
-6  1968-76  1-3 months     55   131   956.6667
-9  1968-76  3-6 months     58   185  1381.3750
-12 1968-76 6-12 months     85   305  2604.5000
-15 1968-76   1-2 years     87   704  4618.5000
-18 1968-76   2-5 years     70  1833  9814.5000
-21 1968-76  5-10 years     10  2309  5802.5000
-</pre>
-<a name="pwe"></a>
-<h4>Exponential Survival</h4>
-<p>
-In preparation for model fitting I calculate the offset or
-log of exposure and add it to the data frame. I then fit a
-simple exponential model by treating the number of deaths
-as Poisson with mean proportional to exposure time and a
-constant rate:
-</p>
-<pre class='r'>
-> co$os <- log(co$exposure)
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-18.697   -7.419    4.800    8.254   31.485  
 
-> em <- glm(deaths ~ offset(os), family=poisson, data=co)
+Coefficients:
+              Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)   -3.89949    0.04113 -94.799  &lt; 2e-16 ***
+cohort1960-67 -0.30204    0.05733  -5.268 1.38e-07 ***
+cohort1968-76  0.07422    0.05897   1.259    0.208    
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
-> summary(em)$coefficients
-             Estimate Std. Error   z value Pr(>|z|)
-(Intercept) -3.996449 0.02371543 -168.5168        0
+(Dispersion parameter for poisson family taken to be 1)
 
-> deviance(em)
-[1] 4239.871
-</pre>
-<p>
-  Note the astronomical deviance. 
-The estimate of the constant happens to be the log of the 
-overall mortality rate. Let's verify this fact
-</p>
-<pre class='r'>
-> sum(co$deaths)/sum(co$exposure)
-[1] 0.0183808
+    Null deviance: 4239.9  on 20  degrees of freedom
+Residual deviance: 4190.7  on 18  degrees of freedom
+AIC: 4325.1
 
-> exp(coef(em))
-(Intercept) 
-  0.0183808 
-</pre>
-<p>
-We have an overall mortality rate of 18.4 deaths per
-thousand child-years of exposure.
-</p>
-<h4>Three Exponentials</h4> 
-<p>
-On to the one-factor models. 
-We start with the cohort model, which is equivalent to a separate 
-exponential survival model for each cohort:
-</p>
-<pre class='r'>
-> emc <- glm(deaths ~ cohort + offset(os), family=poisson, data=co)
+Number of Fisher Scoring iterations: 6</code></pre>
+<pre class="r"><code>&gt; exp(coef(mcoh)[-1])</code></pre>
+<pre><code>cohort1960-67 cohort1968-76 
+    0.7393088     1.0770409 </code></pre>
+<p>Compare these results with the gross effect estimates in Table 7.3.
+Note that the hazard rate declined 26% between the 1941-59 and 1960-67
+cohorts, but appears to have increased almost 8% for the 1968-76 cohort
+compared to the 1941-59 cohort. (We will return to this issue.)</p>
+<p>The extremely large deviance shows that this model does not provide a
+reasonable description of the data. It is, however, better than the
+model where all cohorts follow the same exponential survival curve, as
+evidenced by the model chi-squared or the Wald test.</p>
+<pre class="r"><code>&gt; anova(mexp, mcoh)</code></pre>
+<pre><code>Analysis of Deviance Table
 
-> summary(emc)$coefficients
-                 Estimate Std. Error    z value     Pr(>|z|)
-(Intercept)   -3.89948706 0.04113406 -94.799469 0.000000e+00
-cohort1960-67 -0.30203952 0.05733117  -5.268330 1.376702e-07
-cohort1968-76  0.07421735 0.05897221   1.258514 2.082060e-01
+Model 1: deaths ~ 1
+Model 2: deaths ~ cohort
+  Resid. Df Resid. Dev Df Deviance
+1        20     4239.9            
+2        18     4190.7  2   49.161</code></pre>
+<pre class="r"><code>&gt; wald &lt;- function(model, pattern) {
++   indices = grep(pattern, names(coef(model)))
++   b &lt;- coef(model)[indices]
++   V &lt;- vcov(model)[indices, indices]
++   data.frame(wald=t(b) %*% solve(V) %*% b)
++ } 
+&gt; wald(mcoh, &quot;cohort&quot;)</code></pre>
+<pre><code>      wald
+1 47.99641</code></pre>
+<p>Both tests are highly significant, indicating that overall mortality
+rates are not the same across cohorts.</p>
+</div>
+<div id="piece-wise-exponential-survival" class="section level3">
+<h3>Piece-Wise Exponential Survival</h3>
+<p>Now we consider the age model, where the hazard depends on the age of
+the child:</p>
+<pre class="r"><code>&gt; mage &lt;- glm(deaths ~ age, offset=os, family=poisson, data=somoza)
+&gt; summary(mage)</code></pre>
+<pre><code>
+Call:
+glm(formula = deaths ~ age, family = poisson, data = somoza, 
+    offset = os)
 
-> deviance(emc)
-[1] 4190.709
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-2.7308  -1.0399  -0.5649   1.3472   3.4629  
 
-> exp(coef(emc)[-1]) - 1
-cohort1960-67 cohort1968-76 
-  -0.26069116    0.07704087 
-</pre>
-<p>
-Compare these results with the gross effect estimates in Table 7.3. 
-Note that the hazard rate declined 26% between the 1941-59 and 
-1960-67 cohorts, but appears to have increased almost 8% for the 
-1968-76 cohort compared to the 1941-59 cohort. 
-(We will return to this issue.) 
-</p>
-<p>
-  The astronomical deviance shows that this model does not provide
-a reasonable description of the data. It is, however, better than
-the model where all cohorts follow the same exponential survival
-curve, as evidenced by the reduction in deviance or the Wald test
-(I'll write a simple function for this)
-</p>
-<pre class='r'>
-> wald <- function(model,pattern) {
-+   loc <- grep(pattern,names(coef(model)))    
-+   b <- coef(model)[loc]
-+   V <- vcov(model)[loc,loc]
-+   t(b) %*% solve(V) %*% b
-+ }
+Coefficients:
+               Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)    -0.74268    0.04226  -17.57   &lt;2e-16 ***
+age1-3 months  -1.97263    0.09170  -21.51   &lt;2e-16 ***
+age3-6 months  -2.16186    0.08515  -25.39   &lt;2e-16 ***
+age6-12 months -2.48789    0.07555  -32.93   &lt;2e-16 ***
+age1-2 years   -3.00435    0.07268  -41.34   &lt;2e-16 ***
+age2-5 years   -4.08593    0.07565  -54.01   &lt;2e-16 ***
+age5-10 years  -5.35520    0.11411  -46.93   &lt;2e-16 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
-> deviance(em) - deviance(emc)
-[1] 49.16135
+(Dispersion parameter for poisson family taken to be 1)
 
-> wald(emc, "cohort")
-         [,1]
-[1,] 47.99641
-</pre>
-<p>
-Both tests are highly significant, indicating that overall mortality
-rates are not the same across cohorts.
-</p>
-<h4>Piece-Wise Exponential Survival</h4> 
-<p>
-Now we consider the age model, where the hazard depends on the age 
-of the child:
-</p>
-<pre class='r'>
-> pwe <- glm(deaths ~ age + offset(os), family=poisson, data=co)
+    Null deviance: 4239.87  on 20  degrees of freedom
+Residual deviance:   72.64  on 14  degrees of freedom
+AIC: 214.98
 
-> summary(pwe)$coefficients
-                 Estimate Std. Error   z value      Pr(>|z|)
-(Intercept)    -0.7426811 0.04225771 -17.57504  3.826003e-69
-age1-3 months  -1.9726274 0.09169641 -21.51259 1.186813e-102
-age3-6 months  -2.1618582 0.08514807 -25.38940 3.302537e-142
-age6-12 months -2.4878907 0.07554656 -32.93189 7.686765e-238
-age1-2 years   -3.0043518 0.07267886 -41.33735  0.000000e+00
-age2-5 years   -4.0859318 0.07564868 -54.01194  0.000000e+00
-age5-10 years  -5.3552038 0.11411253 -46.92915  0.000000e+00
+Number of Fisher Scoring iterations: 4</code></pre>
+<pre class="r"><code>&gt; exp(coef(mage)[-1])</code></pre>
+<pre><code> age1-3 months  age3-6 months age6-12 months   age1-2 years   age2-5 years 
+   0.139090922    0.115111026    0.083085029    0.049570876    0.016807471 
+ age5-10 years 
+   0.004723507 </code></pre>
+<p>The age model is equivalent to a piece-wise exponential survival
+model with no cohort effects. Compare the results with the gross effects
+in Table 7.3. Note the dramatic decrease in risk with age. At age one
+the risk of death is only 5% of what it was in the first month of
+life.</p>
+<p>This model still doesn’t fit the data, as evidenced by the deviance
+or goodness of fit chi-squared. It is, however, a remarkable improvement
+over the null, as indicated by the model chi-squared or the Wald
+test,</p>
+<pre class="r"><code>&gt; anova(mexp, mage)</code></pre>
+<pre><code>Analysis of Deviance Table
 
-> deviance(pwe)
-[1] 72.64013
-</pre>
-<p>
-  The age model is equivalent to a piece-wise exponential survival model 
-with no cohort effects. 
-Compare the results with the gross effects in Table 7.3. 
-Note the dramatic decrease in risk with age. 
-At age one the risk of death is only 5% of what it is 
-in the first month of life. 
-</p>
-<p>
-  This model still doesn't fit the data, as evidenced by the
-deviance or goodness of fit chi-squared. It is, however,
-a remarkable improvement over the null, as indicated by the
-reduction in deviance or the Wald test
-</p>
-<pre class='r'>
-> deviance(em) - deviance(pwe)
-[1] 4167.231
+Model 1: deaths ~ 1
+Model 2: deaths ~ age
+  Resid. Df Resid. Dev Df Deviance
+1        20     4239.9            
+2        14       72.6  6   4167.2</code></pre>
+<pre class="r"><code>&gt; wald(mage, &quot;age&quot;)</code></pre>
+<pre><code>      wald
+1 4689.271</code></pre>
+<p>You can see why demographers prefer age-specific mortality rates
+:)</p>
+</div>
+<div id="the-proportional-hazards-model" class="section level3">
+<h3>The Proportional Hazards Model</h3>
+<p>Now on to the additive model with main effects of age and cohort,
+which is equivalent to a proportional hazards model:</p>
+<pre class="r"><code>&gt; mphaz &lt;-  glm(deaths ~ age + cohort, offset=os, family=poisson, data=somoza)
+&gt; summary(mphaz)</code></pre>
+<pre><code>
+Call:
+glm(formula = deaths ~ age + cohort, family = poisson, data = somoza, 
+    offset = os)
 
-> wald(pwe,"age")
-         [,1]
-[1,] 4689.271
-</pre>
-<p>
-You can see why demographers prefer age-specific mortality rates :)
-</p>
-<p>
-<a name="ph"></a><h4>The Proportional Hazards Model</h4> 
-</p>
-<p>
-  Now on to the additive model with main effects of age and cohort, 
-which is equivalent to a proportional hazards model:
-</p>
-<pre class='r'>
-> ph <- glm(deaths ~ age + cohort + offset(os), family=poisson, data=co)
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-1.08098  -0.35175  -0.00231   0.35063   0.81568  
 
-> summary(ph)$coefficients
-                 Estimate Std. Error    z value      Pr(>|z|)
-(Intercept)    -0.4484821 0.05453886  -8.223166  1.982007e-16
-age1-3 months  -1.9726879 0.09169642 -21.513248 1.170171e-102
-age3-6 months  -2.1633200 0.08514876 -25.406360 2.145120e-142
-age6-12 months -2.4916746 0.07555092 -32.980069 1.568574e-238
-age1-2 years   -3.0140525 0.07270345 -41.456800  0.000000e+00
-age2-5 years   -4.1153826 0.07582599 -54.274040  0.000000e+00
-age5-10 years  -5.4358866 0.11476799 -47.364136  0.000000e+00
-cohort1960-67  -0.3242408 0.05733511  -5.655188  1.556759e-08
-cohort1968-76  -0.4783590 0.05932554  -8.063290  7.426801e-16
+Coefficients:
+               Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)    -0.44848    0.05454  -8.223  &lt; 2e-16 ***
+age1-3 months  -1.97269    0.09170 -21.513  &lt; 2e-16 ***
+age3-6 months  -2.16332    0.08515 -25.406  &lt; 2e-16 ***
+age6-12 months -2.49167    0.07555 -32.980  &lt; 2e-16 ***
+age1-2 years   -3.01405    0.07270 -41.457  &lt; 2e-16 ***
+age2-5 years   -4.11538    0.07583 -54.274  &lt; 2e-16 ***
+age5-10 years  -5.43589    0.11477 -47.364  &lt; 2e-16 ***
+cohort1960-67  -0.32424    0.05734  -5.655 1.56e-08 ***
+cohort1968-76  -0.47836    0.05933  -8.063 7.43e-16 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
-> deviance(ph)
-[1] 6.182972
+(Dispersion parameter for poisson family taken to be 1)
 
-> pchisq(deviance(ph), ph$df.residual, lower.tail=FALSE)
-[1] 0.9065788
+    Null deviance: 4239.871  on 20  degrees of freedom
+Residual deviance:    6.183  on 12  degrees of freedom
+AIC: 152.53
 
-> j <- grep("cohort",names(coef(ph)))
+Number of Fisher Scoring iterations: 3</code></pre>
+<pre class="r"><code>&gt; exp(coef(mphaz)[-1])</code></pre>
+<pre><code> age1-3 months  age3-6 months age6-12 months   age1-2 years   age2-5 years 
+    0.13908251     0.11494288     0.08277124     0.04909233     0.01631970 
+ age5-10 years  cohort1960-67  cohort1968-76 
+    0.00435737     0.72307607     0.61979965 </code></pre>
+<p>Note that this model fits reasonably well, with a deviance of 6.18 on
+12 d.f., so the assumption of proportional hazards is consistent with
+the data.</p>
+<p>Compare the results with the net effect estimates in Table 7.3, and
+note that the anomaly with the youngest cohort has dissappeared. The
+estimates now indicate a steady decline in mortality across cohorts.
+Taking the 1941-59 cohort as a baseline, mortality at every age from
+zero to ten was 28% lower for the 1960-67 cohort and 36% lower for the
+more recent 1968-76 cohort. Can you explain why this trend did not
+emerge until we controlled for age? <em>Hint</em>: the survey was
+conducted in 1976.</p>
+<p>Here’s a likelihood ratio test for the cohort effect adjusted for
+age. Note that we compare the age model with the additive model that has
+age and cohort. That is followed by the Wald test.</p>
+<pre class="r"><code>&gt; anova(mage, mphaz)</code></pre>
+<pre><code>Analysis of Deviance Table
 
-> exp(coef(ph)[j]) - 1 
-cohort1960-67 cohort1968-76 
-   -0.2769239    -0.3802004 
-</pre>
-<p>
-Note that this model fits reasonably well, with a deviance
-of 6.18 on 12 d.f., so the assumption of proportional hazards
-is consistent with the data. 
-</p>
-<p>
-Compare the results with the net effect estimates in Table 7.3,
-and note that the anomaly with the youngest cohort has dissappeared.
-The estimates now indicate a steady decline in mortality across 
-cohorts. 
-Taking the 1941-59 cohort as a baseline, mortality at every age from 
-zero to ten was 28% lower for the 1960-67 cohort and 36% lower for 
-the  more recent 1968-76 cohort. 
-Can you explain why this trend did not emerge until we controlled 
-for age? <i>Hint</i>: the survey was conducted in 1976. 
-</p>
-<p>
-Here's a likelihood ratio test for the cohort effect adjusted for age. 
-Note that we compare the age model with the additive 
-model that has age and cohort. That is followed by the Wald test.
-</p>
-<pre class='r'>
-> deviance(pwe) - deviance(ph)  
-[1] 66.45716
-
-> wald(ph,"cohort")
-         [,1]
-[1,] 68.59521
-</pre>
-<p>
-The cohort differences within age groups are highly significant.
-</p>
-<p>
-<a name="surv"></a><h4>Estimating Survival Probabilities</h4> 
-</p>
-<p>
-Let us calculate the fitted life table shown in Table 7.4 of the 
-lecture notes. 
-The <code>predict</code> command following a Poisson regression has
-and argument <code>type="response"</code> to calculate the expected 
-number of events, which we then divide by exposure to obtain fitted 
-rates. (An alternative is to leave out the <code>type</code>argument 
-to obtain the linear predictor, substract the offset, and exponentiate 
-to obtain the rate. I'll let you verify that you get the same prediction.)
-</p>
-<pre class='r'>
-> co$hazard <- predict(ph, type="response")/co$exposure
-</pre>
-<p>
-At this point recall that the age intervals have different widths. 
-We just don't need the width for 10+. We then loop by cohort,
-calculate the cumulative hazard by summing the product of the hazard
-in each age by the width of the interval, and then exponentiate
-the negative cumulative hazard to get the survival function:
-</p>
-<pre class='r'>
-> w <- w[-8]
-
-> co$survival <- 0
-
-> for(cohort in levels(co$cohort)) {
-+   i <- which(co$cohort == cohort)
-+   Hazard <- cumsum(co$hazard[i] * w)
-+   co$survival[i] <- exp(-Hazard)
-+ }
-</pre>
-<p>
-Rather than list the data frame I will tabulate the survival
-by age and cohort:
-</p>
-<pre class='r'>
-> S <- tapply(co$survival,list(co$age,co$cohort),function(x) round(x,4))
-
-> S
-            1941-59 1960-67 1968-76
-0-1 months   0.9482  0.9623  0.9676
-1-3 months   0.9342  0.9520  0.9587
-3-6 months   0.9173  0.9395  0.9479
-6-12 months  0.8933  0.9217  0.9325
-1-2 years    0.8658  0.9010  0.9145
-2-5 years    0.8391  0.8809  0.8970
-5-10 years   0.8275  0.8721  0.8893
-</pre>
-<p>
-Finally, here are the complements of the probability of surviving to age one
-for each cohort. 
-</p>
-<pre class='r'>
-> 1 - S["6-12 months",]  
-1941-59 1960-67 1968-76 
- 0.1067  0.0783  0.0675 
-</pre>
-<p>
-These are known  as the infant mortality rates (although they are probabilities, 
-not  rates) and are usually expressed per thousand births.
-They declined from 106.7 to 78.3 to 67.5 across cohorts.
-</p>
-<h4>Other Methods</h4> 
-<p>
-R has functions for fitting some of the parametric models 
-discussed in the bibliographic notes, such as the Weibull model. 
-It also has non-parametric methods, including procedures for 
-calculating Kaplan-Meier estimates and for fitting Cox regression 
-models by partial likelihood. But that's a subject for another course.
-</p>
-<p>
-Follow the link below for another example applying a piecewise exponential
-survival model, this time to recidivism using individual rather than grouped data
-and illustrating the creation of person-year files.
-</p>
+Model 1: deaths ~ age
+Model 2: deaths ~ age + cohort
+  Resid. Df Resid. Dev Df Deviance
+1        14     72.640            
+2        12      6.183  2   66.457</code></pre>
+<pre class="r"><code>&gt; wald(mphaz, &quot;cohort&quot;)</code></pre>
+<pre><code>      wald
+1 68.59521</code></pre>
+<p>The cohort differences within age groups are highly significant.</p>
+</div>
+<div id="estimating-survival-probabilities" class="section level3">
+<h3>Estimating Survival Probabilities</h3>
+<p>Let us calculate the fitted life table shown in Table 7.4 of the
+lecture notes.</p>
+<p>The <code>predict()</code> function returns the predicted number of
+events, so we divide by exposure to obtain a predicted rate. we then
+calculate the cumulative hazard as a cumulative sum of the hazard times
+the width of the intervals in years. Finally we exponentiate minus the
+cumulative hazard to obtain the survival function.</p>
+<pre class="r"><code>&gt; surv &lt;- ungroup(somoza) |&gt; 
++   mutate(rate = fitted(mphaz)/exposure,
++     cumhaz = cumsum(rate*width)/12,
++     survival = exp(-cumhaz)) |&gt;
++ select(age, cohort, survival)</code></pre>
+<p>The last thing to do is print our handy work. I will pivot the
+dataset to print a two-way table of survival probabilities.</p>
+<pre class="r"><code>&gt; library(tidyr)
+&gt; pivot_wider(surv, names_from=&quot;cohort&quot;, values_from=&quot;survival&quot;)</code></pre>
+<pre><code># A tibble: 7 × 4
+  age         `1941-59` `1960-67` `1968-76`
+  &lt;fct&gt;           &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+1 0-1 months      0.948     0.796     0.698
+2 1-3 months      0.934     0.788     0.692
+3 3-6 months      0.917     0.777     0.684
+4 6-12 months     0.893     0.763     0.673
+5 1-2 years       0.866     0.746     0.660
+6 2-5 years       0.839     0.729     0.647
+7 5-10 years      0.828     0.722     0.642</code></pre>
+<p>We see that the probability of surviving to age one increased from
+89.3% to 92.2% and then to 93.2% across cohorts. The complement of the
+probability of surviving to age one is known as the infant mortality
+rate (although it is a probability, not a rate) and is usually expressed
+per thousand births; it declined from 106.7 to 78.3 to 67.5 across
+cohorts.</p>
+</div>
+<div id="other-methods" class="section level3">
+<h3>Other Methods</h3>
+<p>For another example of piecewise exponential survival, this time
+applied to recidivism and using individual rather than group data, and
+illustrating the creating of person-year files, see <a
+href="recidivism">this page</a>.</p>
+<p>Our software is able to fit some of the parametric models discussed
+in the bibliographic notes, such as the Weibull model. It also has
+non-parametric methods, including procedures for calculating
+Kaplan-Meier estimates and for fitting Cox regression models by partial
+likelihood. Finally, the data management facilities include facilities
+for generating person-year files. For more information see the <a
+href="/survival">survival course</a> pages.</p>
+</div>
+<div id="references" class="section level3">
+<h3>References</h3>
+<p>Somoza, J.L. (1980). “Illustrative Analysis: Infant and Child
+Mortality in Colombia.” <em>WFS Scientific Reports</em>, Number 10.
+Scanned version <a
+href="https://wfs.dhsprogram.com/WFS-SR/ISI-WFS_SR-10_Samoza_1980_Illustrative%20Analysis%20-%20Infant%20and%20Child%20Mortality%20in%20Colombia.pdf">here</a></p>
+<p><small>Updated fall 2022</small></p>
+</div>
+</div>
+</div>

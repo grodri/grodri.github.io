@@ -57,7 +57,7 @@ jackknifed) residuals. Let us obtain all three:</p>
 <h3 id="leverage-and-influence">Leverage and Influence</h3>
 <p>To get the diagonal elements of the hat matrix and Cook’s distance we
 use two more options of <code>predict</code>, <code>hat</code> and
-<code>cook</code>: :::</p>
+<code>cook</code>:</p>
 <pre class='stata'>. predict hii, hat
 
 . predict di, cook
@@ -188,3 +188,4 @@ using standardized residuals. The latter is the value quoted in the
 notes. Both are above (if barely) the minimum correlation of 0.95 needed
 to accept normality. I will skip the graph because it looks almost
 identical to the one produced above.</p>
+<p><small>Updated fall 2022</small></p>

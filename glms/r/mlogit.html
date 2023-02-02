@@ -1,0 +1,154 @@
+---
+layout: default
+section: glms
+tab: "R Logs"
+pager: true
+mathjax: true
+---
+
+{% include r.css %}
+
+<div id="mlogit" class="section level2 first">
+<h2 class="first">6.A Interpreting Multinomial Logit Coefficients</h2>
+<p>Let us consider Example 16.1 in Wooldridge (2010), concerning school
+and employment decisions for young men. The data contain information on
+employment and schooling for young men over several years. We will work
+with the data for 1987.</p>
+<p>The outcome is status, coded 1=in school, 2=at home (meaning not in
+school and not working), and 3=working. The predictors are education, a
+quadratic on work experience, and an indicator for black.</p>
+<p>We read the data from the Stata website, keep the year 1987, drop
+missing values, label the outcome, and fit the model. The argument
+<code>reltol</code> is used to increase the precision of the
+estimates</p>
+<pre class="r"><code>&gt; library(haven)
+&gt; library(dplyr)</code></pre>
+<pre><code>
+Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:stats&#39;:
+
+    filter, lag</code></pre>
+<pre><code>The following objects are masked from &#39;package:base&#39;:
+
+    intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>&gt; library(nnet)
+&gt; keane &lt;- read_dta(&quot;https://www.stata.com/data/jwooldridge/eacsap/keane.dta&quot;)
+&gt; keane &lt;- filter(keane, year==87, !is.na(status)) |&gt;
++   mutate(status=factor(status, labels=c(&quot;school&quot;,&quot;home&quot;,&quot;work&quot;))) 
+&gt; ml &lt;- multinom(status ~ educ + exper + expersq + black, data=keane, reltol=1e-12)</code></pre>
+<pre><code># weights:  18 (10 variable)
+initial  value 1886.317300 
+iter  10 value 1034.528631
+iter  20 value 907.857379
+iter  30 value 907.857229
+final  value 907.857225 
+converged</code></pre>
+<pre class="r"><code>&gt; summary(ml)</code></pre>
+<pre><code>Call:
+multinom(formula = status ~ educ + exper + expersq + black, data = keane, 
+    reltol = 1e-12)
+
+Coefficients:
+     (Intercept)       educ      exper     expersq     black
+home   10.277875 -0.6736313 -0.1062149 -0.01251515 0.8130167
+work    5.543798 -0.3146573  0.8487367 -0.07730035 0.3113612
+
+Std. Errors:
+     (Intercept)       educ     exper    expersq     black
+home    1.133336 0.06989987 0.1732820 0.02522912 0.3027231
+work    1.086409 0.06510963 0.1569856 0.02292171 0.2815339
+
+Residual Deviance: 1815.714 
+AIC: 1835.714 </code></pre>
+<p>The results agree exactly with Table 16.1 in Wooldridge (2010, page
+645).</p>
+<div id="relative-probabilities" class="section level3">
+<h3>Relative Probabilities</h3>
+<p>Let us focus on the coefficient of black in the work equation, which
+is 0.311. Exponentiating we obtain</p>
+<p>Thus, the relative probability of working rather than being in school
+is 37% higher for blacks than for non-blacks with the same education and
+work experience. (Relative probabilities are also called relative
+odds.)</p>
+<p>A common mistake is to interpret this coefficient as meaning that the
+probability of working is higher for blacks. It is only the
+<em>relative</em> probability of work over school that is higher. To
+obtain a fuller picture we need to consider the second equation as well.
+The coefficient of black in the home equation is 0.813. Exponentiating,
+we obtain</p>
+<p>Thus, the relative probability of being at home rather than in school
+for blacks is more than double the corresponding relative probability
+for non blacks with the same education and work experience.</p>
+<p>In short, black is associated with an increase in the relative
+probability of work over school, but also a much large increase in the
+relative probability of home over school. What happens with the actual
+probability of working depends on how these two effects balance out.</p>
+</div>
+<div id="marginal-effects-continuous" class="section level3">
+<h3>Marginal Effects (Continuous)</h3>
+<p>To determine the effect of black in the probability scale we need to
+compute marginal effects, which can be done using continuous or discrete
+calculations.</p>
+<p>The continuous calculation is based on the derivative of the
+probability of working with respect to a predictor. Let <span
+class="math inline">\(\pi_{ij}=\Pr\{Y_i=j\}\)</span> denote the
+probability that the i-th observation follows on the j-th category,
+which is given by <span class="math display">\[
+\pi_{ij} = \frac{e^{x_i&#39;\beta_j}}{\sum_r e^{x_i&#39;\beta_r}}
+\]</span> where <span class="math inline">\(\beta_j = 0\)</span> when j
+is the baseline or reference outcome, in this case school.</p>
+<p>Taking derivatives w.r.t. the k-th predictor we obtain, after some
+simplification <span class="math display">\[
+\frac{\partial\pi_{ij}}{\partial x_{ik}} =
+\pi_{ij} ( \beta_{jk} - \sum_r \pi_{ir} \beta_{rk} )
+\]</span> noting again that the coefficient is zero for the baseline
+outcome.</p>
+<p>To compute these we predict the probabilities and then apply the
+formula.</p>
+<pre class="r"><code>&gt; b &lt;- coef(ml)
+&gt; pr &lt;- data.frame(predict(ml, type=&quot;p&quot;))
+&gt; part &lt;- pr$home*b[&quot;home&quot;,&quot;black&quot;] + pr$work*b[&quot;work&quot;,&quot;black&quot;]
+&gt; me &lt;- data.frame( 
++   school = pr$school * (                   - part),
++   home   = pr$home   * (b[&quot;home&quot;, &quot;black&quot;] - part),
++   work   = pr$work   * (b[&quot;work&quot;, &quot;black&quot;] - part))
+&gt; summarize(me, school = mean(school), home = mean(home), work=mean(work))</code></pre>
+<pre><code>       school       home       work
+1 -0.01838111 0.05897901 -0.0405979</code></pre>
+<p>We find that the average marginal effect of black on work is actually
+negative: -0.0406. This means that the probability of working is on
+average about four percentage points lower for blacks than for
+non-blacks with the same education and experience.</p>
+</div>
+<div id="marginal-effects-discrete" class="section level3">
+<h3>Marginal Effects (Discrete)</h3>
+<p>For the discrete calculation we compute predicted probabilities by
+setting ethnicity to black and then to non-black and averaging:</p>
+<pre class="r"><code>&gt; black    &lt;- colMeans(predict(ml, mutate(keane, black=1), type=&quot;p&quot;))
+&gt; black</code></pre>
+<pre><code>    school       home       work 
+0.04507381 0.22741139 0.72751480 </code></pre>
+<pre class="r"><code>&gt; notblack &lt;- colMeans(predict(ml, mutate(keane, black=0), type=&quot;p&quot;))
+&gt; notblack</code></pre>
+<pre><code>    school       home       work 
+0.06306482 0.16594933 0.77098585 </code></pre>
+<pre class="r"><code>&gt; data.frame(avg.marginal.effect = black[&quot;work&quot;] - notblack[&quot;work&quot;])</code></pre>
+<pre><code>     avg.marginal.effect
+work         -0.04347105</code></pre>
+<p>We find that the average probability of working is 0.7275 if black
+and 0.7710 if not black, a difference of -0.0435, so the probability of
+working is on average just over four percentage points lower for
+blacks.</p>
+<p>The take away conclusion here is that multinomial logit coefficients
+can only be interpreted in terms of relative probabilities. To reach
+conclusions about actual probabilities we need to calculate continuous
+or discrete marginal effects.</p>
+</div>
+<div id="reference" class="section level3">
+<h3>Reference</h3>
+<p>Wooldridge, J. M. (2010). <em>Econometric Analysis of Cross Section
+and Panel Data</em>. Second Edition. Cambridge, Massachussets: The MIT
+Press.</p>
+<p><small>Updated fall 2022</small></p>
+</div>
+</div>

@@ -5,212 +5,201 @@ tab: "R Logs"
 pager: true
 ---
 
+{% include r.css %}
 
-<h3>2.7 Two-Way Analysis of Variance</h3>
-<p>
-We now fit a model treating both social setting and family
-planning effort as factors. We start by grouping effort into
-the three categories defined above:
-</p>
-<pre class='r'>
-> effort.g <- cut(effort, 
-+   breaks=c(min(effort),5,15,max(effort)), 
-+   right=FALSE, include.lowest=TRUE, 
-+   labels=c("Weak","Moderate","Strong"))
-</pre>
-<p>
-Next we fit an additive model and summarize the results:
-</p>
-<pre class='r'>
-> m2g <- lm(change ~ setting.g + effort.g)
-> summary(m2g)
+
+
+
+<div id="c2s7" class="section level2 first">
+<h2 class="first">2.7 Two-Way Analysis of Variance</h2>
+<p>We start by reading the data and recreating setting in groups.</p>
+<pre class="r"><code>&gt; library(dplyr)
+&gt; fpe &lt;- read.table(&quot;https://grodri.github.io/datasets/effort.dat&quot;) |&gt;
++   mutate(setting_g = cut(setting, breaks=c(min(setting),70,80,max(setting)),
++   right=FALSE, include.lowest=TRUE, labels=c(&quot;Low&quot;,&quot;Medium&quot;,&quot;High&quot;))) </code></pre>
+<p>Let us now create a copy of program effort and group it into
+categories 0-4, 5-14 and 15+. We’ll call the variable
+<code>effort_g</code> for effort in groups.</p>
+<pre class="r"><code>&gt; fpe &lt;- mutate(fpe, effort_g = cut(effort, breaks=c(min(effort), 5, 15, max(effort)),
++   right=FALSE, include.lowest=TRUE, labels=c(&quot;Weak&quot;,&quot;Moderate&quot;,&quot;Strong&quot;)))</code></pre>
+<p>Here’s a table showing steeper declines in countries with strong
+programs, with a smaller difference between weak and moderate:</p>
+<pre class="r"><code>&gt; group_by(fpe, effort_g) |&gt; summarize(change = mean(change))</code></pre>
+<pre><code># A tibble: 3 × 2
+  effort_g change
+  &lt;fct&gt;     &lt;dbl&gt;
+1 Weak       5   
+2 Moderate   9.33
+3 Strong    27.9 </code></pre>
+<div id="an-additive-model" class="section level3">
+<h3>An Additive Model</h3>
+<p>Let us fit a model treating both setting and effort as factor
+variables, with weak programs in low settings as the reference cell</p>
+<pre class="r"><code>&gt; m2g &lt;- lm(change ~ setting_g + effort_g, data = fpe)
+&gt; summary(m2g)</code></pre>
+<pre><code>
 Call:
-lm(formula = change ~ setting.g + effort.g)
+lm(formula = change ~ setting_g + effort_g, data = fpe)
 
 Residuals:
     Min      1Q  Median      3Q     Max 
 -7.5347 -4.5883  0.5617  1.7909 11.7845 
 
 Coefficients:
-                 Estimate Std. Error t value Pr(>|t|)    
+                 Estimate Std. Error t value Pr(&gt;|t|)    
 (Intercept)         5.379      3.105   1.732 0.103723    
-setting.gMedium    -1.681      3.855  -0.436 0.669035    
-setting.gHigh       2.388      4.457   0.536 0.599989    
-effort.gModerate    3.836      3.575   1.073 0.300138    
-effort.gStrong     20.672      4.339   4.764 0.000251 ***
+setting_gMedium    -1.681      3.855  -0.436 0.669035    
+setting_gHigh       2.388      4.457   0.536 0.599989    
+effort_gModerate    3.836      3.575   1.073 0.300138    
+effort_gStrong     20.672      4.339   4.764 0.000251 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
 Residual standard error: 6.188 on 15 degrees of freedom
-Multiple R-squared:  0.7833,	Adjusted R-squared:  0.7255 
-F-statistic: 13.55 on 4 and 15 DF,  p-value: 7.19e-05
-</pre>
-<p>
-Compare these estimates with the results in Table 2.15.
-Countries with strong family planning programs show steeper declines 
-than countries with weak programs at the same level of social setting, 
-on average 21 percentage points more.
-</p>
-<p>
-This statement is based on the assumption of additivity, namely that the 
-difference in outcomes across categories of program effort is the same 
-at every level of setting. We will test this assumption later.
-</p>
-<p>
-Calling the <code>anova()</code> function produces the
-hierarchical analysis of variance in Table 2.16 of the notes:
-</p>
-<pre class='r'>
-> anova(m2g)
-Analysis of Variance Table
+Multiple R-squared:  0.7833,    Adjusted R-squared:  0.7255 
+F-statistic: 13.55 on 4 and 15 DF,  p-value: 7.19e-05</code></pre>
+<pre class="r"><code>&gt; anova(m2g)</code></pre>
+<pre><code>Analysis of Variance Table
 
 Response: change
-          Df  Sum Sq Mean Sq F value    Pr(>F)    
-setting.g  2 1193.79  596.89  15.588 0.0002176 ***
-effort.g   2  882.02  441.01  11.517 0.0009320 ***
+          Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
+setting_g  2 1193.79  596.89  15.588 0.0002176 ***
+effort_g   2  882.02  441.01  11.517 0.0009320 ***
 Residuals 15  574.39   38.29                      
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-</pre>
-<p>
-As you can see the differences by level of effort among countries
-with the same level of setting are significant, with an F-ratio of
-11.5 on 2 and 15 d.f.
-</p>
-<h4>Fitted Values</h4>
-<p>
-Let us reproduce Table 2.17 in the notes, showing fitted means by
-categories of setting and effort. I use <code>fitted()</code> to
-extract the fitted values and <code>tapply()</code> to produce a
-table of means. 
-</p>
-<pre class='r'>
-> fv <- fitted(m2g)
-> tfv <- tapply(fv,list(setting.g, effort.g),mean)
-> tfv
-           Weak  Moderate   Strong
-Low    5.379275  9.215544       NA
-Medium 3.698446  7.534715 24.36995
-High   7.766839 11.603109 28.43834
-</pre>
-<p>
-The NA value on the top right cell is due to the fact that there
-are no countries with strong effort in low settings. However, we
-can still make a prediction for that cell:
-</p>
-<pre class='r'>
-> tfv[1,3] <- coef(m2g) %*% c(1,0,0,0,1)
-> tfv
-           Weak  Moderate   Strong
-Low    5.379275  9.215544 26.05078
-Medium 3.698446  7.534715 24.36995
-High   7.766839 11.603109 28.43834
-</pre>
-<p>
-we use <code>coef()</code> to extract the coefficients and we
-multiply them by a vector representing the cell of interest.
-Because the model is additive the difference between any two
-columns is the same for every row. 
-</p>
-<p>
-We can use the complete table to produce adjusted means by 
-effort when the distribution of setting is set to the marginal 
-totals of 7,5 and 8, reproducing the last row of Table 2.17.
-</p>
-<pre class='r'>
-> data.frame(adj=t(tfv) %*% c(7,5,8)/20) 
-               adj
-Weak      5.914093
-Moderate  9.750363
-Strong   26.585596
-</pre>
-<p>
-The same technique can be used to produce expected declines
-by setting adjusted for effort (the last column of Table 2.17).
-This is a form of model-based standardization.
-</p>
-<h4>A Two-Factor Interaction</h4>
-<p>
-Let us now consider a model with an interaction between social setting 
-and program effort, so differences in fertility decline by effort will 
-vary by setting. In a model formula we can include the interaction
-between two factor using the colon operator. We can also use a
-star (or asterisk) to include the main effects and interactions.
-Thus, for factor A and B, the model A*B is exactly the same as 
-A + B + A:B.
-</p>
-<pre class='r'>
-> m3g <- lm(change~setting.g * effort.g)
-> summary(m3g)
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>Compare these estimates with the results in Table 2.15 and the anova
+with Table 2.16 in the lecture notes.</p>
+<p>Countries with strong family planning programs show steeper declines
+than countries with weak programs at the same level of social setting,
+on average 21 percentage points more.</p>
+<p>This statement is based on the assumption of additivity, namely that
+the difference in outcomes across categories of program effort is the
+same at every level of setting. We will test this assumption <a
+href="#id_2wayi">below</a>.</p>
+<p>As you can see the differences in fertility change by level of
+effort, among countries with the same level of setting are significant,
+with an F-ratio of 11.5 on 2 and 15 d.f.</p>
+</div>
+<div id="fitted-values" class="section level3">
+<h3>Fitted Values</h3>
+<p>Let us reproduce Table 2.17 in the notes, showing fitted means by
+grouped setting and effort. I will use <code>fitted()</code> to generate
+fitted values, and then <code>summarize()</code> them by the two
+relevant factors</p>
+<pre class="r"><code>&gt; library(tidyr)</code></pre>
+<pre><code>
+Attaching package: &#39;tidyr&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:Matrix&#39;:
+
+    expand, pack, unpack</code></pre>
+<pre class="r"><code>&gt; fpe &lt;- mutate(fpe, fitted = fitted(m2g)) 
+&gt; group_by(fpe, setting_g, effort_g) |&gt; summarize(fitted = mean(fitted)) |&gt;
++   pivot_wider(names_from=effort_g, values_from=fitted)</code></pre>
+<pre><code>`summarise()` has grouped output by &#39;setting_g&#39;. You can override using the `.groups` argument.</code></pre>
+<pre><code># A tibble: 3 × 4
+# Groups:   setting_g [3]
+  setting_g  Weak Moderate Strong
+  &lt;fct&gt;     &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;
+1 Low        5.38     9.22   NA  
+2 Medium     3.70     7.53   24.4
+3 High       7.77    11.6    28.4</code></pre>
+<p>Can you get the missing cell in the upper right corner? How about the
+margins, can you get those values?</p>
+</div>
+<div id="a-two-factor-interaction" class="section level3">
+<h3>A Two-Factor Interaction</h3>
+<p>Let us now consider a model with an interaction between social
+setting and program effort, so differences in fertility decline by
+effort will vary by setting.</p>
+<p>In R we use a colon <code>:</code> to indicate an interaction term,
+and an asterisk <code>*</code> to include main effects and interactions,
+so <code>A*B</code> is equivalent to <code>A + B + A:B</code>.</p>
+<pre class="r"><code>&gt; m2gi &lt;- lm(change ~ setting_g*effort_g, data=fpe)
+&gt; summary(m2gi)</code></pre>
+<pre><code>
 Call:
-lm(formula = change ~ setting.g * effort.g)
+lm(formula = change ~ setting_g * effort_g, data = fpe)
 
 Residuals:
     Min      1Q  Median      3Q     Max 
 -7.3333 -3.0000  0.0000  0.9375 11.6667 
 
 Coefficients: (1 not defined because of singularities)
-                                 Estimate Std. Error t value Pr(>|t|)  
+                                 Estimate Std. Error t value Pr(&gt;|t|)  
 (Intercept)                        2.6667     3.5775   0.745   0.4704  
-setting.gMedium                    3.3333     5.0594   0.659   0.5224  
-setting.gHigh                      6.3333     7.1550   0.885   0.3935  
-effort.gModerate                   8.5833     4.7326   1.814   0.0948 .
-effort.gStrong                    19.3333     6.6929   2.889   0.0136 *
-setting.gMedium:effort.gModerate -14.5833     8.5786  -1.700   0.1149  
-setting.gHigh:effort.gModerate    -6.5833     9.9594  -0.661   0.5211  
-setting.gMedium:effort.gStrong    -0.3333     9.7974  -0.034   0.9734  
-setting.gHigh:effort.gStrong           NA         NA      NA       NA  
+setting_gMedium                    3.3333     5.0594   0.659   0.5224  
+setting_gHigh                      6.3333     7.1550   0.885   0.3935  
+effort_gModerate                   8.5833     4.7326   1.814   0.0948 .
+effort_gStrong                    19.3333     6.6929   2.889   0.0136 *
+setting_gMedium:effort_gModerate -14.5833     8.5786  -1.700   0.1149  
+setting_gHigh:effort_gModerate    -6.5833     9.9594  -0.661   0.5211  
+setting_gMedium:effort_gStrong    -0.3333     9.7974  -0.034   0.9734  
+setting_gHigh:effort_gStrong           NA         NA      NA       NA  
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
 Residual standard error: 6.196 on 12 degrees of freedom
-Multiple R-squared:  0.8261,	Adjusted R-squared:  0.7247 
-F-statistic: 8.146 on 7 and 12 DF,  p-value: 0.0009208
-</pre>
-<p>
-With 3 categories of effort and 3 for setting one would have expected
-nine parameters, but we only obtain 8 because, as noted earlier, we
-have an empty cell. R automatically drops one of the interaction
-terms. Fortunately this doesn't affect testing. We can obtain a
-join test of significance for the 3 parameters representing the
-interaction using anova:
-</p>
-<pre class='r'>
-> anova(m3g)
-Analysis of Variance Table
+Multiple R-squared:  0.8261,    Adjusted R-squared:  0.7247 
+F-statistic: 8.146 on 7 and 12 DF,  p-value: 0.0009208</code></pre>
+<p>Oops, our software dropped a term. Why? Because there are no
+countries with strong programs in low settings, so we have only eight
+groups, but are trying to represent their means using nine parameters,
+which is obviously one too many. Fortunately this doesn’t affect
+testing.</p>
+<pre class="r"><code>&gt; anova(m2gi)</code></pre>
+<pre><code>Analysis of Variance Table
 
 Response: change
-                   Df  Sum Sq Mean Sq F value    Pr(>F)    
-setting.g           2 1193.79  596.89 15.5458 0.0004664 ***
-effort.g            2  882.02  441.01 11.4859 0.0016322 ** 
-setting.g:effort.g  3  113.64   37.88  0.9866 0.4317952    
+                   Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
+setting_g           2 1193.79  596.89 15.5458 0.0004664 ***
+effort_g            2  882.02  441.01 11.4859 0.0016322 ** 
+setting_g:effort_g  3  113.64   37.88  0.9866 0.4317952    
 Residuals          12  460.75   38.40                      
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-</pre>
-<p>
-The F-statistic for the interaction term is 0.99 on 3 and 12 d.f.,
-which is clearly not significant. We have no evidence that the 
-differences by effort vary according to social setting.
-</p>
-<p>
-This makes the issue of interpreting parameters moot, but it may be 
-worth noting briefly the problems caused by the empty cell. As things 
-stand, the coefficient of moderate effort compares moderate with weak 
-at low setting, but the coefficient of strong effort compares strong 
-with weak at high setting. (Table 2.20 in the notes may help see this 
-point. When the term for high and strong is dropped, the only difference 
-between weak and strong programs at high setting is the coefficient of strong.)
-</p>
-<p>
-The parametrization I like best for this problem combines the main effects 
-of effort with the interactions, so we obtain differences between strong 
-and weak, and between moderate and weak programs, at each level of setting. 
-This allows us to omit the difference between strong and weak programs at 
-low setting, which is the one we can't identify. I will not pursue this 
-tack at this point, but will return to the idea when we have to interpret 
-a significant interaction. If you are curious try the model formula
-<code>change ~ setting.g + effort.g:setting.g</code>, which achieves 
-the desired result by including the interaction but omitting the main
-effect of effort.
-</p>
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>We have no evidence that the differences by effort vary with social
+setting, with an F just below 1 on 3 and 12 d.f.</p>
+<p>This makes the issue of interpreting parameters moot, but it may be
+worth noting briefly the problems caused by the empty cell. As things
+stand, the coefficient of moderate effort compares moderate with weak at
+low setting, but the coefficient of strong effort compares strong with
+weak at high setting. (Table 2.20 in the notes may help see this point.
+When the term for high and strong is dropped, the only difference
+between weak and strong programs at high setting is the coefficient of
+strong.)</p>
+<p>The parametrization I like best for this problem combines the main
+effects of effort with the interactions, so we obtain differences
+between strong and weak, and between moderate and weak programs, at each
+level of setting. This allows us to omit the difference between strong
+and weak programs at low setting, which is the one we can’t identify.
+Try the specification below</p>
+<pre><code>lm( change ~ setting_g + effort_g:setting_g, data=fpe)</code></pre>
+</div>
+<div id="dummy-variables" class="section level3">
+<h3>Dummy Variables</h3>
+<p>You could have obtained the same results in this unit using dummy
+variables. For the record, this is how you might build the dummies and
+fit the models. For the additive model we need just four indicators, two
+for each factor. In R I make sure the dummies are numeric, not boolean,
+otherwise the coefficient would have names like
+<code>effortStrongTRUE</code>.</p>
+<pre><code>d &lt;- as.numeric # for short
+mutate(fpe, 
+  settingMed = d(setting_g==&quot;Medium&quot;), settingHigh = d(setting_g==&quot;High&quot;),
+  effortMod = d(effort_g==&quot;Moderate&quot;), effortStrong = d(effort_g==&quot;Strong&quot;))
+lm(change ~ settingMed + settingHigh + effortMod + effortStrong, data=fpe)</code></pre>
+<p>We need a total of four dummies to represent the interactions, which
+can be computed simply as the product of the indicators for the main
+effects.</p>
+<pre><code>fpe &lt;- mutate(fpe, 
+  seMedMod = settingMed*effortMod, seMedStrong=settingMed*effortStrong,
+  seHighMod = settingHigh*effortMod, seHighStrong = settingHigh*effortStrong)
+lm(change settingMed + settingHigh + effortMod + effortStrong + 
+  seMedMod + seMedStrong + seHighMod + seHighStrong, data = fpe)</code></pre>
+<p>Our software will again omit a variable, but you have more control on
+what to drop. Can you figure out which dummies you would need to show
+the effects of effort at each level of setting?</p>
+<p><small>Updated fall 2022</small></p>
+</div>
+</div>

@@ -5,89 +5,50 @@ tab: "R Logs"
 pager: true
 ---
 
+{% include r.css %}
 
-<h2>3. Logit Models in R</h2>
-<p>
-In this section we illustrate the use of the <code>glm()</code> function
-to fit logistic regression models as a special case of a generalized
-linear model with family binomial and link logit.
-</p>
-<h3>3.3 The Comparison of Two Groups</h3>
-<p>
-Following the lecture notes we will compare two groups and then move on
-to more than two.
-</p>
-<h4>A 2-by-2 Table</h4>
-<p>
-Consider the data on contraceptive use by desire for more children on Table 3.2 
-(page 14 of the notes). We can read these data into R as 2 binomial observations. 
-To make life easier I will enter desire for more children as a dummy variable that 
-takes the value 1 for women who want no more children and 0 otherwise:
-</p>
-<pre class='r'>
-> cuse <- data.frame(matrix(c(
-+ 0, 219, 753, 
+
+
+
+<div id="c3s1" class="section level1 first">
+<h1 class="first">3. Logit Models</h1>
+<p>In this chapter we discuss fitting logistic regression models by
+maximum likelihood. In R this task is accomplished by the
+<code>glm()</code> function with family <code>binomial()</code>.</p>
+<div id="the-comparison-of-two-groups" class="section level2">
+<h2>3.3 The Comparison of Two Groups</h2>
+<p>Our discussion starts with simple comparisons of proportions in two
+groups. For simplicity we use grouped data, but the key ideas apply to
+individual data as well.</p>
+<div id="a-2-by-2-table" class="section level3">
+<h3>A 2 by 2 Table</h3>
+<p>Consider the data on contraceptive use by desire for more children on
+Table 3.2 (page 14 of the notes). We can read these data into our
+software as 2 binomial observations. To make life easier, I will enter
+desire for more children as a dummy variable that takes the value 1 for
+women who want no more children and 0 otherwise.</p>
+<pre class="r"><code>&gt; library(dplyr)
+&gt; cuse &lt;- data.frame(matrix(c(
++ 0, 219, 753,
 + 1, 288, 347), 2, 3, byrow=TRUE))
-
-> names(cuse) <- c("nomore","using","notUsing")
-
-> cuse$n <- cuse$using + cuse$notUsing
-
-> cuse
-  nomore using notUsing   n
+&gt; names(cuse) &lt;- c(&quot;nomore&quot;, &quot;using&quot;,&quot;notUsing&quot;)
+&gt; cuse &lt;- mutate(cuse, n = using + notUsing)
+&gt; cuse</code></pre>
+<pre><code>  nomore using notUsing   n
 1      0   219      753 972
-2      1   288      347 635
-</pre>
-<h4>Testing Homogeneity</h4>
-<p>
-Let us start by fitting the null model. In R the outcome with individual data is
-a vector of ones and zeroes, but with grouped data it is a matrix with counts of
-successes and failures, which we create first:
-</p>
-<pre class='r'>
-> cuse$Y <- cbind(cuse$using, cuse$notUsing)
-
-> m0 <- glm( Y ~ 1, data=cuse, family=binomial)
-
-> m0
-
-Call:  glm(formula = Y ~ 1, family = binomial, data = cuse)
-
-Coefficients:
-(Intercept)  
-    -0.7746  
-
-Degrees of Freedom: 1 Total (i.e. Null);  1 Residual
-Null Deviance:	    91.67 
-Residual Deviance: 91.67 	AIC: 107.5
-</pre>
-<p>
-Setting <code>family</code> to <code>binomial</code> provides a logit link
-by default. (Note that the relevant argument is not the name of the family
-but a <i>function</i> that tells <code>glm</code> how to compute things such 
-as the deviance, link and inverse link.)
-</p>
-<p>
-It is easy to verify that the estimate of the constant is the
-logit of the proportion using contraception:
-</p>
-<pre class='r'>
-> p <- sum(cuse$using)/sum(cuse$n)
-
-> log(p/(1-p))
-[1] -0.7745545
-</pre>
-<p>
-I computed the logit as the log of the odds. An alternative is to
-use <code>qlogis</code> for quantiles of the standard logistic
-distribution. The inverse function is <code>plogis</code>.
-</p>
-<p>
-To obtain standard errors we need to use the summary function
-</p>
-<pre class='r'>
-> summary(m0)
-
+2      1   288      347 635</code></pre>
+</div>
+<div id="testing-homogeneity" class="section level3">
+<h3>Testing Homogeneity</h3>
+<p>Let us start by fitting the null model. With grouped binomial data
+the outcome is a matrix with two columns, representing the number of
+“successes” and “failures”, in this case users and non-users of
+contraception. The binomial denominator is calculated internally as the
+sum of these two columns.</p>
+<pre class="r"><code>&gt; cuse &lt;- mutate(cuse, Y = cbind(using, notUsing))
+&gt; m0 &lt;- glm(Y ~ 1, family=binomial, data = cuse)
+&gt; summary(m0)</code></pre>
+<pre><code>
 Call:
 glm(formula = Y ~ 1, family = binomial, data = cuse)
 
@@ -96,10 +57,10 @@ Deviance Residuals:
 -6.240   7.262  
 
 Coefficients:
-            Estimate Std. Error z value Pr(>|z|)    
-(Intercept) -0.77455    0.05368  -14.43   <2e-16 ***
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept) -0.77455    0.05368  -14.43   &lt;2e-16 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
 (Dispersion parameter for binomial family taken to be 1)
 
@@ -107,106 +68,34 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 Residual deviance: 91.674  on 1  degrees of freedom
 AIC: 107.54
 
-Number of Fisher Scoring iterations: 4
-</pre>
-<p>
-You can verify that the estimated standard error of the observed logit is 
-the square root of 1/successes + 1/failures
-</p>
-<pre class='r'>
-> sqrt( 1/sum(cuse$using) + 1/sum(cuse$notUsing) )
-[1] 0.0536794
-</pre>
-<p>
-To obtain a confidence interval for the logit we use <code>confint</code>. 
-To translate to the probability scale we calculate inverse logits
-</p>
-<pre class='r'>
-> confint(m0)
-     2.5 %     97.5 % 
--0.8804716 -0.6700014 
-
-> plogis(confint(m0))
-    2.5 %    97.5 % 
-0.2930801 0.3384965 
-</pre>
-<p>
-The result differs from what you may obtain with other packages such as Stata
-because R uses a profile log-likelihood, exactly like we did when we computed
-a Box-Cox transformation.  The standard approach uses the estimate plus/minus
-1.96 standard errors, which is based on the large sample distribution of
-the m.l.e.
-</p>
-<pre class='r'>
-> b <- coef(m0)
-
-> se <- sqrt(vcov(m0))
-
-> z <- qnorm(0.975)
-
-> ci <- b + c(-z, z) * se
-
-> ci
-[1] -0.8797641 -0.6693448
-
-> plogis(ci)
-[1] 0.2932267 0.3386436
-</pre>
-<p>
-A simpler way to obtain the more conventional confidence interval is to use
-the <code>confint.default</code> function, which bypasses the method dispatch
-and calls the default method instead of <code>confint.gml</code>:
-</p>
-<pre class='r'>
-> confint.default(m0)
-                 2.5 %     97.5 %
-(Intercept) -0.8797641 -0.6693448
-
-> plogis(confint(m0))
-    2.5 %    97.5 % 
-0.2930801 0.3384965 
-</pre>
-<p>
-The model deviance is 91.67 on one d.f., providing ample evidence that
-the null model does not fit the data.  In other words we reject the null
-hypothesis of no differences in contraceptive use by desire for more children.
-</p>
-<p>
-It may be instructive to calculate the deviance "by hand". We could use
-<code>fitted</code> to obtain the predicted probability for each group,
-but this is of course <code>p</code> as calculated earlier:
-</p>
-<pre class='r'>
-> obs <- cuse$Y
-
-> fit <- cbind(p*cuse$n, (1-p)*cuse$n)
-
-> 2*sum(obs*log(obs/fit))
-[1] 91.6744
-</pre>
-<p>
-The same approach may be used to calculate Pearson's chi-squared statistic:
-</p>
-<pre class='r'>
-> sum((obs-fit)^2/fit)
-[1] 92.64424
-</pre>
-<p>
-We get a statistic of 92.64 on one d.f.  You may want to verify that
-this is also the square of the standard z-test for comparing two proportions 
-using a pooled estimated of the variance.
-</p>
-<h4>The Odds Ratio</h4>
-<p>
-We now fit the model with "want no more" children as the predictor. 
-This model is saturated for this dataset, using two parameters to model two 
-probabilities, so it has a deviance of zero
-</p>
-<pre class='r'>
-> m1 <- glm(Y ~ nomore, family=binomial, data=cuse)
-
-> summary(m1)
-
+Number of Fisher Scoring iterations: 4</code></pre>
+<pre class="r"><code>&gt; sum(residuals(m0, type=&quot;pearson&quot;)^2) # Pearson&#39;s chi-squared</code></pre>
+<pre><code>[1] 92.64424</code></pre>
+<p>The estimate of the constant is simply the logit of the overall
+proportion using contraception, say <em>p=y/n</em>, and the standard
+error is the square root of <em>1/y + 1/(n-y)</em>. You may want to
+check these results by hand. To compute logits you may use
+<code>qlogis()</code>, with inverse <code>plogis()</code>, for quantiles
+and probabilities of the standard logistic distribution. These
+specialized functions are more accurate than just computing
+<em>log(p/(1-p))</em>.</p>
+<p>The deviance is 91.67 on one d.f., providing ample evidence that the
+null model does not fit the data. Thus, we reject the hypothesis that
+the probability of using contraception is the same in the two
+groups.</p>
+<p>An alternative test is Pearson’s chi-squared, which is 92.64 on one
+d.f., and leads to the same conclusions. These two tests are
+asymptotically equivalent, so they tend to give similar results in large
+samples.</p>
+</div>
+<div id="the-odds-ratio" class="section level3">
+<h3>The Odds Ratio</h3>
+<p>Let us now fit the model with “want no more” children as the
+predictor. This model is saturated for this dataset, using two
+parameters to model two probabilities:</p>
+<pre class="r"><code>&gt; m1 &lt;- glm(Y ~ nomore, family=binomial, data=cuse)
+&gt; summary(m1)</code></pre>
+<pre><code>
 Call:
 glm(formula = Y ~ nomore, family = binomial, data = cuse)
 
@@ -214,11 +103,11 @@ Deviance Residuals:
 [1]  0  0
 
 Coefficients:
-            Estimate Std. Error z value Pr(>|z|)    
-(Intercept) -1.23499    0.07677 -16.086   <2e-16 ***
-nomore       1.04863    0.11067   9.475   <2e-16 ***
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept) -1.23499    0.07677 -16.086   &lt;2e-16 ***
+nomore       1.04863    0.11067   9.475   &lt;2e-16 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
 (Dispersion parameter for binomial family taken to be 1)
 
@@ -226,89 +115,87 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 Residual deviance: 1.7986e-14  on 0  degrees of freedom
 AIC: 17.87
 
-Number of Fisher Scoring iterations: 2
-
-> exp(coef(m1)["nomore"])
-  nomore 
-2.853737 
-</pre>
-<p>
-The constant corresponds to the log-odds of using contraception among whomen 
-who do want more children, and the coefficient of nomore is the difference 
-in log-odds between the two groups.
-</p>
-<p>
-Exponentiating this coefficient we get an odds ratio of about three. Contrary 
-to popular belief, this does not mean that "women who want no more children 
-are three times more likely to use contraception than those who want more". 
-There are two problems with this interpretation.
-</p>
-<p>
-First, and more importantly, it is the <i>odds</i> of using contraception among 
-women who want no more children that are three times those of women who want more, 
-not the probability, which is what's usually understood by "likelihood". The 
-interpretation would be approximately correct if the event under study was rare, 
-because if p is small then 1-p is close to one and the odds ratio is approximately 
-the same as the relative risk. Here the observed proportions are 0.454 and 0.225, 
-and the ratio is 2.01, so women who want no more children are twice as likely to 
-use contraception as those who want more.
-</p>
-<p>
-Second, even if the probability was tripled, that would make the women three times 
-as likely, or two times more likely, to use contraception, not three times more 
-likely. In this case the probability is doubled, and that makes women twice as 
-likely, not two times <i>more</i> likely.
-</p>
-<h4>Testing Significance</h4>
-<p>
-The z-statistic is as reported on page 16 of the notes. Let us square it:
-</p>
-<pre class='r'>
-> b <- coef(m1)
-
-> se <- sqrt(diag(vcov(m1)))
-
-> (b[2]/se[2])^2
-  nomore 
-89.77765 
-</pre>
-<p>
-The resulting chi-squared of 89.78 is Wald's statistic for testing the 
-hypothesis that the coefficient of nomore is zero, or equivalently 
-that the odds-ratio is one.
-</p>
-<p>
-This is similar, but not identical, to the likelihood ratio chi-squared of
-91.67 that we get as the differences in deviances between the null and
-"nomore" models. (In this case that is the same as the deviance of the
-null morel, because the "nomore" model is saturated for the data.)
-</p>
-<h4>Confidence Intervals</h4>
-<p>
-We can compute confidence intervals for some or all the parameters.
-Again, R uses a profile likelihood, but we can use <code>confint.default</code>
-to obtain the conventional confidence intervals. Here are results for the
-odds ratio both ways:
-</p>
-<pre class='r'>
-> exp(confint(m1,"nomore"))
-   2.5 %   97.5 % 
-2.298942 3.548111 
-
-> exp(confint.default(m1,"nomore"))
-          2.5 %   97.5 %
-nomore 2.297258 3.545015
-</pre>
-<p>
-So the odds of using contraception among women who want no more children
-are between 2.30 and 3.55 times the corresponding odds for women who want
-more children. (The profile likelihood gives almost identical results,
-with small differences in the third decimal place.)
-</p>
-<p>
-Either way, note that confidence intervals are calculated working in
-the logit scale and then exponentiating to obtain odds ratios. We do
-not work with the odds ratio and its standard error (which can be obtained
-using the delta method) because the normal approximation is much better
-in the unrestricted logit scale.
-</p>
+Number of Fisher Scoring iterations: 2</code></pre>
+<pre class="r"><code>&gt; exp(coef(m1)[&quot;nomore&quot;])</code></pre>
+<pre><code>  nomore 
+2.853737 </code></pre>
+<p>The constant corresponds to the log-odds of using contraception among
+whomen who <em>do</em> want more children, and the coefficient of
+<code>nomore</code> is the difference in log-odds between the two
+groups.</p>
+<p>Exponentiating this coefficient we get an odds ratio of about three.
+Contrary to popular belief, this does not mean that “women who want no
+more children are three times more likely to use contraception”. There
+are two errors in this interpretation.</p>
+<p>First, and more importantly, it is the <em>odds</em> of using
+contraception among women who want no more children that are three times
+those of women who want more, not the probability, which is what’s
+usually understood by “likelihood”. The interpretation would be
+approximately correct if the event under study was rare, because if
+<em>p</em> is small then <em>1-p</em> is close to one and the odds ratio
+is approximately the same as the relative risk. Here the observed
+proportions are 0.454 and 0.225, and the ratio is 2.01, so women who
+want no more children are twice as likely to use contraception as those
+who want more.</p>
+<p>Second, even if the probability was tripled, that would make the
+women three times <em>as</em> likely, or two times <em>more</em> likely,
+to use contraception, not three times more likely. In this case the
+probability is doubled, and that makes women twice <em>as</em> likely,
+not two times <em>more</em> likely.</p>
+</div>
+<div id="testing-significance" class="section level3">
+<h3>Testing Significance</h3>
+<p>The z-statistic is as reported on page 16 of the notes. Let us square
+it:</p>
+<pre class="r"><code>&gt; b &lt;- coef(m1)
+&gt; se &lt;- sqrt(diag(vcov(m1)))
+&gt; (b[2]/se[2])^2</code></pre>
+<pre><code>  nomore 
+89.77765 </code></pre>
+<p>This is Wald’s chi-squared statistic for the hypothesis that the
+coefficient of <code>nomore</code> is zero, or equivalently that the
+odds-ratio is one.</p>
+<p>We can also compare these models using a likelihood ratio test.</p>
+<pre class="r"><code>&gt; -2*(logLik(m0) - logLik(m1))</code></pre>
+<pre><code>&#39;log Lik.&#39; 91.6744 (df=1)</code></pre>
+<p>Can you explain why we get 91.67, which is the deviance of the null
+model? <em>Hint:</em> What’s the deviance of the current model?</p>
+<p>A third test of the effect of want no more is given by Pearson’s
+chi-squared statistic, which we calculated earlier as 92.64. This is
+equivalent to the standard z-test for comparing two proportions if you
+use the pooled proportion to estimate the standard error.</p>
+<p>All three statistics are different, but they are asymptotically
+equivalent. In our example they are also close in value and lead to the
+same overwhelming rejection of the hypothesis that the probability of
+using contraception is the same in the two groups.</p>
+</div>
+<div id="confidence-intervals" class="section level3">
+<h3>Confidence Intervals</h3>
+<p>You can obtain a confidence interval in R by calling the
+<code>confint()</code> function, which uses a profile log-likelihood.
+You can obtain the more conventional confidence intervals by calling
+<code>confint.default()</code>. Let us obtain a confidence interval for
+the odds ratio using both methods.</p>
+<pre class="r"><code>&gt; exp(confint(m1,&quot;nomore&quot;))</code></pre>
+<pre><code>Waiting for profiling to be done...</code></pre>
+<pre><code>   2.5 %   97.5 % 
+2.298942 3.548111 </code></pre>
+<pre class="r"><code>&gt; exp(confint.default(m1,&quot;nomore&quot;))</code></pre>
+<pre><code>          2.5 %   97.5 %
+nomore 2.297258 3.545015</code></pre>
+<p>With 95% confidence, the odds of using contraception among women who
+want no more kids are between 2.3 and 3.5 times as high as for women who
+want more children.</p>
+<p>Note that the standard confidence bounds for the odds ratio are
+<em>not</em> calculated by adding and subtracting twice its standard
+error. Instead, the calculation is done in the logit scale and the
+results are then exponentiated. This is done because the normal
+approximation is more accurate (and makes more sense) in the logit
+scale, which has no range restrictions.</p>
+<p><em>Exercise</em>. Calculate the conventional z-test for comparing
+the proportions using contraception in the two groups and verify that
+the square coincides with Pearson’s chi-squared statistic.</p>
+<p><small>Updated fall 2022</small></p>
+</div>
+</div>
+</div>

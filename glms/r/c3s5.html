@@ -5,104 +5,66 @@ tab: "R Logs"
 pager: true
 ---
 
+{% include r.css %}
 
-<h3>3.5 Models with Two Predictors</h3>
-<p>
-We now turn to logistic regression models with two or more predictors.
-Following the notes, we will use illustrate the procedures using the tabulation 
-of contraceptive use by age (in groups) and desire for more children, shown
-in Table 3.17 in the notes. (This is the last table we type :)
-</p>
-<pre class='r'>
-> cuse <- data.frame(matrix(c(
-+ 1, 0,  58, 265,
-+ 1, 1,  14,  60,
-+ 2, 0,  68, 215,
-+ 2, 1,  37,  84,
-+ 3, 0,  79, 230,
-+ 3, 1, 158, 145,
-+ 4, 0,  14,  43,
-+ 4, 1,  79,  58), 8, 4, byrow=TRUE))
 
-> names(cuse) <- c("age","nomore","using","notUsing")
 
-> cuse$n <- cuse$using + cuse$notUsing
 
-> cuse$age <- factor(cuse$age, labels=c("< 25","25-29","30-39","40-49"))
-
-> cuse
-    age nomore using notUsing   n
-1  < 25      0    58      265 323
-2  < 25      1    14       60  74
+<div id="models-with-two-predictors" class="section level2">
+<h2>3.5. Models with Two Predictors</h2>
+<p>We now turn to logistic regression models with two or more
+predictors. For consistency with the notes we will continue to work with
+grouped data. This time we will have 8 groups, defined by the
+combinations of four age groups and two categories of desire for more
+children, as shown on table 3.7:</p>
+<pre class="r"><code>&gt; library(dplyr)
+&gt; cuse &lt;- data.frame(matrix(c(
++   1, 0,  58, 265,
++   1, 1,  14,  60,
++   2, 0,  68, 215,
++   2, 1,  37,  84,
++   3, 0,  79, 230,
++   3, 1, 158, 145,
++   4, 0,  14,  43,
++   4, 1,  79,  58), 8, 4, byrow=TRUE))
+&gt; names(cuse) &lt;- c(&quot;ageg&quot;,&quot;nomore&quot;,&quot;users&quot;,&quot;nonusers&quot;)
+&gt; cuse &lt;- mutate(cuse, n = users + nonusers,
++   ageg = factor(ageg, labels=c(&quot;&lt; 25&quot;,&quot;25-29&quot;,&quot;30-39&quot;,&quot;40-49&quot;)))
+&gt; cuse</code></pre>
+<pre><code>   ageg nomore users nonusers   n
+1  &lt; 25      0    58      265 323
+2  &lt; 25      1    14       60  74
 3 25-29      0    68      215 283
 4 25-29      1    37       84 121
 5 30-39      0    79      230 309
 6 30-39      1   158      145 303
 7 40-49      0    14       43  57
-8 40-49      1    79       58 137
-</pre>
-<h4>The Deviance Table</h4>
-<p>
-There are five basic models of interest for this dataset. I will fit them all
-to reproduce the deviances in Table 3.8, and then consider the models one by one. 
-As usual, we start by creating the matrix of users and non-users.
-The we fit the models and store the resulting objects in a list.
-</p>
-<pre class='r'>
-> cuse$Y <- cbind(cuse$using, cuse$notUsing)
-
-> models <- list(
-+   null     = glm(Y ~ 1, family=binomial, data=cuse),
-+   age      = glm(Y ~ age, family=binomial, data=cuse),
-+   desire   = glm(Y ~ nomore, family=binomial, data=cuse),
-+   additive = glm(Y ~ age + nomore, family=binomial, data=cuse),
-+   interact = glm(Y ~ age * nomore, family=binomial, data=cuse)
-+ )
-</pre>
-<p>
-Producing the table is now easy:
-</p>
-<pre class='r'>
-> data.frame( 
-+     deviance = round(unlist(lapply(models,deviance)),2),
-+     df       = unlist(lapply(models,df.residual))
-+ )
-         deviance df
-null       145.67  7
-age         66.48  4
-desire      54.00  6
-additive    16.79  3
-interact     0.00  0
-</pre>
-<p>
-The workhorse here is <code>lapply</code>, which applies a function over a
-list or vector. Here the extractors <code>deviance</code> and 
-<code>df.residuals</code> are called with each model. I then use
-<code>unlist()</code> to simplify the output and <code>round()</code>
-to print the deviances in a friendlier format.
-</p>
-<h4>The Age Model</h4>
-<p>
-Here is the model treating age as a factor with four levels:
-</p>
-<pre class='r'>
-> summary(models$age)
-
+8 40-49      1    79       58 137</code></pre>
+<p>There are five basic models of interest for this dataset. I will fit
+fit them all and, when it’s all done, reproduce the deviances in Table
+3.8.</p>
+<div id="the-age-model" class="section level3">
+<h3>The Age Model</h3>
+<p>Let us start with the age model.</p>
+<pre class="r"><code>&gt; cuse = mutate(cuse, Y = cbind(users, nonusers))
+&gt; mageg &lt;- glm(Y ~ ageg, family=binomial, data=cuse)
+&gt; summary(mageg)</code></pre>
+<pre><code>
 Call:
-glm(formula = Y ~ age, family = binomial, data = cuse)
+glm(formula = Y ~ ageg, family = binomial, data = cuse)
 
 Deviance Residuals: 
       1        2        3        4        5        6        7        8  
 -0.0838   0.1738  -0.7589   1.1308  -4.8873   4.7260  -3.6293   2.2799  
 
 Coefficients:
-            Estimate Std. Error z value Pr(>|z|)    
-(Intercept)  -1.5072     0.1303 -11.571  < 2e-16 ***
-age25-29      0.4607     0.1727   2.667  0.00765 ** 
-age30-39      1.0483     0.1544   6.788 1.14e-11 ***
-age40-49      1.4246     0.1940   7.345 2.06e-13 ***
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)  -1.5072     0.1303 -11.571  &lt; 2e-16 ***
+ageg25-29     0.4607     0.1727   2.667  0.00765 ** 
+ageg30-39     1.0483     0.1544   6.788 1.14e-11 ***
+ageg40-49     1.4246     0.1940   7.345 2.06e-13 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
 (Dispersion parameter for binomial family taken to be 1)
 
@@ -110,47 +72,38 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 Residual deviance:  66.482  on 4  degrees of freedom
 AIC: 116.98
 
-Number of Fisher Scoring iterations: 4
-</pre>
-<p>
-Note that the parameter estimates and standard errors are exactly the
-same as in Section 3.4 when we worked with only four binomial observations.
-This shows that grouping the data does not affect any of these statistics.
-</p>
-<p>
-The model deviance, however, is different. In Section 3.4 the deviance was
-zero because the age model fitted exactly the four groups. Here the
-deviance is 66.48 because we are working with eight groups, indicating
-that the model with age as the only predictor doesn't fit the data
-by age and desire for more children.
-</p>
-<p>
-You may want to verify that the model with "nomore" as the only predictor
-produces the same estimates and standard errors as in Section 3.3.
-</p>
-<h4>The Additive Model</h4>
-<p>
-We are now ready to consider a model with both age and desire for no more children:
-</p>
-<pre class='r'>
-> summary(models$additive)
-
+Number of Fisher Scoring iterations: 4</code></pre>
+<p>Note that the parameter estimates and standard errors are exactly the
+same as in Section 3.4, when we worked with only four binomial
+observations, showing that grouping the data does not affect any of
+these statistics.</p>
+<p>The model deviance, however, is different. In Section 3.4 the
+deviance was zero because the model fitted exactly the four groups. Here
+we work with eight groups and get a deviance of 66.48.</p>
+</div>
+<div id="the-additive-model" class="section level3">
+<h3>The Additive Model</h3>
+<p>We are now ready to consider a model with both age and desire for no
+more children:</p>
+<pre class="r"><code>&gt; madd &lt;- glm(Y ~ ageg + nomore, family=binomial, data=cuse)
+&gt; summary(madd)</code></pre>
+<pre><code>
 Call:
-glm(formula = Y ~ age + nomore, family = binomial, data = cuse)
+glm(formula = Y ~ ageg + nomore, family = binomial, data = cuse)
 
 Deviance Residuals: 
       1        2        3        4        5        6        7        8  
  1.1823  -2.0890   1.2383  -1.6419  -1.4197   1.2870  -1.5180   0.9067  
 
 Coefficients:
-            Estimate Std. Error z value Pr(>|z|)    
-(Intercept)  -1.6939     0.1352 -12.526  < 2e-16 ***
-age25-29      0.3678     0.1754   2.097    0.036 *  
-age30-39      0.8078     0.1598   5.056 4.27e-07 ***
-age40-49      1.0226     0.2039   5.014 5.32e-07 ***
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)  -1.6939     0.1352 -12.526  &lt; 2e-16 ***
+ageg25-29     0.3678     0.1754   2.097    0.036 *  
+ageg30-39     0.8078     0.1598   5.056 4.27e-07 ***
+ageg40-49     1.0226     0.2039   5.014 5.32e-07 ***
 nomore        0.8241     0.1171   7.037 1.97e-12 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 
 (Dispersion parameter for binomial family taken to be 1)
 
@@ -158,444 +111,210 @@ Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’
 Residual deviance:  16.789  on 3  degrees of freedom
 AIC: 69.285
 
-Number of Fisher Scoring iterations: 4
-
-> b <- coef(models$additive) 
-
-> exp(b["nomore"])
- nomore 
-2.27981 
-</pre>
-<p>
-Compare the results with table 3.9 on page 26 of the notes.
-Exponentiating the coefficient of "nomore" we get an odds ratio of 2.28. 
-This means that the odds of using contraception among women who want no more children 
-are double the odds among women in the same age group who do want more children. 
-The model assumes that the odds ratio by "nomore" is the same for every age group, 
-an assumption we will need to test.
-</p>
-<p>
-To test the significance of the odds ratio we can use the Wald test given in the 
-output, a z-statistic of 7.04 (which can be squared to obtain a chi-squared statistic 
-on one d.f.) The likelihood ratio test would compare the additive model with the 
-age model. Here are the two tests:
-</p>
-<pre class='r'>
-> V <- vcov(models$additive)
-
-> b["nomore"]^2/V["nomore","nomore"]
-  nomore 
-49.51564 
-
-> deviance(models$age) - deviance(models$additive)
-[1] 49.69282
-</pre>
-<p>
-Note the convenience of using character subscripts to extract the coefficient and
-variance for "nomore".
-We obtain chi-squared statistics of 49.5 and 49.7 on one d.f., so there is no doubt 
-that the odds of using contraception in any given age group vary by whether the 
-women want more children.
-</p>
-<h4>A Model With an Interaction</h4>
-<p>
-We now move to the model with an interaction, so that the effect of having no
-more children on the logit of the probability of using contraception is allowed 
-to vary from one age group to another. 
-</p>
-<pre class='r'>
-> summary(models$interact)
-
-Call:
-glm(formula = Y ~ age * nomore, family = binomial, data = cuse)
-
-Deviance Residuals: 
-[1]  0  0  0  0  0  0  0  0
-
-Coefficients:
-                Estimate Std. Error z value Pr(>|z|)    
-(Intercept)      -1.5193     0.1450 -10.480  < 2e-16 ***
-age25-29          0.3682     0.2009   1.832  0.06691 .  
-age30-39          0.4507     0.1950   2.311  0.02082 *  
-age40-49          0.3971     0.3402   1.168  0.24298    
-nomore            0.0640     0.3303   0.194  0.84637    
-age25-29:nomore   0.2672     0.4091   0.653  0.51366    
-age30-39:nomore   1.0905     0.3733   2.921  0.00349 ** 
-age40-49:nomore   1.3672     0.4834   2.828  0.00468 ** 
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-(Dispersion parameter for binomial family taken to be 1)
-
-    Null deviance: 1.4567e+02  on 7  degrees of freedom
-Residual deviance: 1.7786e-13  on 0  degrees of freedom
-AIC: 58.496
-
-Number of Fisher Scoring iterations: 3
-</pre>
-<p>
-The estimates show a difference by desire for more children of 0.06 in the logit scale
-for women under age 25, with additional differences of 0.27 for women 25-29, 1.09 for
-women in their thirties and 1.38 for women in their forties. Clearly the difference is
-larger the older the age group. (You may want to be careful about saying "increases with
-age" as this is a cross-section, but maybe that is clear enough from the context.)
-</p>
-<p>
-We can test the significance of the interaction term using a Wald test or computing
-a likelihood ratio test that compares the models with an without the interaction:
-</p>
-<pre class='r'>
-> b <- coef(models$interact)
-
-> V <- vcov(models$interact)
-
-> i <- 6:8
-
-> t(b[i]) %*% solve(V[i,i]) %*% b[i]
-         [,1]
-[1,] 16.02916
-
-> deviance(models$additive) - deviance(models$interact)
-[1] 16.78881
-</pre>
-<p>
-Here I used the fact that the coefficients representing the iteraction terms are
-in positions 5, 6 and 7.  We get a Wald statistic of 16.03 on 3 d.f. and a
-likelihoor ratio test of 16.79 on the same 3 d.f. Clearly the interaction is
-significant, so the ratio of the odds of using contraception among women who
-do and do not want another child varies by age.
-</p>
-<p>
-This is not the same as testing for the effect of preferences for more children. 
-A test for the "main" effect of nomore would just test for women under age 25 
-and would find no difference. To test at all ages together we can compare this 
-model with the age model, or do a Wald test for all terms involving preferences
-</p>
-<pre class='r'>
-> i <- 5:8
-
-> t(b[i]) %*% solve(V[i,i]) %*% b[i]
-         [,1]
-[1,] 62.44789
-
-> deviance(models$age) - deviance(models$interact)
-[1] 66.48163
-</pre>
-<p>
-We get highly-significant chi-squared values of 62.45 and 66.48.
-</p>
-<h4>Reparametrizing Interactions</H4>
-<p>
-In may be easier to present the results in terms of odds ratios by desire for 
-more children  in each of the age groups, as discussed on page 27 of the notes, 
-see also Table 3.10.
-(In fact I strongly recommend this approach, because models with interactions are
-often misinterpreted; people forget that the so-called "main effect" is just the 
-effect for the reference cell, and the "interactions" are additional effects. It is 
-much better to do this calculations ourselves, and present the results in a 
-more-easily understood and robust way.)
-</p>
-<p>
-To do this we simply specify the model as in terms of the main effect of age
-and the interaction, as <code>age + nomore:age</code> instead of the product
-<code>age * nomore</code>, which expands to <code>age + nomore + age:nomore</code>.
-R will still fit a model with 8 parameters. But it will use one for the constant,
-three for the age groups, and four for the effects of nomore at each age. The
-conventional approach uses one for the constant, three for the age groups (for
-women who want more), one for nomore (for women in the first age group), and three
-"additional" effects for the other combinations of age and no more (such as nomore
-in the other three age groups). 
-</p>
-<pre class='r'>
-> alt <- glm(Y ~ age + nomore:age, family=binomial, data=cuse)
-
-> summary(alt)
-
-Call:
-glm(formula = Y ~ age + nomore:age, family = binomial, data = cuse)
-
-Deviance Residuals: 
-[1]  0  0  0  0  0  0  0  0
-
-Coefficients:
-                Estimate Std. Error z value Pr(>|z|)    
-(Intercept)      -1.5193     0.1450 -10.480  < 2e-16 ***
-age25-29          0.3682     0.2009   1.832   0.0669 .  
-age30-39          0.4507     0.1950   2.311   0.0208 *  
-age40-49          0.3971     0.3402   1.168   0.2430    
-age< 25:nomore    0.0640     0.3303   0.194   0.8464    
-age25-29:nomore   0.3312     0.2414   1.372   0.1701    
-age30-39:nomore   1.1545     0.1739   6.640 3.14e-11 ***
-age40-49:nomore   1.4311     0.3530   4.055 5.02e-05 ***
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-(Dispersion parameter for binomial family taken to be 1)
-
-    Null deviance: 1.4567e+02  on 7  degrees of freedom
-Residual deviance: 1.0747e-13  on 0  degrees of freedom
-AIC: 58.496
-
-Number of Fisher Scoring iterations: 3
-</pre>
-<p>
-Because the model is saturated, it is easy to verify that these estimates are
-the differences in logits between women who want no more children and those who want 
-more in each age group. To obtain the corresponding odds-ratios we simply exponentiate:
-</p>
-<pre class='r'>
-> b <- coef(alt)
-
-> i <- 5:8
-
-> exp(b[i])
- age< 25:nomore age25-29:nomore age30-39:nomore age40-49:nomore 
-       1.066092        1.392682        3.172414        4.183498 
-</pre>
-<p>
-we find that the odds of using contraception for women who want no more children,
-compared to those who do, are 7% higher at ages under 25, 39% higher at ages 25-29, 
-three times as high at age 30-39, and four times as high at age 40-49.  
-This leads to a more direct presentation of the results.
-</p>
-<h4>Analysis of Covariance Models</h4>
-<p>
-We now treat age as a covariate, using the mid-points of the age groups 
-just as we did before. As usual, we center age before adding an interaction
-</p>
-<pre class='r'>
-> cuse$agem <- c(20, 27.5, 35, 45)[as.numeric(cuse$age)]
-
-> cuse$agec <- cuse$agem - 30.6
-
-> ancova = list(
-+   one      = glm(Y ~ agem, family=binomial, data=cuse),
-+   parallel = glm(Y ~ agem+nomore, family=binomial, data=cuse),
-+   two      = glm(Y ~ agec*nomore, family=binomial, data=cuse) )
-</pre>
-<p>
-Here is a summary with deviances and d.f., reproducing Table 3.11:
-</p>
-<pre class='r'>
-> data.frame( 
-+   deviance = unlist(lapply(ancova,deviance)),
-+   df       = unlist(lapply(ancova,df.residual)) )
-          deviance df
-one      68.884986  6
-parallel 18.987937  5
-two       9.134935  4
-</pre>
-<p>
-The first model of interest has a linear effect of age, and is analogous to 
-simple linear regression (one line) 
-</p>
-<pre class='r'>
-> summary(ancova$one)
-
-Call:
-glm(formula = Y ~ agem, family = binomial, data = cuse)
-
-Deviance Residuals: 
-    Min       1Q   Median       3Q      Max  
--4.1453  -1.8368  -0.2017   1.0574   5.5011  
-
-Coefficients:
-             Estimate Std. Error z value Pr(>|z|)    
-(Intercept) -2.672667   0.233249 -11.458   <2e-16 ***
-agem         0.060671   0.007103   8.541   <2e-16 ***
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-(Dispersion parameter for binomial family taken to be 1)
-
-    Null deviance: 145.673  on 7  degrees of freedom
-Residual deviance:  68.885  on 6  degrees of freedom
-AIC: 115.38
-
-Number of Fisher Scoring iterations: 4
-</pre>
-<p>
-The estimated slope shows that the odds of using contraception increase about
-six percent per year of age. This, of course, is the same model we fitted
-in Section 3.4.
-</p>
-<p>
-The second model includes additive effects of age and desire for more children,
-and is analogous to an analysis of covariance model (parallel lines)
-</p>
-<pre class='r'>
-> summary(ancova$parallel)
-
-Call:
-glm(formula = Y ~ agem + nomore, family = binomial, data = cuse)
-
-Deviance Residuals: 
-       1         2         3         4         5         6         7         8  
- 0.78518  -2.32013   1.08217  -1.76899  -0.73947   2.02626  -2.00697   0.08668  
-
-Coefficients:
-             Estimate Std. Error z value Pr(>|z|)    
-(Intercept) -2.516654   0.236529 -10.640  < 2e-16 ***
-agem         0.044106   0.007529   5.858 4.68e-09 ***
-nomore       0.825898   0.117110   7.052 1.76e-12 ***
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-(Dispersion parameter for binomial family taken to be 1)
-
-    Null deviance: 145.673  on 7  degrees of freedom
-Residual deviance:  18.988  on 5  degrees of freedom
-AIC: 67.484
-
-Number of Fisher Scoring iterations: 4
-
-> exp(coef(ancova$parallel)["nomore"])
- nomore 
-2.28393 
-</pre>
-<p>
-We see that the odds of using contraception are 128% higher among women who want
-no more children than among women who want more and have the same age. The estimated
-difference in log-odds when we adjust linearly for age is very similar to that 
-obtained by treating age as a factor (0.826 vs. 0.824).
-</p>
-<p>
-None of these models fits the data very well, so we move to the model with a
-linear interaction between age and desire for no more children (two lines)
-</p>
-<pre class='r'>
-> summary(ancova$two)
-
-Call:
-glm(formula = Y ~ agec * nomore, family = binomial, data = cuse)
-
-Deviance Residuals: 
-      1        2        3        4        5        6        7        8  
--0.6521  -0.9648   0.7893  -0.8532   0.2273   1.8753  -0.8022  -1.4886  
-
-Coefficients:
-            Estimate Std. Error z value Pr(>|z|)    
-(Intercept) -1.19437    0.07860 -15.196  < 2e-16 ***
-agec         0.02182    0.01037   2.105  0.03527 *  
-nomore       0.75751    0.12184   6.217 5.06e-10 ***
-agec:nomore  0.04799    0.01544   3.109  0.00188 ** 
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-(Dispersion parameter for binomial family taken to be 1)
-
-    Null deviance: 145.6734  on 7  degrees of freedom
-Residual deviance:   9.1349  on 4  degrees of freedom
-AIC: 59.631
-
-Number of Fisher Scoring iterations: 3
-
-> exp(coef(ancova$two)[3:4])
-     nomore agec:nomore 
-   2.132956    1.049162 
-</pre>
-<p>
-The estimates agree with the results in Table 3.12. We see that the odds of using
-contraception among women who want more children are about two percent higher per 
-year of age. The odds among women who want no more children are double those of 
-women who want more at the mean age (30.6). This ratio is about five percent higher 
-per year of age above the mean (and of course five percent lower per year below 
-the mean).
-</p>
-<p>
-Another way to look at this result is to note that the odds of using contraception 
-among women who want no more children are about 7 percent higher per year of age. 
-This may be seen more clearly if we parametrize the model using two constants and 
-two slopes, as done in Table 3.12:
-</p>
-<pre class='r'>
-> cuse$more <- 1 - cuse$nomore
-
-> cuse$age.more   <- cuse$agec * cuse$more
-
-> cuse$age.nomore <- cuse$agec * cuse$nomore
-
-> alt <- glm(Y ~ more + age.more + nomore + age.nomore - 1, family=binomial, data=cuse)
-
-> summary(alt)
-
-Call:
-glm(formula = Y ~ more + age.more + nomore + age.nomore - 1, 
-    family = binomial, data = cuse)
-
-Deviance Residuals: 
-      1        2        3        4        5        6        7        8  
--0.6521  -0.9648   0.7893  -0.8532   0.2273   1.8753  -0.8022  -1.4886  
-
-Coefficients:
-           Estimate Std. Error z value Pr(>|z|)    
-more       -1.19437    0.07860 -15.196  < 2e-16 ***
-age.more    0.02182    0.01037   2.105   0.0353 *  
-nomore     -0.43686    0.09310  -4.692 2.70e-06 ***
-age.nomore  0.06981    0.01144   6.103 1.04e-09 ***
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-(Dispersion parameter for binomial family taken to be 1)
-
-    Null deviance: 369.7549  on 8  degrees of freedom
-Residual deviance:   9.1349  on 4  degrees of freedom
-AIC: 59.631
-
-Number of Fisher Scoring iterations: 3
-</pre>
-<p>
-To obtain this result I included dummies for both more and nomore (leaving out the
-constants) and constructed terms that represent age separately for more and nomore.
-</p>
-<p>
-Time for a plot. We will reproduce Figure 3.3 in the notes, comparing the analysis 
-of covariance model we just fitted, a model with a quadratic effect of age where the
-curvature is assumed to be the same for the two groups defined by preferences, and 
-the anova type model which was saturated for the age by preferences table and thus
-represents observed logits.
-</p>
-<pre class='r'>
-> plot(cuse$agem, predict(models$interact), pch=16, 
-+     ylim=c(-1.5,.5), xlab="age", ylab="logit",
-+     main="Figure 3.3: Contraceptive Use by Age and Desire")
-
-> #
-> # two straight lines
-> linear <- predict(ancova$two)
-
-> n <- cuse$nomore == 1
-
-> lines(cuse$agem[n], linear[n])
-
-> lines(cuse$agem[!n], linear[!n])
-
-> #
-> # two parabolas, same curvature
-> curvy <-  glm(Y ~ agec* nomore + I(agec^2), family=binomial, data=cuse)
-
-> b <- coef(curvy)
-
-> agesc <- ages - 30.6
-
-> lines(ages, b[1]       +  b[2]       * agesc  + b[4] * agesc^2, lty="dashed")
-
-> lines(ages,(b[1]+b[3]) + (b[2]+b[5]) * agesc  + b[4] * agesc^2, lty="dashed")
-</pre>
-<img src="fig33.png" class="img-responsive center-block"/>
-<p>
-Visually the model with some curvature provides a much better fit than the
-model that assumes linearity of age effects with different slopes by desire for
-more children.  While the simpler model passes the goodness of fit test, the
-fact that we can reduce the deviance by 6.79 at the expece of just one d.f.
-indicates significant curvature.
-</p>
-<pre class='r'>
-> deviance(ancova$two) - deviance(curvy)
-[1] 6.794625
-</pre>
-<p>
-For purposes of presentation you may consider doing an equivalent plot in the probability
-scale. Don't forget that a linear relationship in the logit scale will be nonlinear in
-the probability scale, so you should probably a fine age grid to reflect the curvature.
-</p>
+Number of Fisher Scoring iterations: 4</code></pre>
+<pre class="r"><code>&gt; exp(coef(madd)[&quot;nomore&quot;])</code></pre>
+<pre><code> nomore 
+2.27981 </code></pre>
+<p>Compare the results with Table 3.9 on page 26 of the notes.
+Exponentiating the coefficient of “nomore” we get an odds ratio of 2.28.
+This means that the odds of using contraception among women who want no
+more children are double the odds among women in the same age group who
+do want more children. The model assumes that the odds ratio is the same
+for every age group, an assumption we will need to test.</p>
+<p>To test the significance of the odds ratio for no more we can use the
+z-statistic given in the output, technically a Wald test. The value of
+7.04 can be squared to obtain a chi-squared statistic on one d.f. The
+likelihood ratio test would compare the additive model with the age
+model.</p>
+<pre class="r"><code>&gt; coef(madd)[&quot;nomore&quot;]^2/vcov(madd)[&quot;nomore&quot;,&quot;nomore&quot;]</code></pre>
+<pre><code>  nomore 
+49.51564 </code></pre>
+<pre class="r"><code>&gt; -2*(logLik(mageg)-logLik(madd))</code></pre>
+<pre><code>&#39;log Lik.&#39; 49.69282 (df=4)</code></pre>
+<p>We obtain chi-squared statistics of 49.5 and 49.7 on one d.f., so
+there is no doubt that the odds of using contraception in any given age
+group vary by whether the women want more children.</p>
+</div>
+<div id="a-model-with-an-interaction" class="section level3">
+<h3>A Model with an Interaction</h3>
+<p>We now add an interaction between age and desire for no more
+children.</p>
+<pre class="r"><code>&gt; mint &lt;- glm(Y ~ ageg * nomore, family=binomial, data=cuse)</code></pre>
+<p>We can test the significance of the interaction <span class="r">by
+computing a Wald test from the coefficients and their variance
+matrix.</span>] The likekihood ratio test would compare the additive
+model and the model with the interaction.</p>
+<pre class="r"><code>&gt; want = paste(c(&quot;ageg25-29&quot;,&quot;ageg30-39&quot;,&quot;ageg40-49&quot;), &quot;nomore&quot;, sep=&quot;:&quot;)
+&gt; b = coef(mint)[want]
+&gt; V = vcov(mint)[want,want]
+&gt; t(b) %*% solve(V) %*% b</code></pre>
+<pre><code>         [,1]
+[1,] 16.02916</code></pre>
+<pre class="r"><code>&gt; deviance(madd)  # also -2*(logLik(madd) - loglik(mint))</code></pre>
+<pre><code>[1] 16.78881</code></pre>
+<p>Can you reproduce the Wald test for all terms involving
+preferences?</p>
+</div>
+<div id="reparametrizing-interactions" class="section level3">
+<h3>Reparametrizing Interactions</h3>
+<p>It may be easier to present the result for this model in terms of
+odds ratios by desire for more children in the different age groups, as
+discussed on page 27 of the notes, see also Table 3.10.</p>
+<p>To this end we need to specify the interaction as usual, but omit the
+main effect of wanting no more.</p>
+<pre class="r"><code>&gt; altp &lt;- glm(Y ~ ageg + ageg:nomore, family=binomial, data=cuse)
+&gt; want = paste(c(&quot;ageg&lt; 25&quot;,&quot;ageg25-29&quot;,&quot;ageg30-39&quot;,&quot;ageg40-49&quot;),&quot;nomore&quot;,sep=&quot;:&quot;)
+&gt; exp(coef(altp)[want])</code></pre>
+<pre><code> ageg&lt; 25:nomore ageg25-29:nomore ageg30-39:nomore ageg40-49:nomore 
+        1.066092         1.392682         3.172414         4.183498 </code></pre>
+<p>The parameters now represent differences in the logit scale between
+women who do not want more children and those who, do in each of the
+four age groups. Exponentiating the coefficients we find that the odds
+of u sing contraception for women who want no more children, compared to
+those who do, are 7% higher at age under 25, 39% higher at ages 25-29,
+three times as high at age 30-39, and four times as high at age 40-49.
+The parametrization used here effectively combines the “main” effect of
+wanting no more children (really the effect in the first age group) with
+the “additional” effect as one moves to older age groups, in a single
+number for each age group. This leads to a more direct presentation of
+the results.</p>
+</div>
+<div id="the-deviance-table" class="section level3">
+<h3>The Deviance Table</h3>
+<p>At this point we have fit all the models listed in Table 3.8 except
+for the null model and the model with desire.</p>
+<pre class="r"><code>&gt; mnull &lt;- glm(Y ~ 1, family=binomial, data=cuse)
+&gt; mnom &lt;- glm(Y ~ nomore, family=binomial, data=cuse)
+&gt; models &lt;- list(null= mnull, ageg=mageg, nomore=mnom, additive=madd, interact=mint)
+&gt; data.frame(deviance = round(unlist(lapply(models,deviance)),2),
++                df = unlist(lapply(models, df.residual)))</code></pre>
+<pre><code>         deviance df
+null       145.67  7
+ageg        66.48  4
+nomore      54.00  6
+additive    16.79  3
+interact     0.00  0</code></pre>
+<p>Make sure you can build tests for the gross and net effects of each
+factor from this deviance table.</p>
+</div>
+<div id="analysis-of-covariance-models" class="section level3">
+<h3>Analysis of Covariance Models</h3>
+<p>We now treat age as a covariate, using the mid-points of the age
+groups just as we did before:</p>
+<pre class="r"><code>&gt; cuse &lt;- mutate(cuse, agem = c(20, 27.5, 35, 45)[as.numeric(ageg)])</code></pre>
+<p>The first model of interest has a linear effect of age, and is
+analogous to simple linear regression:</p>
+<pre class="r"><code>&gt; magel &lt;- glm(Y ~ agem, family=binomial, data=cuse)
+&gt; exp(coef(magel)[&quot;agem&quot;])</code></pre>
+<pre><code>    agem 
+1.062549 </code></pre>
+<p>The estimated slope shows that the odds of using contraception
+increase about six percent per year of age, the same result we obtained
+in Section 3.4.</p>
+<p>The second model of interest includes additive effects of age and
+desire for no more children, and is analogous to an analysis of
+covariance model:</p>
+<pre class="r"><code>&gt; maddl &lt;- glm(Y ~ agem + nomore, family=binomial, data=cuse)
+&gt; exp(coef(maddl)[&quot;nomore&quot;])</code></pre>
+<pre><code> nomore 
+2.28393 </code></pre>
+<p>We see that the odds of using contraception are 128% higher among
+women who want no more children than among women who want more and have
+the same age. The estimated difference in log-odds when we adjust
+linearly for age is very similar to that obtained by treating age as a
+factor (0.826 vs. 0.824).</p>
+<p>None of these models fits the data very well, so we add an
+interaction between age and desire for no more children. As usual, we
+center age before constructing the interaction</p>
+<pre class="r"><code>&gt; cuse &lt;- mutate(cuse, agec = agem-30.6, nomXagec = nomore*agec)
+&gt; mintl &lt;- glm(Y ~ agem + nomore + nomXagec, family=binomial, data=cuse)
+&gt; summary(mintl)$coefficients</code></pre>
+<pre><code>               Estimate Std. Error   z value     Pr(&gt;|z|)
+(Intercept) -1.86215247 0.31087843 -5.989970 2.098797e-09
+agem         0.02182294 0.01036621  2.105199 3.527397e-02
+nomore       0.75750899 0.12184179  6.217153 5.062570e-10
+nomXagec     0.04799135 0.01543795  3.108660 1.879378e-03</code></pre>
+<pre class="r"><code>&gt; exp(coef(mintl))</code></pre>
+<pre><code>(Intercept)        agem      nomore    nomXagec 
+  0.1553379   1.0220628   2.1329564   1.0491616 </code></pre>
+<p>The estimates agree with the results in Table 3.12. We see that the
+odds of using contraception among women who want more children are about
+two percent higher per year of age. The odds among women who want no
+more children are double those of women who want more at the mean age
+(30.6). This ratio is about five percent higher per year of age above
+the mean (and of course five percent lower per year of age below the
+mean).</p>
+<p>Another way to look at this result is to note that the odds of using
+contraception among women who want no more children are about 7 percent
+higher per year of age. This may be seen more clearly if we parametrize
+the model using two constants and two slopes</p>
+<pre class="r"><code>&gt; cuse &lt;- mutate(cuse, more=1-nomore, moreXagec = more*agec)
+&gt; altp = glm(Y ~ -1 + more + moreXagec + nomore + nomXagec, family=binomial, data=cuse)
+&gt; summary(altp)$coefficients</code></pre>
+<pre><code>             Estimate Std. Error    z value     Pr(&gt;|z|)
+more      -1.19437053 0.07859690 -15.196153 3.750046e-52
+moreXagec  0.02182294 0.01036621   2.105199 3.527397e-02
+nomore    -0.43686153 0.09310182  -4.692299 2.701523e-06
+nomXagec   0.06981429 0.01143993   6.102684 1.043020e-09</code></pre>
+<pre class="r"><code>&gt; exp(coef(altp))</code></pre>
+<pre><code>     more moreXagec    nomore  nomXagec 
+0.3028946 1.0220628 0.6460609 1.0723090 </code></pre>
+<p>which is the main body of Table 3.12. Testing for equality of slopes
+is equivalent to testing the interaction term in the previous
+specification</p>
+<pre class="r"><code>&gt; r &lt;- c(0, 1, 0, -1) # moreXagec - nomXagec
+&gt; b &lt;- r %*% coef(altp); 
+&gt; V &lt;- r %*% vcov(altp) %*% r
+&gt; b^2/V</code></pre>
+<pre><code>         [,1]
+[1,] 9.663768</code></pre>
+<p>If you install the package <code>car</code> you can use the
+<code>linearHypothesis()</code> function to build Wald tests. Try
+<code>linearHypothesis(altp, c("moreXagec - omXagec")</code>.</p>
+</div>
+<div id="plotting-observed-and-fitted-logits" class="section level3">
+<h3>Plotting Observed and Fitted Logits</h3>
+<p>Time for a plot. We will reproduce Figure 3.3 in the notes, comparing
+the analysis of covariance model we just fitted, a model with a
+quadratic effect of age where the curvature is assumed to be the same
+for the two groups defined by preferences, and the anova type model
+which was saturated for the age by preferences table, and thus
+represents observed logits.</p>
+<pre class="r"><code>&gt; library(ggplot2)
+&gt; cuse &lt;- mutate(cuse, obs = qlogis(users/n), agecsq = agec^2)
+&gt; # make prediction datasets for the linear and quadratic fits
+&gt; linear &lt;- data.frame(agem=c(20,45), nomore=0, nomXagec=0)
+&gt; linear &lt;- mutate(linear, y0=predict(mintl, linear), 
++   y1=predict(mintl,mutate(linear,nomore=1, nomXagec=(agem-30))))
+&gt; quadratic &lt;- data.frame(agem=seq(20,45,.1)) |&gt; 
++   mutate(agec=agem-30, agecsq=agec^2, nomore=0)
+&gt; quadratic &lt;- mutate(quadratic, y0=predict(curvy,quadratic), 
++   y1=predict(curvy, mutate(quadratic, nomore=1)))
+&gt; # plot observed and fitted
+&gt; png(&quot;fig33r.png&quot;, width=500, height=400)
+&gt; ggplot(cuse, aes(agem, obs)) + geom_point() +
++   geom_text(aes(46, obs[7], label=&quot;More&quot;, hjust=&quot;left&quot;)) +
++   geom_text(aes(46, obs[8]+0.1, label=&quot;No more&quot;, hjust=&quot;left&quot;)) +
++   geom_line(data=linear, mapping=aes(agem, y0, color=&quot;blue&quot;)) +
++   geom_line(data=linear, mapping=aes(agem, y1, color=&quot;blue&quot;)) +
++   geom_line(data=quadratic, mapping=aes(agem, y0, color=&quot;green&quot;)) +
++   geom_line(data=quadratic, mapping=aes(agem, y1, color=&quot;green&quot;)) + 
++   coord_cartesian(xlim=c(20,50)) + labs(x=&quot;age&quot;, y=&quot;logit&quot;) +
++   ggtitle(&quot;Figure 3.3: Contraceptive Use by Age and Desire&quot;) +
++   theme(legend.position=&quot;none&quot;)
+&gt; dev.off()</code></pre>
+<pre><code>png 
+  2 </code></pre>
+<p><img src="fig33r.png" class="img-responsive center-block r" /></p>
+<p>Visually the model with some curvature provides a better fit, but we
+have no evidence that it is in fact better than the model with two
+straight lines with different slopes.</p>
+<p>For purposes of presentation you may consider doing an equivalent
+plot in the probability scale. Don’t forget that a linear relationship
+in the logit scale will be nonlinear in the probability scale, so you
+need to rflect the curvature. <span class="stata">The
+<code>function</code> or <code>mspline</code> plot types will be useful
+in this regard.</span></p>
+<p><small>Updated fall 2022</small></p>
+</div>
+</div>

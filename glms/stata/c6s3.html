@@ -5,105 +5,93 @@ tab: "Stata Logs"
 pager: true
 ---
 
+<h2 class="first" id="c6s3">6.3 The Conditional Logit Model</h2>
+<p>Stata and R are also able to fit the more general McFadden
+conditional logit model discussed in the notes, a random-utility model
+where the expected utility of a choice may depend on characteristics of
+the alternatives, characteristics of the people making the choices, and
+variables which are specific to a combination of person and alternative,
+for example distance to a cinema. The special case where all predictors
+are individual characteristics is the multinomial logit model of the
+previous section.</p>
+<p>Stata 10 introduced the <code>asclogit</code> command, short for
+<u>a</u>lternative <u>s</u>pecific <u>c</u>onditional logit, which
+greatly simplified fitting this model. The model can also be fit, albeit
+with a bit more work, using Stata’s <code>clogit</code> command, which
+is designed for matched case-control or fixed-effects logit models, and
+was the only choice in earlier versions.</p>
+<p>We provide a brief illustration using the contraceptive choice data.
+Here we don’t have any alternative-specific variables, but you’ll see
+how they could be added. The first step is to expand the dataset so we
+have one record for each combination of individual and alternative. In
+our example the 3 women aged 15-19 who are sterilized become 3 records,
+one for sterilization, one for other methods and one for no method,
+which a dummy variable indicating that the first one of these was
+chosen. This structure is what makes posible adding alternative-specific
+predictors. We start by saving the dataset, creating an id, expanding
+it, coding the alternatives available and the one chosen</p>
+<pre class='stata'>. preserve
 
-<h3 class='first'>6.3 The Conditional Logit Model</h3> 
-<P> 
-Stata is also able to fit the more general McFadden conditional logit
-model discussed in the notes, a random-utility  model where the 
-expected utility of a choice may depend on characteristics of the 
-alternatives, characteristics of the people making the choices, 
-and variables which are specific to a combination of person and 
-alternative, for example distance to a cinema. 
-The special case where all predictors are individual  characteristics 
-is the multinomial logit model of the previous section.
-<P> 
-Stata 10 introduced the <code>asclogit</code> command, short for
-<u>a</u>lternative <u>s</u>pecific <u>c</u>onditional logit,
-which greatly simplified fitting this model. 
-The model can also be fit, albeit with a bit more work, using
-Stata's <code>clogit</code> command, which is designed for
-matched case-control or fixed-effects logit models, and was
-the only choice in earlier versions. 
-<P> 
-We provide a brief illustration using the contraceptive choice
-data. Here we don't have any alternative-specific variables but
-you'll see how they could be added. The first step is to expand
-the dataset so we have one record for each combination of 
-individual and alternative. In our example the 3 women aged 15-19
-who are sterilized become 3 records, one for sterilization, one
-for other methods and one for no method, which a dummy variable
-indicating that the first one of these was chosen. This structure
-is what makes posible adding alternative-specific predictors.
-We start by saving the dataset, creating an id, expanding it,
-coding the alternatives available and the one chosen
-<pre class='stata'>
-. preserve
- 
 . gen id = _n
- 
+
 . expand 3
 (42 observations created)
- 
+
 . sort id
- 
+
 . by id: gen chosen = cuse == _n 
- 
+
 . by id: replace cuse = _n
 (42 real changes made)
-</pre> 
-<P> 
-To fit the model we specify the dummy variable indicating the choice
-as outcome, followed by the predictors that vary by alternative,
-of which we have none. The predictors that vary only by individual,
-in our case age and age squared, are specified using the 
-<code>casevars()</code> option.
-The structure of the data is defined using two options,
-<code>case()</code> specifies a variable identifying each individual 
-and 
-<code><u>alt</u>ernatives()</code> specifies a variable identifying the
-alternatives. 
-The reference or base alternative is specified using the
-<code><u>base</u>alternative()</code> option.
-Our last step is to restore the original data.
-<pre class='stata'>
-. asclogit chosen [fw=cases], case(id) casevars(age agesq) ///
->     alternatives(cuse) basealternative(3)
- 
+</pre>
+<p>To fit the model we specify the dummy variable indicating the choice
+as outcome, followed by the predictors that vary by alternative, of
+which we have none. The predictors that vary only by individual, in our
+case age and age squared, are specified using the
+<code>casevars()</code> option. The structure of the data is defined
+using two options, <code>case()</code> specifies a variable identifying
+each individual and <u><code>alt</code></u><code>ernatives()</code>
+specifies a variable identifying the alternatives. The reference or base
+alternative is specified using the
+<u><code>base</code></u><code>alternative()</code> option. Our last step
+is to restore the original data.</p>
+<pre class='stata'>. asclogit chosen [fw=cases], case(id) casevars(age agesq) ///
+>   alternatives(cuse) basealternative(3)
+
 Iteration 0:   log likelihood = -2962.4334  
 Iteration 1:   log likelihood = -2886.4722  
 Iteration 2:   log likelihood =  -2883.148  
 Iteration 3:   log likelihood = -2883.1364  
 Iteration 4:   log likelihood = -2883.1364  
- 
-Alternative-specific conditional logit         Number of obs      =       9495
-Case variable: id                              Number of cases    =       3165
- 
-Alternative variable: cuse                     Alts per case: min =          3
+
+Alternative-specific conditional logit         Number of obs      =      9,495
+Case ID variable: id                           Number of cases    =       3165
+
+Alternatives variable: cuse                    Alts per case: min =          3
                                                               avg =        3.0
                                                               max =          3
- 
+
                                                   Wald chi2(4)    =     351.79
 Log likelihood = -2883.1364                       Prob > chi2     =     0.0000
- 
-------------------------------------------------------------------------------
-      chosen |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-sterilizat~n |
-         age |   .7097186   .0455074    15.60   0.000     .6205258    .7989114
-       agesq |  -.0097327   .0006588   -14.77   0.000     -.011024   -.0084415
-       _cons |  -12.61816   .7574065   -16.66   0.000    -14.10265   -11.13367
--------------+----------------------------------------------------------------
-other_method |
-         age |   .2640719   .0470719     5.61   0.000     .1718127    .3563311
-       agesq |   -.004758   .0007596    -6.26   0.000    -.0062469   -.0032692
-       _cons |  -4.549798   .6938498    -6.56   0.000    -5.909718   -3.189877
--------------+----------------------------------------------------------------
-no_method    |   (base alternative)
-------------------------------------------------------------------------------
- 
+
+──────────────┬────────────────────────────────────────────────────────────────
+       chosen │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+──────────────┼────────────────────────────────────────────────────────────────
+sterilization │
+          age │   .7097186   .0455074    15.60   0.000     .6205258    .7989114
+        agesq │  -.0097327   .0006588   -14.77   0.000     -.011024   -.0084415
+        _cons │  -12.61816   .7574065   -16.66   0.000    -14.10265   -11.13367
+──────────────┼────────────────────────────────────────────────────────────────
+other_method  │
+          age │   .2640719   .0470719     5.61   0.000     .1718127    .3563311
+        agesq │   -.004758   .0007596    -6.26   0.000    -.0062469   -.0032692
+        _cons │  -4.549798   .6938498    -6.56   0.000    -5.909718   -3.189877
+──────────────┼────────────────────────────────────────────────────────────────
+no_method     │  (base alternative)
+──────────────┴────────────────────────────────────────────────────────────────
+
 . restore
-</pre> 
-<P> 
-As you can see, the results are identical to those obtained using
-the <code>mlogit</code> command. 
-</p>
+</pre>
+<p>As you can see, the results are identical to those obtained using the
+<code>mlogit</code> command.</p>
+<p><small>Updated fall 2022</small></p>

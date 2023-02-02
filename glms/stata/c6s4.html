@@ -5,183 +5,166 @@ tab: "Stata Logs"
 pager: true
 ---
 
-
-<h3 class='first'>6.4 The Sequential Logit Model</h3> 
-<P> 
-We now fit the <i>hierarchical</i> logit model described in the notes.
-Because the term hierarchical has come to be closely associated with 
-multilevel models, I now prefer calling this model the <i>sequential</i> 
-logit model, reflecting the fact that the model proceeds as if decisions 
-were made in a sequence of stages. 
-<P> 
-This model is not to be confused with the <i>nested</i> logit model, 
-a term used in econometrics to refer to a random-utility model where the
-errors within subsets of choices are correlated and the predictors 
-include alternative-specific variables.
-The nested logit model is implemented in Stata's <code>nlogit</code> 
-command. Our approach is much simpler, but doesn't have a strict
-utility maximization interpretation.
-<P> 
-We assume that women first decide whether to use a method or not,
-and model this choice using a conventional logit model. We then focus
+<h2 class="first" id="c6s4">6.4 The Sequential Logit Model</h2>
+<p>We now fit the <em>hierarchical</em> logit model described in the
+notes. Because the term hierarchical has come to be closely associated
+with multilevel models, I now prefer calling this model the
+<em>sequential</em> logit model, reflecting the fact that the model
+proceeds as if decisions were made in a sequence of stages.</p>
+<p>This model is not to be confused with the <em>nested</em> logit
+model, a term used in econometrics to refer to a random-utility model
+where the errors within subsets of choices are correlated and the
+predictors include alternative-specific variables. Our approach is much
+simpler, but doesn’t have a strict utility maximization
+interpretation.</p>
+<p>We assume that women first decide whether to use a method or not, and
+model this choice using a conventional logit model. We then focus
 exclusively on women who use a method, and model their choice of
-sterilization or another method using another conventional logit
-model. (I told you this would be simpler :)
-<P> 
-<P> 
-<h4>The Decision to Use</h4> 
-<P> 
-We continue to use the same dataset, so all we need to get started
-is a variable to identify users of contraception.  
-We then model the logit of the probability of using contraception
-as a quadratic function of age:
-<pre class='stata'>
-. gen use  = cuse < 3 
- 
-. logit use age agesq [fw=cases]
- 
+sterilization or another method using another conventional logit model.
+(I told you this would be simpler :)</p>
+<h3 id="the-decision-to-use">The Decision to Use</h3>
+<p>We continue to use the same dataset as in the previous sections.
+<span class="stata">All we need to get started is a variable to identify
+users of contraception.</span></p>
+<pre class='stata'>. use https://grodri.github.io/datasets/elsalvador1985, clear
+(Contraceptive Use by Age. Currently Married Women. El Salvador, 1985)
+
+. gen age = 12.5 + 5*ageg
+
+. gen agesq = age^2
+
+. gen use  = cuse &lt; 3 
+</pre>
+<p>We then model the logit of the probability of using contraception as
+a quadratic function of age:</p>
+<pre class='stata'>. logit use age agesq [fw=cases]
+
 Iteration 0:   log likelihood =  -2188.859  
 Iteration 1:   log likelihood = -2082.7995  
 Iteration 2:   log likelihood = -2082.4993  
 Iteration 3:   log likelihood = -2082.4993  
- 
-Logistic regression                               Number of obs   =       3165
-                                                  LR chi2(2)      =     212.72
-                                                  Prob > chi2     =     0.0000
-Log likelihood = -2082.4993                       Pseudo R2       =     0.0486
- 
-------------------------------------------------------------------------------
-         use |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-         age |   .4397399   .0330984    13.29   0.000     .3748683    .5046115
-       agesq |  -.0063448   .0004992   -12.71   0.000    -.0073231   -.0053664
-       _cons |  -7.180362   .5215582   -13.77   0.000    -8.202598   -6.158127
-------------------------------------------------------------------------------
- 
+
+Logistic regression                                     Number of obs =  3,165
+                                                        LR chi2(2)    = 212.72
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -2082.4993                             Pseudo R2     = 0.0486
+
+─────────────┬────────────────────────────────────────────────────────────────
+         use │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+         age │   .4397399   .0330984    13.29   0.000     .3748683    .5046115
+       agesq │  -.0063448   .0004992   -12.71   0.000    -.0073231   -.0053664
+       _cons │  -7.180362   .5215582   -13.77   0.000    -8.202598   -6.158127
+─────────────┴────────────────────────────────────────────────────────────────
+
 . di -0.5*_b[age]/_b[agesq]
 34.653835
- 
+
 . scalar ll_u = e(ll)
- 
+
 . predict fit_u, xb
-</pre> 
-<P> 
-We have stored the log-likelihood and predicted the probability
-of using a contraceptive method for each age group for later use.
-<P> 
-The estimates indicate that the odds of using contraception
-(sterilization or other method as opposed to no method) 
-increase with age to reach a maximum at 34.7 and then decline. 
-This is more easily appreciated in a graph, which we will do below.
-<P> 
-<h4>The Choice of Method Among users</h4> 
-<P> 
-For the second step we look just at current users, and model the
-logit of the conditional probability of being sterilized given that
-the woman uses contraception as a quadratic function of age:
-<pre class='stata'>
-. gen ster = cuse == 1
- 
+</pre>
+<p>We have stored the log-likelihood and predicted the probability of
+using a contraceptive method for each age group for later use.</p>
+<p>The estimates indicate that the odds of using contraception
+(sterilization or other method as opposed to no method) increase with
+age to reach a maximum at 34.7 and then decline. This is more easily
+appreciated in a graph, which we will do below.</p>
+<h3 id="the-choice-of-method-among-users">The Choice of Method Among
+users</h3>
+<p>For the second step we look just at current users, and model the
+logit of the conditional probability of being sterilized given that the
+woman uses contraception as a quadratic function of age:</p>
+<pre class='stata'>. gen ster = cuse == 1
+
 . logit ster age agesq [fw=cases] if use
- 
+
 Iteration 0:   log likelihood = -944.59148  
 Iteration 1:   log likelihood = -800.66624  
 Iteration 2:   log likelihood = -798.84996  
 Iteration 3:   log likelihood = -798.84632  
 Iteration 4:   log likelihood = -798.84632  
- 
-Logistic regression                               Number of obs   =       1494
-                                                  LR chi2(2)      =     291.49
-                                                  Prob > chi2     =     0.0000
-Log likelihood = -798.84632                       Pseudo R2       =     0.1543
- 
-------------------------------------------------------------------------------
-        ster |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
--------------+----------------------------------------------------------------
-         age |   .4942454   .0667965     7.40   0.000     .3633266    .6251642
-       agesq |  -.0056737   .0010108    -5.61   0.000    -.0076548   -.0036926
-       _cons |  -8.868692   1.065769    -8.32   0.000    -10.95756   -6.779822
-------------------------------------------------------------------------------
- 
+
+Logistic regression                                     Number of obs =  1,494
+                                                        LR chi2(2)    = 291.49
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -798.84632                             Pseudo R2     = 0.1543
+
+─────────────┬────────────────────────────────────────────────────────────────
+        ster │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+         age │   .4942454   .0667965     7.40   0.000     .3633266    .6251642
+       agesq │  -.0056737   .0010108    -5.61   0.000    -.0076548   -.0036926
+       _cons │  -8.868692   1.065769    -8.32   0.000    -10.95756   -6.779822
+─────────────┴────────────────────────────────────────────────────────────────
+
 . di -0.5*_b[age]/_b[agesq]
 43.555674
- 
+
 . scalar ll_s = e(ll)
- 
+
 . predict fit_s, xb
-</pre> 
-<P> 
-Again we have stored the log-likelihood and predicted the
-conditional probabilities for each age group for later use.
-<P> 
-The estimates indicate that the odds of begin sterilized among users
-(sterilization as opposed to other method) increase with age but
-at a decreasing rate, reaching a maximum at 43.6. Again, a picture
-is worth a tousand words and we will plot these curves below.
-<P> 
-<P> 
-<h4>Comparing Model Likelihoods and Deviances</h4> 
- 
-Adding the log-likelihoods for the two stages 
-we get the overall log-likelihood
-<pre class='stata'>
-. di ll_s + ll_u
--2881.3456
-</pre> 
-<P> 
-which is a tad better (higher) than for the multinomial logit model.
-Alternatively, we can compute a deviance using the stored log-likelihood
-for the model treating the data as seven multinomials:
-<pre class='stata'>
-. scalar dev = 2*(ll_sat - ll_u - ll_s)
- 
-. di dev, chi2tail(8,dev)
-16.892981 .03124295
-</pre> 
-<P> 
-We see that the deviance is a bit better (smaller) than for the 
-multinomial logit model, although it also reveals significant lack
-of fit. We will build a plot to examine where the lack of fit
-comes from.
-<P> 
-<P> 
-<h4>Plotting Observed and Fitted Logits</h4> 
-<P> 
-We now produce a figure similar to 6.1 but for the sequential logit model.
-We could easily produce 'observed' logits fitting a model treating age
-as a factor with seven levels, but we can easily compute these 'by hand'
-<pre class='stata'>
-. gen obs_u = log((cases[_n]+cases[_n+1])/cases[_n+2]) if cuse==1
+</pre>
+<p>Again we have stored the log-likelihood and predicted the conditional
+probabilities for each age group for later use.</p>
+<p>The estimates indicate that the odds of begin sterilized among users
+(sterilization as opposed to other method) increase with age, but at a
+decreasing rate, reaching a maximum at 43.6. Again, a picture is worth a
+tousand words and we will plot these curves below.</p>
+<h3 id="comparing-model-likelihoods-and-deviances">Comparing Model
+Likelihoods and Deviances</h3>
+<p>To obtain the log-likehood for the sequential model we simply add the
+log-likelihoods for each stage. We can then compare this to the
+log-likelihood for a saturated multinomial model to get a sequential
+logit deviance.</p>
+<pre class='stata'>. scalar ll_seq = ll_s + ll_u
+
+. quietly mlogit cuse i.ageg [fw=cases], base(3)
+
+. scalar dev = 2*(e(ll) - ll_seq)
+
+. di "deviance =",%6.2f dev,"df =", 14 - 6, "p-value =", ///
+>   %5.3f chi2tail(8, dev)
+deviance =  16.89 df = 8 p-value = 0.031
+</pre>
+<p>The deviance of 16.89 on 8 d.f. is a bit better (lower) than the
+comparable multinomial logit model of <a href="c2s6">Section 6.2</a>
+with linear and quadratic effects of age, which was ??? although the
+difference is small and we have some evidence that the model does not
+fit the data. We will build a plot to examine where the lack of fit
+comes from.</p>
+<h3 id="plotting-observed-and-fitted-logits">Plotting Observed and
+Fitted Logits</h3>
+<p>We now produce a figure similar to 6.1, but for the sequential logit
+model. We could produce <em>observed</em> logits from logit models
+treating age as a factor with seven levels, but we can easily compute
+these “by hand”.</p>
+<pre class='stata'>. gen obs_u = log((cases[_n]+cases[_n+1])/cases[_n+2]) if cuse==1
 (14 missing values generated)
- 
+
 . gen obs_s = log( cases[_n]/cases[_n+1]) if cuse==1
 (14 missing values generated)
-</pre> 
-<P> 
-We can then plot these against the fitted logits saved earlier:
-<pre class='stata'>
-. graph twoway (scatter obs_u age, mc(green)) ///
->         (scatter obs_s age, mc(red) ms(t)) ///
->         (mspline  fit_u age, bands(7) lc(green) lw(medthick)) ///
->         (mspline  fit_s age,  bands(7) lc(red) lw(medthick) ) ///
+</pre>
+<p>We can then plot observed versus fitted logits for each equation:</p>
+<pre class='stata'>. graph twoway (scatter obs_u age, mc(green)) ///
+>   (scatter obs_s age, mc(red) ms(t)) ///
+>   (mspline  fit_u age, bands(7) lc(green) lw(medthick)) ///
+>   (mspline  fit_s age,  bands(7) lc(red) lw(medthick) ) ///
 >   , title("Figure 6.2:  Contraceptive Use by Age")  ///
->         subtitle("Sequential Logits") ytitle(logit) ///
->         legend(order (1 "Use" 2 "Sterilization|Use") ring(0) pos(5))
- 
+>     subtitle("Sequential Logits") ytitle(logit) ///
+>     legend(order (1 "Use" 2 "Sterilization|Use") ring(0) pos(5))
+
 . graph export fig62.png, width(500) replace
-(file fig62.png written in PNG format)
-</pre> 
-<P> 
-<img src="fig62.png" class="img-responsive center-block"/> 
-<P> 
-We see that the two quadratics fit reasonably well except for
+file fig62.png saved as PNG format
+</pre>
+<p><img src="fig62.png" class="img-responsive center-block stata" /></p>
+<p>We see that the two quadratics fit reasonably well, except for
 overestimating the probability of sterilization among contraceptive
 users at ages 15 to 19, a problem similar to that noted in the
-multinomial logit model. We could easily remedy this deficiency
-by adding a dummy variable for teenagers in the second-stage model.
-<P> 
-<i>Exercise</i>. In the next section we will study ordered logit models. 
-You may want to try fitting an ordered logit model to this dataset
-treating the three choices as ordered in terms of contraceptive
-effectiveness.
-</p>
+multinomial logit model. We could easily remedy this deficiency by
+adding a dummy variable for teenagers in the second-stage model.</p>
+<p><em>Exercise</em>. In the next section we will study ordered logit
+models. You may want to try fitting an ordered logit model to this
+dataset treating the three choices as ordered in terms of contraceptive
+effectiveness.</p>
+<p><small>Updated fall 2022</small></p>

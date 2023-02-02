@@ -5,106 +5,91 @@ tab: "Stata Logs"
 pager: true
 ---
 
-
-<h2>Piecewise Exponential Models</h2>
-<p>
-This is an illustration of piecewise exponential survival using Stata, 
-relying on the commands <code>stset</code> and <code>stsplit</code> 
-to create pseudo-observations
-and <code>poisson</code> to fit the model using the Poisson equivalence.
-Stata can also fit this model using <code>streg</code> with
-<code>distribution(exponential)</code> on the split data.
-<!--
-A more detailed discussion showing how to create pseudo-observations
-&ldquo;by hand&rdquo; may be found in <a href='episodes.html'>episodes</a>.
--->
-</p>
-<h3>The Data</h3>
-<p>
-The dataset we will consider is analyzed in Wooldridge (2002) and
-credited to Chung, Schmidt and Witte (1991). The data pertain to a 
-random sample of convicts released from prison between July 1, 1977
-and June 30, 1978.  Of interest is the time until they return to
-prison.  The information was collected retrospectively by looking at
-records in April 1984, so the maximum length of observation is 81
-months.  The data are available from the Stata website in Stata
-format. 
-</p>
-<pre class='stata'>
-. use http://www.stata.com/data/jwooldridge/eacsap/recid.dta, clear
+<h2 id="a-piecewise-exponential-models">7.A Piecewise Exponential
+Models</h2>
+<p>This is an illustration of piecewise exponential survival models
+using individual-level data. We use Stata, relying on the commands
+<code>stset</code> and <code>stsplit</code> to create
+pseudo-observations, and <code>poisson</code> to fit the model using the
+Poisson equivalence. Stata can also fit this model using
+<code>streg</code> with <code>distribution(exponential)</code> on the
+split data.</p>
+<h3 id="the-data">The Data</h3>
+<p>The dataset we will consider is analyzed in Wooldridge (2002) and
+credited to Chung, Schmidt and Witte (1991). The data pertain to a
+random sample of convicts released from prison between July 1, 1977 and
+June 30, 1978. Of interest is the time until they return to prison. The
+information was collected retrospectively by looking at records in April
+1984, so the maximum length of observation is 81 months. The data are
+available from the Stata website in Stata format.</p>
+<pre class='stata'>. use https://www.stata.com/data/jwooldridge/eacsap/recid, clear
 
 . desc, s
 
-Contains data from http://www.stata.com/data/jwooldridge/eacsap/recid.dta
-  obs:         1,445                          
- vars:            18                          28 Sep 1998 13:28
- size:        33,235                          
-Sorted by:  
+Contains data from https://www.stata.com/data/jwooldridge/eacsap/recid.dta
+ Observations:         1,445                  
+    Variables:            18                  28 Sep 1998 13:28
+Sorted by: 
 </pre>
-<p>
-The file has a censoring indicator, which we subtract from 1 to get
-a failure indicator. We also create an id variable and list 
-observation number 9, which goes back to prison after 54 months.
-</p>
-<pre class='stata'>
-. gen fail = 1 - cens
+<p>The file has a censoring indicator, which we subtract from 1 to get a
+failure indicator. We also create an id variable and list observation
+number 9, which goes back to prison after 54 months.</p>
+<pre class='stata'>. gen fail = 1 - cens
 
 . gen id = _n
 
-. list id durat fail in 9
+. list id durat fail in 9    
 
-<table class='stata'>
-<tr><td class=' br'>     </td><td class=' bt bb bl br'> id   durat   fail </td></tr>
-<tr><td class=' br'>  9. </td><td class=' bt bb bl br'>  9      54      1 </td></tr>
-</table>
+     ┌───────────────────┐
+     │ id   durat   fail │
+     ├───────────────────┤
+  9. │  9      54      1 │
+     └───────────────────┘
 </pre>
-<h3>Creating Pseudo-Observations</h3>
-<p>
-  To create pseudo-observations for survival analysis using the
-piecewise exponential model we <code>stset</code> the data making sure
-we specify an id variable, and then use <code>stsplit</code> to
-split the data into single-year
-intervals of duration from 0-12 to 48-60 with an open-ended 
-category 60+. 
-The first command generates the built-in variables 
-<code>_t0</code> for entering time, <code>_t</code> for exit time
-and <code>_d</code> for failure. These are adjusted after the split
-to reflect what happens in each interval. 
-We compute exposure as the difference between the exit and entering
-times. I also create a variable for the number of events, but this is
-not necessary as <code>_d</code> would serve the same purpose.
-We list these variables for individual 9 before and after the split
-to illustrate how the episodes are created.
-</p>
-<pre class='stata'>
-. stset durat, fail(fail) id(id)
+<h3 id="creating-pseudo-observations">Creating Pseudo-Observations</h3>
+<p>To create pseudo-observations for survival analysis using the
+piecewise exponential model we <code>stset</code> the data ,making sure
+we specify an id variable, and then use <code>stsplit</code> to split
+the data into single-year intervals of duration from 0-12 to 48-60, with
+an open-ended category 60+. The first command generates the built-in
+variables <code>_t0</code> for entering time, <code>_t</code> for exit
+time and <code>_d</code> for failure. These are adjusted after the split
+to reflect what happens in each interval. We compute exposure as the
+difference between the exit and entering times. I also create a variable
+for the number of events, but this is not necessary as <code>_d</code>
+would serve the same purpose. We list these variables for individual 9
+after the split to illustrate how the episodes are created.</p>
+<pre class='stata'>. stset durat, fail(fail) id(id)
 
-                id:  id
-     failure event:  fail != 0 &amp; fail &lt; .
-obs. time interval:  (durat[_n-1], durat]
- exit on or before:  failure
+Survival-time data settings
 
-<table class='stata'>
-<tr><td class=' bt'>     1445  total observations</td></tr>
-<tr><td class=' bb'>        0  exclusions</td></tr>
-<tr><td class=' bt'>     1445  observations remaining, representing</td></tr>
-<tr><td>     1445  subjects</td></tr>
-<tr><td>      552  failures in single-failure-per-subject data</td></tr>
-<tr><td>    80013  total analysis time at risk and under observation</td></tr>
-<tr><td>                                              at risk from t =         0</td></tr>
-<tr><td>                                   earliest observed entry t =         0</td></tr>
-<tr><td>                                        last observed exit t =        81</td></tr>
-</table>
+           ID variable: id
+         Failure event: fail!=0 &amp; fail&lt;.
+Observed time interval: (durat[_n-1], durat]
+     Exit on or before: failure
+
+──────────────────────────────────────────────────────────────────────────
+      1,445  total observations
+          0  exclusions
+──────────────────────────────────────────────────────────────────────────
+      1,445  observations remaining, representing
+      1,445  subjects
+        552  failures in single-failure-per-subject data
+     80,013  total analysis time at risk and under observation
+                                                At risk from t =         0
+                                     Earliest observed entry t =         0
+                                          Last observed exit t =        81
 
 . list id _t0 _t _d if id==9
 
-<table class='stata'>
-<tr><td class=' br'>      </td><td class=' bt bb bl br'> id   _t0   _t   _d </td></tr>
-<tr><td class=' br'>   9. </td><td class=' bt bb bl br'>  9     0   54    1 </td></tr>
-</table>
+      ┌────────────────────┐
+      │ id   _t0   _t   _d │
+      ├────────────────────┤
+   9. │  9     0   54    1 │
+      └────────────────────┘
 
 . stsplit year, at(0 12 24 36 48 60 100)
-(5273 observations (episodes) created)
+(5,273 observations (episodes) created)
 
 . gen exposure = _t - _t0
 
@@ -112,36 +97,33 @@ obs. time interval:  (durat[_n-1], durat]
 
 . list id _t0 _t _d year exposure events if id==9
 
-<table class='stata'>
-<tr><td class=' br'>      </td><td class=' bt bb bl br'> id   _t0   _t   _d   year   exposure   events </td></tr>
-<tr><td class=' br'>  41. </td><td class=' bt bl br'>  9     0   12    0      0         12        0 </td></tr>
-<tr><td class=' br'>  42. </td><td class=' bl br'>  9    12   24    0     12         12        0 </td></tr>
-<tr><td class=' br'>  43. </td><td class=' bl br'>  9    24   36    0     24         12        0 </td></tr>
-<tr><td class=' br'>  44. </td><td class=' bl br'>  9    36   48    0     36         12        0 </td></tr>
-<tr><td class=' br'>  45. </td><td class=' bb bl br'>  9    48   54    1     48          6        1 </td></tr>
-</table>
+      ┌───────────────────────────────────────────────┐
+      │ id   _t0   _t   _d   year   exposure   events │
+      ├───────────────────────────────────────────────┤
+  41. │  9     0   12    0      0         12        0 │
+  42. │  9    12   24    0     12         12        0 │
+  43. │  9    24   36    0     24         12        0 │
+  44. │  9    36   48    0     36         12        0 │
+  45. │  9    48   54    1     48          6        1 │
+      └───────────────────────────────────────────────┘
 </pre>
-<p>
-The sample observation going back to prison after 54 months contributes
-five episodes or pseudo-observations,
-one each for years one to four with 12 months of exposure and no events, 
-and another for year five with 6 months of exposure and one event.
-Note also that the variable generated by Stata to identify episodes,
-here <code>year</code>, reflects the time at which the interval <i>starts</i>,
-the same as <code>_t0</code>.
-</p>
-<h3>A PWE Proportional Hazards Model</h3>
-<p>
-We are now ready to fit a proportional hazards model with
-a piecewise exponential baseline where the hazard changes from
-year to year. We use the same model as Wooldridge(2002),
-involving ten predictors, all fixed covariates. 
-I specify the offset using the <code>exposure()</code> option.
-I could, of course, take logs and then use the <code>offset()</code>
-option.
-</p>
-<pre class='stata'>
-. local predictors workprg priors tserved felon alcohol drugs black married educ age
+<p>The sample observation, which goes back to prison after 54 months,
+contributes five episodes or pseudo-observations; one each for years one
+to four, with 12 months of exposure and no events, and another one for
+year five, with 6 months of exposure and one event. Note that the
+variable generated by Stata to identify episodes, here
+<code>year</code>, reflects the time at which the interval
+<em>starts</em>, the same as <code>_t0</code>.</p>
+<h3 id="a-pwe-proportional-hazards-model">A PWE Proportional Hazards
+Model</h3>
+<p>We are now ready to fit a proportional hazards model with a piecewise
+exponential baseline where the hazard changes from year to year. We use
+the same model as Wooldridge(2002), involving ten predictors, all fixed
+covariates. I specify the offset using the <code>exposure()</code>
+option. I could, of course, take logs and then use the
+<code>offset()</code> option.]{.stata}</p>
+<pre class='stata'>. local predictors workprg priors tserved felon alcohol drugs black married educ
+>  age
 
 . poisson events i.year `predictors', exposure(exposure)
 
@@ -150,129 +132,114 @@ Iteration 1:   log likelihood = -2241.5492
 Iteration 2:   log likelihood = -2241.5353  
 Iteration 3:   log likelihood = -2241.5353  
 
-Poisson regression                                Number of obs   =       6718
-                                                  LR chi2(15)     =     312.36
-                                                  Prob &gt; chi2     =     0.0000
-Log likelihood = -2241.5353                       Pseudo R2       =     0.0651
+Poisson regression                                      Number of obs =  6,718
+                                                        LR chi2(15)   = 312.36
+                                                        Prob > chi2   = 0.0000
+Log likelihood = -2241.5353                             Pseudo R2     = 0.0651
 
-<table class='stata'>
-<tr><td class=' bt bb br'>      events </td><td class=' bt bb bl'>      Coef.   Std. Err.      z    P&gt;|z|     [95% Conf. Interval]</td></tr>
-<tr><td class=' bt br'>        year </td><td class=' bt bl'></td></tr>
-<tr><td class=' br'>         12  </td><td class=' bl'>    .036532   .1093659     0.33   0.738    -.1778212    .2508851</td></tr>
-<tr><td class=' br'>         24  </td><td class=' bl'>  -.3738156   .1296172    -2.88   0.004    -.6278607   -.1197706</td></tr>
-<tr><td class=' br'>         36  </td><td class=' bl'>  -.8115436   .1564067    -5.19   0.000    -1.118095   -.5049921</td></tr>
-<tr><td class=' br'>         48  </td><td class=' bl'>  -.9382311   .1683272    -5.57   0.000    -1.268146   -.6083159</td></tr>
-<tr><td class=' br'>         60  </td><td class=' bl'>  -1.547178   .2033594    -7.61   0.000    -1.945755   -1.148601</td></tr>
-<tr><td class=' br'>     workprg </td><td class=' bl'>   .0838291   .0907983     0.92   0.356    -.0941323    .2617906</td></tr>
-<tr><td class=' br'>      priors </td><td class=' bl'>   .0872458   .0134763     6.47   0.000     .0608327     .113659</td></tr>
-<tr><td class=' br'>     tserved </td><td class=' bl'>   .0130089   .0016863     7.71   0.000     .0097039    .0163139</td></tr>
-<tr><td class=' br'>       felon </td><td class=' bl'>  -.2839252   .1061534    -2.67   0.007     -.491982   -.0758684</td></tr>
-<tr><td class=' br'>     alcohol </td><td class=' bl'>   .4324425   .1057254     4.09   0.000     .2252245    .6396605</td></tr>
-<tr><td class=' br'>       drugs </td><td class=' bl'>   .2747141   .0978667     2.81   0.005     .0828989    .4665293</td></tr>
-<tr><td class=' br'>       black </td><td class=' bl'>    .433556   .0883658     4.91   0.000     .2603622    .6067497</td></tr>
-<tr><td class=' br'>     married </td><td class=' bl'>  -.1540477   .1092154    -1.41   0.158    -.3681059    .0600104</td></tr>
-<tr><td class=' br'>        educ </td><td class=' bl'>  -.0214162   .0194453    -1.10   0.271    -.0595283     .016696</td></tr>
-<tr><td class=' br'>         age </td><td class=' bl'>    -.00358   .0005223    -6.85   0.000    -.0046037   -.0025563</td></tr>
-<tr><td class=' br'>       _cons </td><td class=' bl'>  -3.830127    .280282   -13.67   0.000     -4.37947   -3.280785</td></tr>
-<tr><td class=' bb br'>ln(exposure) </td><td class=' bb bl'>          1  (exposure)</td></tr>
-</table>
+─────────────┬────────────────────────────────────────────────────────────────
+      events │ Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+        year │
+         12  │    .036532   .1093659     0.33   0.738    -.1778212    .2508851
+         24  │  -.3738156   .1296172    -2.88   0.004    -.6278607   -.1197706
+         36  │  -.8115436   .1564067    -5.19   0.000    -1.118095   -.5049921
+         48  │  -.9382311   .1683272    -5.57   0.000    -1.268146   -.6083159
+         60  │  -1.547178   .2033594    -7.61   0.000    -1.945755   -1.148601
+             │
+     workprg │   .0838291   .0907983     0.92   0.356    -.0941323    .2617906
+      priors │   .0872458   .0134763     6.47   0.000     .0608327     .113659
+     tserved │   .0130089   .0016863     7.71   0.000     .0097039    .0163139
+       felon │  -.2839252   .1061534    -2.67   0.007     -.491982   -.0758684
+     alcohol │   .4324425   .1057254     4.09   0.000     .2252245    .6396605
+       drugs │   .2747141   .0978667     2.81   0.005     .0828989    .4665293
+       black │    .433556   .0883658     4.91   0.000     .2603622    .6067497
+     married │  -.1540477   .1092154    -1.41   0.158    -.3681059    .0600104
+        educ │  -.0214162   .0194453    -1.10   0.271    -.0595283     .016696
+         age │    -.00358   .0005223    -6.85   0.000    -.0046037   -.0025563
+       _cons │  -3.830127    .280282   -13.67   0.000     -4.37947   -3.280785
+ln(exposure) │          1  (exposure)
+─────────────┴────────────────────────────────────────────────────────────────
+
+. di 1 - exp(_b[felon])
+.24717705
 </pre>
-<p>
-The results are exactly the same as in the 
-<a href='..\r\recidivism.html'>sister page using R</a>. 
-We see that the risk of recidivism is about the same in the first two years, 
-but then decreases substantially with duration since release. 
-At any given duration felons have 25% lower risk of recidivism than non-felons 
-with the same observed characteristics. Subjects imprisoned for alcohol or drug 
-related offenses have much higher risk of recidivism, everything else being 
-equal.
-</p>
-<h3>Survival Probabilities</h3>
-<p>
-We now illustrate the calculation of survival probabilities,
-starting with the baseline hazard, which requires setting all
-predictors to zero.
-There are different ways to do these calculations in Stata, 
-but I will proceed from first principles using Mata. 
-An alternative is to use or create a dummy variable with the
-required predictor values and then use <code>predict</code>.
-If you go this way make sure to specify the options <code>xb</code> 
-and  <code>nooffset</code> to predict the log-hazard.
-</p>
-<p>
-Stata stores the constant as the last coefficient, here with index 17 .
-We add that to the year coefficients to obtain the log-hazard
-for each year, exponentiate to obtain hazards, and multiply by 12
-and sum to obtain the cumulative or integrated hazard.
-Note that we only need the first five years.
-</p>
-<pre class='stata'>
-. mata
-// mata (type end to exit)
-: b = st_matrix("e(b)")
+<p>We see that the risk of recidivism is about the same in the first two
+years, but then decreases substantially with duration since release. At
+any given duration, felons have 25% lower risk of recidivism than
+non-felons with the same observed characteristics. Subjects imprisoned
+for alcohol or drug related offenses have much higher risk of
+recidivism, everything else being equal.</p>
+<h3 id="survival-probabilities">Survival Probabilities</h3>
+<p>We now illustrate the calculation of survival probabilities, starting
+with the baseline hazard. <span class="stata">There are different ways
+to do these calculations in Stata, but I will proceed from first
+principles using Mata.</span>. We will retrieve the coefficients, add
+the constant and the age effects to obtain the log hazard, exponentiate
+to obtain hazards, multiply by 12 and sum to obtain the cumulative
+baseline hazard, and then exponentiate to obtain the baseline survival.
+This is not particularly meaningful as it would apply with all
+covariates set to zero, including age, which is measured in months.</p>
+<pre class='stata'>. mata
+───────────────────────────────────────────────── mata (type end to exit) ──────
+:     b = st_matrix("e(b)")
 
-: logh = b[17] :+ b[1..5]
+:     logh = b[17] :+ b[1..5] // constant is last coefficient
 
-: h = exp(logh)
+:     h = exp(logh)
 
-: H = runningsum(12 * h)
+:     H = runningsum(12 * h)
 
-: S = exp(-H)
+:     S = exp(-H)
 
-: S
+:     S
                  1             2             3             4             5
-  1    .7706798852   .5882188201   .4916958096   .4379748047   .3955311901  
+    ┌───────────────────────────────────────────────────────────────────────┐
+  1 │  .7706798852   .5882188201   .4916958096   .4379748047   .3955311901  │
+    └───────────────────────────────────────────────────────────────────────┘
 
 : end
+────────────────────────────────────────────────────────────────────────────────
 </pre>
-<p>
-These calculations apply to the reference cell and are
-not very meaningful because they set age to zero (and age, 
-by the way, is measured in months).  
-</p>
-<p>
-We will now estimate the probability of staying out of prison 
-for five years given average values of the predictors.
-In calculating the mean of each predictor we have to be careful 
-to include only one observation per person, so we restrict the 
-calculation to the first interval. The easiest way to compute
-means in Stata is to <code>collapse</code>
-</p>
-<pre class='stata'>
-. keep if year == 0
-(5273 observations deleted)
+<p>We will now estimate the probability of staying out of prison for
+five years given average values of the predictors. First we calculate
+the mean of each predictor; we have to be careful to include only one
+observation per person, so we restrict the data to the first interval.
+The easiest way to compute means in Stata is to
+<code>collapse</code>.</p>
+<pre class='stata'>. keep if year == 0
+(5,273 observations deleted)
 
 . save recid1, replace
 file recid1.dta saved
 
 . collapse `predictors'
 </pre>
-<p>
-Now that we have the means we multiply each by the corresponding
-coefficient to obtain the linear predictor <code>xb</code>
-</p>
-<pre class='stata'>
-. scalar xb = 0
+<p>Now that we have the means, we multiply each by the corresponding
+coefficient to obtain the linear predictor <code>xb</code>, exponentiate
+to obtain a relative risk, multiply by the baseline hazard, and then
+calculated the predicted survival.</p>
+<pre class='stata'>. scalar xb = 0
 
 . foreach var of local predictors {
-  2.         scalar xb = xb + `var' * _b[`var']
+  2.   scalar xb = xb + `var' * _b[`var']
   3. }
 
 . di "xb=" xb
-  -.79219682
+xb=-.79219682
 
-. mata exp( -H[5] * exp(st_numscalar("xb")) )
+. mata: exp( -H[5] * exp(st_numscalar("xb")) )
   .6570278064
 </pre>
-<p>
-Thus, the  probability of staying out of prison for the average person is 65.7%. 
-We can easily calculate this probability for felons and non-felons keeping all 
-other variables at their means. All we need to do is subtract the coefficient
-of felon times the mean to get the linear predictor for a non-felon, and then
-add the coefficient to get the linear predictor for felons:
-</p>
-<pre class='stata'>
-. scalar xb0 = xb - felon*_b[felon]
+<p>Thus, the probability of staying out of prison for five years for the
+average person is 65.7%.</p>
+<p>We now calculate this probability for felons and non-felons, keeping
+all other variables at their means. All we need to do is subtract from
+<code>xb</code> the coefficient of felon times the mean, which gives the
+linear predictor for a non-felon. We then add the coefficient of felon
+to get the linear predictor for a felon. In both cases the other
+variables stay at their means.</p>
+<pre class='stata'>. scalar xb0 = xb - felon*_b[felon]
 
 . scalar xb1 = xb0 + _b[felon]
 
@@ -282,33 +249,30 @@ add the coefficient to get the linear predictor for felons:
 . mata exp( -H[5] * exp(st_numscalar("xb1")) )
   .7077167906
 </pre>
-<p>
-The predicted probability is 70.8% for felons and 63.2% for non-felons when 
-all other characteristics are set to the mean, a difference of 7.6 percentage 
-points.
-</p>
-<p>
-An alternative calculation sets every person to be a felon or non-felon leaving 
-all other characteristics as they are, and then averages the predicted 
-probability of surviving five years without returning to prison. 
-To do this we need the file with the first episode for each person, which
-conveniently I saved. I'll also store the cumulative hazard at duration 60
-in scalar <code>H5</code>
-</p>
-<pre class='stata'>
-. use recid1, clear
+<p>The predicted probability is 70.8% for felons and 63.2% for
+non-felons when all other characteristics are set to the mean, a
+difference of 7.6 percentage points. This is a marginal effect at the
+means.</p>
+<p>An alternative calculation sets every person to be a felon or
+non-felon, leaving all other characteristics as they are, and then
+averages the predicted probability of surviving five years without
+returning to prison. To do this we need the file with the first episode
+for each person, which conveniently I saved. I’ll also store the
+cumulative hazard at duration 60 in scalar <code>H5</code>.</p>
+<pre class='stata'>. use recid1, clear
 
 . scalar drop _all // to reuse names xb0 and xb1
 
-. mata st_numscalar("H5",H[5])
+. mata st_numscalar("H5", H[5])
 
 . gen xb0 = 0
 
-. local predictors workprg priors tserved felon alcohol drugs black married educ age
+. local predictors workprg priors tserved felon alcohol drugs black married educ
+>  age
 
 . foreach var of local predictors {
-  2.         if "`var'" == "felon" continue
-  3.         quietly replace xb0 = xb0 + `var' * _b[`var']
+  2.   if "`var'" == "felon" continue
+  3.   quietly replace xb0 = xb0 + `var' * _b[`var']
   4. }
 
 . gen xb1 = xb0 + _b[felon]
@@ -317,16 +281,21 @@ in scalar <code>H5</code>
 
 . gen S1 = exp(-H5 * exp(xb1) )
 
-. sum S0 S1
+. sum S0 S1 
 
-<table class='stata'>
-<tr><td class=' bb br'>    Variable </td><td class=' bb bl'>       Obs        Mean    Std. Dev.       Min        Max</td></tr>
-<tr><td class=' bt br'>          S0 </td><td class=' bt bl'>      1445    .6118797    .1549424   .0021267   .9595686</td></tr>
-<tr><td class=' br'>          S1 </td><td class=' bl'>      1445    .6857928    .1392872   .0097329   .9694076</td></tr>
-</table>
+    Variable │        Obs        Mean    Std. dev.       Min        Max
+─────────────┼─────────────────────────────────────────────────────────
+          S0 │      1,445    .6118797    .1549424   .0021267   .9595686
+          S1 │      1,445    .6857928    .1392872   .0097329   .9694076
 </pre>
-<p>
-The average probability of staying out of prison for five years
-is 68.6% if a felon and 61.2% if not, a difference of 7.4 percentage
-points. This can be interpreted as a discrete marginal effect.
-</p>
+<p>The average probability of staying out of prison for five years is
+68.6% for felons 61.2% for non-felons, a difference of 7.4 percentage
+points. This can be interpreted as an average marginal effect.</p>
+<h3 id="references">References</h3>
+<p>Wooldridge, Jeffrey M. (2010). <em>Econometric Analysis of Cross
+Section and Panel Data</em>. 2nd Edition. Cambridge, Massachusetts: The
+MIT Press.</p>
+<p>Chung, C-F, P. Schmidt and A.D. Witte (1991). “Survival Analysis: A
+Survey”. <em>Journal of Quantitative
+Criminology</em>,<strong>7</strong>:59-98.</p>
+<p><small>Updated fall 2022</small></p>
