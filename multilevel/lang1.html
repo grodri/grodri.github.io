@@ -54,7 +54,7 @@ descriptive statistics:</p>
 ranges from 4 to 35, with an average of 17.46.</p>
 <h3 id="components-of-variance">Components of Variance</h3>
 <p>Next we fit a simple variance components model of the form <span
-class="math inline"><em>Y</em><sub><em>ij</em></sub> = <em>μ</em> + <em>a</em><sub><em>i</em></sub> + <em>e</em><sub><em>ij</em></sub></span>
+class="math inline"><em>Y</em><sub><em>i</em><em>j</em></sub> = <em>μ</em> + <em>a</em><sub><em>i</em></sub> + <em>e</em><sub><em>i</em><em>j</em></sub></span>
 using <code>schoolnr</code> as the grouping factor:</p>
 <pre class='stata'>. xtreg langpost, i(schoolnr) mle
 Iteration 0:   log likelihood =  -8128.005
@@ -163,31 +163,38 @@ proportional to the variance of the school means:</p>
 <p>Next we consider ‘estimation’ of the school random effects.</p>
 <p>If these effects were treated as <em>fixed</em>, so the model is
 <span
-class="math inline"><sub><em>ij</em></sub> = <em>μ</em> + <em>α</em><sub><em>i</em></sub> + <em>e</em><sub><em>ij</em></sub></span>
+class="math inline"><em>Y</em><sub><em>i</em><em>j</em></sub> = <em>μ</em> + <em>α</em><sub><em>i</em></sub> + <em>e</em><sub><em>i</em><em>j</em></sub></span>
 we would estimate them by introducing a dummy variable for each
 school.</p>
 <p>It turns out that the estimate of <span
 class="math inline"><em>μ</em></span> is the overall mean, the estimate
 of <span
 class="math inline"><em>μ</em> + <em>α</em><sub><em>i</em></sub></span>
-is the school mean, and thus the estimate of αi is the difference
-between the school mean and the overall mean.</p>
+is the school mean, and thus the estimate of <span
+class="math inline"><em>α</em><sub><em>i</em></sub></span> is the
+difference between the school mean and the overall mean.</p>
 <p>With <em>random</em> effects we consider the (posterior) distribution
-of ai given the data yi (the vector with yi j for j = 1, … ,ni). This
-can be obtained using Bayes theorem from the (prior) distribution of ai,
-the conditional distribution of the data <strong>y</strong><sub>i</sub>
-given <em>a</em><sub>i</sub> and the marginal distribution of the
-data.</p>
+of <span class="math inline"><em>a</em><sub><em>i</em></sub></span>
+given the data $y_i (the vector with <span
+class="math inline"><em>y</em><sub><em>i</em><em>j</em></sub></span> for
+<span
+class="math inline"><em>j</em> = 1, …, <em>n</em><sub><em>i</em></sub></span>).
+This can be obtained using Bayes theorem from the (prior) distribution
+of <span class="math inline"><em>a</em><sub><em>i</em></sub></span>, the
+conditional distribution of the data <span
+class="math inline"><em>y</em><sub><em>i</em></sub></span> given <span
+class="math inline"><em>a</em><sub><em>i</em></sub></span>, and the
+marginal distribution of the data.</p>
 <p>The resulting estimate is known as BLUP (for best linear unbiased
 predictor) and can be shown to be the difference between the school mean
 and the m.l.e. of the constant “shrunk” towards zero by a factor</p>
 <p><span
-class="math display"><em>R</em><sub><em>i</em></sub> = <em>σ</em><sub><em>u</em></sub><sup>2</sup>/(<em>σ</em><sub><em>u</em></sub><sup>2</sup> + <em>σ</em><sub><em>e</em></sub><sup>2</sup>/<em>n</em><sub><em>i</em></sub>),</span></p>
+class="math display"><em>R</em><sub><em>i</em></sub> = <em>σ</em><sub><em>u</em></sub><sup>2</sup>/(<em>σ</em><sub><em>u</em></sub><sup>2</sup>+<em>σ</em><sub><em>e</em></sub><sup>2</sup>/<em>n</em><sub><em>i</em></sub>),</span></p>
 <p>the ratio of the variances of the random effect and the school mean.
 Note that shrinkage is minimal when (1) <span
 class="math inline"><em>n</em><sub><em>i</em></sub></span> is large, (2)
 <span
-class="math inline"><em>σ</em><sub><em>e</em></sub><sup>2</sup></span>
+class="math inline"><em>σ</em><sub><em>e</em></sub><sup>2</sup></span><br />
 is small (students are not informative), and/or (3) <span
 class="math inline"><em>σ</em><sub><em>u</em></sub><sup>2</sup></span>
 is large (schools are informative). Let us calculate these ‘by hand’</p>
@@ -203,7 +210,8 @@ is large (schools are informative). Let us calculate these ‘by hand’</p>
 . graph export langblup.png, width(500) replace    
 file langblup.png saved as PNG format
 </pre>
-<p><img src="langblup.png" class="img-responsive img-center stata" /></p>
+<p><img src="langblup.png"
+class="img-responsive img-center stata" /></p>
 <pre class='r'>> library(ggplot2)
 > schools3 &lt;- mutate(schools2, 
 +   R = s2u/(s2u + s2e/sn), 

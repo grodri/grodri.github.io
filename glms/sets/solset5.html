@@ -24,8 +24,7 @@ an effective sample size of 435.</p>
 
 {% include srtabs.html %}
 
-<pre class='stata'>. //use https//grodri.github.io/datasets/irished, clear
-. use d:/dataweb/wws509/datasets/irished, clear
+<pre class='stata'>. use https//grodri.github.io/datasets/irished, clear
 (Irish Educational Transitions)
 
 . desc
@@ -57,9 +56,8 @@ Sorted by:
 </pre>
 <pre class='r'>> library(haven)
 > library(dplyr)
-> # irish &lt;- read_dta("https://grodri.github.io/datasets/irished.dta")
-> irish &lt;- read_dta("d:/dataweb/wws509/datasets/irished.dta") |>
-+     mutate_if(is.labelled, as_factor) # labelled to factor
+> irish &lt;- read_dta("https://grodri.github.io/datasets/irished.dta") |>
++     mutate_if(is.labelled, as_factor) # labeled to factor
 > head(irish)
 # A tibble: 6 × 9
   gender reason  educ cert  prestige school     educg  prestigeg reasong

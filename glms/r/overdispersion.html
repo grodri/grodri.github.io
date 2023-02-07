@@ -3,12 +3,8 @@ layout: default
 section: glms
 tab: "R Logs"
 pager: true
+mathjax: true
 ---
-
-{% include r.css %}
-
-
-
 
 <div id="a-models-for-over-dispersed-counts" class="section level2">
 <h2>4.A Models for Over-Dispersed Counts</h2>
@@ -53,12 +49,12 @@ models.</p>
 </table>
 <p>These data have also been analyzed by Long and Freese (2006), and are
 available from the Stata website:</p>
-<pre class="r"><code>&gt;     library(haven)
-&gt;     ab &lt;- read_dta(&quot;https://www.stata-press.com/data/lf2/couart2.dta&quot;)
-&gt;     names(ab)</code></pre>
+<pre class="r"><code>&gt; library(haven)
+&gt; ab &lt;- read_dta(&quot;https://www.stata-press.com/data/lf2/couart2.dta&quot;)
+&gt; names(ab)</code></pre>
 <pre><code>[1] &quot;art&quot;  &quot;fem&quot;  &quot;mar&quot;  &quot;kid5&quot; &quot;phd&quot;  &quot;ment&quot;</code></pre>
-<pre class="r"><code>&gt;     r &lt;- c(mean(ab$art), var(ab$art))
-&gt;     c(mean=r[1], var=r[2], ratio=r[2]/r[1])</code></pre>
+<pre class="r"><code>&gt; r &lt;- c(mean(ab$art), var(ab$art))
+&gt; c(mean=r[1], var=r[2], ratio=r[2]/r[1])</code></pre>
 <pre><code>    mean      var    ratio 
 1.692896 3.709742 2.191358 </code></pre>
 <p>The mean number of articles is 1.69 and the variance is 3.71, a bit
@@ -68,8 +64,8 @@ haven’t considered any covariates yet.</p>
 <h3>A Poisson Model</h3>
 <p>Let us fit the model used by Long and Freese (2006), a simple
 additive model using all five predictors.</p>
-<pre class="r"><code>&gt;     mp &lt;- glm(art~fem+mar+kid5+phd+ment, family=poisson, data=ab)
-&gt;     summary(mp)</code></pre>
+<pre class="r"><code>&gt; mp &lt;- glm(art~fem+mar+kid5+phd+ment, family=poisson, data=ab)
+&gt; summary(mp)</code></pre>
 <pre><code>
 Call:
 glm(formula = art ~ fem + mar + kid5 + phd + ment, family = poisson, 
@@ -99,12 +95,12 @@ AIC: 3314.1
 Number of Fisher Scoring iterations: 5</code></pre>
 <p>We see that the model obviously doesn’t fit the data. The
 five-percent critical value for a chi-squared with 909 d.f. is</p>
-<pre class="r"><code>&gt;     qchisq(0.95, df.residual(mp))</code></pre>
+<pre class="r"><code>&gt; qchisq(0.95, df.residual(mp))</code></pre>
 <pre><code>[1] 980.2518</code></pre>
-<pre class="r"><code>&gt;     deviance(mp)</code></pre>
+<pre class="r"><code>&gt; deviance(mp)</code></pre>
 <pre><code>[1] 1634.371</code></pre>
-<pre class="r"><code>&gt;     pr &lt;- residuals(mp, &quot;pearson&quot;)
-&gt;     sum(pr^2)</code></pre>
+<pre class="r"><code>&gt; pr &lt;- residuals(mp, &quot;pearson&quot;)
+&gt; sum(pr^2)</code></pre>
 <pre><code>[1] 1662.547</code></pre>
 <p>and the deviance and Pearson’s chi-squared are both in the 1600s.</p>
 </div>
@@ -114,16 +110,16 @@ five-percent critical value for a chi-squared with 909 d.f. is</p>
 equal to the mean, and estimate the scale parameter <span
 class="math inline">\(\phi\)</span> dividing Pearson’s chi-squared by
 its d.f.:</p>
-<pre class="r"><code>&gt;     phi &lt;- sum(pr^2)/df.residual(mp)
-&gt;     round(c(phi, sqrt(phi)), 4)</code></pre>
+<pre class="r"><code>&gt; phi &lt;- sum(pr^2)/df.residual(mp)
+&gt; round(c(phi, sqrt(phi)), 4)</code></pre>
 <pre><code>[1] 1.8290 1.3524</code></pre>
 <p>We see that the variance is about 83% larger than the mean. This
 means that we should adjust the standard errors multiplying by 1.35, the
 square root of 1.83.</p>
 <p>R can do this calculation for us if we use the
 <code>quasipoisson</code> family:</p>
-<pre class="r"><code>&gt;     mq &lt;- glm(art~fem+mar+kid5+phd+ment, family=quasipoisson, data=ab)
-&gt;     summary(mq)</code></pre>
+<pre class="r"><code>&gt; mq &lt;- glm(art~fem+mar+kid5+phd+ment, family=quasipoisson, data=ab)
+&gt; summary(mq)</code></pre>
 <pre><code>
 Call:
 glm(formula = art ~ fem + mar + kid5 + phd + ment, family = quasipoisson, 
@@ -155,9 +151,9 @@ Number of Fisher Scoring iterations: 5</code></pre>
 are about 35% larger. We have essentially attributed all lack of fit to
 pure error. We can verify this fact easily. First we write a useful
 function to extract standard errors and then use it on our fits:</p>
-<pre class="r"><code>&gt;     se &lt;- function(model) sqrt(diag(vcov(model)))
-&gt;     round(data.frame(p=coef(mp), q=coef(mq), 
-+       se.p=se(mp), se.q=se(mq), ratio=se(mq)/se(mp)), 4)</code></pre>
+<pre class="r"><code>&gt; se &lt;- function(model) sqrt(diag(vcov(model)))
+&gt; round(data.frame(p=coef(mp), q=coef(mq), 
++   se.p=se(mp), se.q=se(mq), ratio=se(mq)/se(mp)), 4)</code></pre>
 <pre><code>                  p       q   se.p   se.q  ratio
 (Intercept)  0.3046  0.3046 0.1030 0.1393 1.3524
 fem         -0.2246 -0.2246 0.0546 0.0739 1.3524
@@ -174,15 +170,9 @@ very similar to the over-dispersed Poisson model.</p>
 <p>We now fit a negative binomial model with the same predictors. To do
 this we need the <code>glm.nb()</code> function in the <code>MASS</code>
 package.</p>
-<pre class="r"><code>&gt;     library(MASS)</code></pre>
-<pre><code>Warning: package &#39;MASS&#39; was built under R version 4.2.2</code></pre>
-<pre><code>
-Attaching package: &#39;MASS&#39;</code></pre>
-<pre><code>The following object is masked from &#39;package:dplyr&#39;:
-
-    select</code></pre>
-<pre class="r"><code>&gt;     mnb &lt;- glm.nb(art ~ fem + mar + kid5 + phd + ment, data = ab)   
-&gt;     summary(mnb)</code></pre>
+<pre class="r"><code>&gt; library(MASS)
+&gt; mnb &lt;- glm.nb(art ~ fem + mar + kid5 + phd + ment, data = ab)   
+&gt; summary(mnb)</code></pre>
 <pre><code>
 Call:
 glm.nb(formula = art ~ fem + mar + kid5 + phd + ment, data = ab, 
@@ -215,12 +205,13 @@ Number of Fisher Scoring iterations: 1
           Std. Err.:  0.271 
 
  2 x log-likelihood:  -3121.917 </code></pre>
-<pre class="r"><code>&gt;     1/mnb$theta</code></pre>
+<pre class="r"><code>&gt; 1/mnb$theta</code></pre>
 <pre><code>[1] 0.4416205</code></pre>
-<pre class="r"><code>&gt;     -2*(logLik(mp) - logLik(mnb))</code></pre>
+<pre class="r"><code>&gt; -2*(logLik(mp) - logLik(mnb))</code></pre>
 <pre><code>&#39;log Lik.&#39; 180.196 (df=6)</code></pre>
 <p>R’s <code>theta</code> is the precision of the multiplicative random
-effect, and corresponds to 1/σ<sup>2</sup> in the notes. The estimate
+effect, and corresponds to <span
+class="math inline">\(1/\sigma^2\)</span> in the notes. The estimate
 corresponds to an estimated variance of 0.44 and is highly
 significant.</p>
 <p>To test the significance of this parameter you may think of computing
@@ -241,9 +232,9 @@ we have made full distributional assumptions.</p>
 <code>theta</code> is given. (This is based on the result that the
 negative binomial is in the glm family for fixed variance.) Here’s a
 quick check:</p>
-<pre class="r"><code>&gt;     mnbg &lt;- glm(art~fem+mar+kid5+phd+ment, 
-+       family=negative.binomial(mnb$theta), data=ab)
-&gt;     all(abs(coef(mnb)-coef(mnbg)) &lt; 1e-5)</code></pre>
+<pre class="r"><code>&gt; mnbg &lt;- glm(art~fem+mar+kid5+phd+ment, 
++   family=negative.binomial(mnb$theta), data=ab)
+&gt; all(abs(coef(mnb)-coef(mnbg)) &lt; 1e-5)</code></pre>
 <pre><code>[1] TRUE</code></pre>
 <p>The standard errors would differ, however, because
 <code>glm.nb</code> allows for the fact that <code>theta</code> was
@@ -258,22 +249,22 @@ density of a gamma distribution with given shape and scale (or its
 reciprocal the rate). In particular, when the random effect has variance
 <code>v</code> the density is
 <code>dgamma(x, shape = 1/v, scale = v)</code>.</p>
-<pre class="r"><code>&gt;     library(ggplot2)
-&gt;     v = 1/mnb$theta
-&gt;     x  = seq(0, 3, 0.05)
-&gt;     gd = data.frame(x, g = dgamma(x, shape = 1/v, scale = v))
+<pre class="r"><code>&gt; library(ggplot2)
+&gt; v = 1/mnb$theta
+&gt; x  = seq(0, 3, 0.05)
+&gt; gd = data.frame(x, g = dgamma(x, shape = 1/v, scale = v))
 &gt; png(&quot;gamdenr.png&quot;, width=500, height=400)
-&gt;     ggplot(gd, aes(x, g)) + geom_line() + 
-+    ggtitle(&quot;The Gamma Density for Heterogeneity with Variance 0.44&quot;)
-&gt;     dev.off()</code></pre>
-<pre><code>png 
+&gt; ggplot(gd, aes(x, g)) + geom_line() + 
++ ggtitle(&quot;The Gamma Density for Heterogeneity with Variance 0.44&quot;)
+&gt; dev.off()</code></pre>
+<pre><code>svg 
   2 </code></pre>
 <p><img src="gamdenr.png" class="r" /></p>
 <p>We can also compute quantiles using
 <code>qgamma(p, shape, rate = 1, scale = 1/rate, lower.tail = TRUE)</code>.
 In our case the shape is <code>1/v</code> and the scale is
 <code>v</code>.</p>
-<pre class="r"><code>&gt;     qgamma((1:3)/4, shape = 1/v, scale = v)</code></pre>
+<pre class="r"><code>&gt; qgamma((1:3)/4, shape = 1/v, scale = v)</code></pre>
 <pre><code>[1] 0.5114167 0.8572697 1.3347651</code></pre>
 <p>Biochemists at Q1 of the distribution of unobserved heterogeneity
 publish 49% fewer papers than expected from their observed
@@ -284,9 +275,9 @@ at Q3 publish 33% more than expected.</p>
 <h3>Comparing Estimates and Standard Errors</h3>
 <p>Let us compare parameter estimates and standard errors under the
 Poisson, over-dispersed Poisson and negative binomial models:</p>
-<pre class="r"><code>&gt;     round(data.frame(
-+       p=coef(mp),q=coef(mq),nb=coef(mnb),
-+     se.p=se(mp),se.q=se(mq),se.nb=se(mnb)),4)</code></pre>
+<pre class="r"><code>&gt; round(data.frame(
++   p=coef(mp),q=coef(mq),nb=coef(mnb),
++ se.p=se(mp),se.q=se(mq),se.nb=se(mnb)),4)</code></pre>
 <pre><code>                  p       q      nb   se.p   se.q  se.nb
 (Intercept)  0.3046  0.3046  0.2561 0.1030 0.1393 0.1373
 fem         -0.2246 -0.2246 -0.2164 0.0546 0.0739 0.0726
@@ -305,7 +296,7 @@ ordinary Poisson regression underestimates the standard errors.</p>
 <h3>Goodness of Fit</h3>
 <p>We can assess the goodness of fit of the negative binomial model by
 using the deviance.</p>
-<pre class="r"><code>&gt;     deviance(mnbg)</code></pre>
+<pre class="r"><code>&gt; deviance(mnbg)</code></pre>
 <pre><code>[1] 1004.281</code></pre>
 <p>The negative binomial model fits better than the Poisson, but still
 has a deviance above the five percent critical value of 980.25.</p>
@@ -323,22 +314,33 @@ percentiles to produce twenty groups of approximately equal size. Note
 that <code>predict()</code> computes a linear predictor, unless
 otherwise specified. To predict in the scale of the response add the
 option <code>type="response"</code>.</p>
-<pre class="r"><code>&gt;     library(dplyr)
-&gt; xb &lt;- predict(mnb)
-&gt;     q &lt;- c(min(xb)-0.1, quantile(xb, seq(5,95,5)/100), max(xb)+0.1)
-&gt;     ab &lt;- mutate(ab, group=cut(xb, breaks=q))
-&gt;     mv &lt;- group_by(ab,group) |&gt; summarize(mean=mean(art), variance=var(art), n=n())
-&gt;     x &lt;- seq(0.63, 3.37, 0.02)
-&gt;     g  &lt;- data.frame( mean = x, poisson = x * phi, negbin = x * (1 + x/mnb$theta))
-&gt;     png(&quot;c4afig1r.png&quot;, width=500, height=400)
-&gt;     ggplot(mv, aes(x=mean, y=variance)) + geom_point()  + xlim(0.5, 3.8) + 
-+       geom_line(data=g, aes(x=mean, y=poisson) , linetype=&quot;dashed&quot;) +
-+       geom_line(data=g, aes(x=mean, y=negbin), linetype=&quot;solid&quot;) +
-+       ggtitle(&quot;Mean-Variance Relationship&quot;, 
-+         subtitle = &quot;Articles Published by Ph.D. biochemists&quot;) +
-+       geom_text(x=3.6, y=6.2, label=&quot;P&quot;) + geom_text(x=3.6, y=8.5, label=&quot;NB&quot;) 
-&gt;     dev.off()</code></pre>
-<pre><code>png 
+<pre class="r"><code>&gt; library(dplyr)</code></pre>
+<pre><code>
+Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:MASS&#39;:
+
+    select</code></pre>
+<pre><code>The following objects are masked from &#39;package:stats&#39;:
+
+    filter, lag</code></pre>
+<pre><code>The following objects are masked from &#39;package:base&#39;:
+
+    intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>&gt; xb &lt;- predict(mnb)
+&gt; q &lt;- c(min(xb)-0.1, quantile(xb, seq(5,95,5)/100), max(xb)+0.1)
+&gt; ab &lt;- mutate(ab, group=cut(xb, breaks=q))
+&gt; mv &lt;- group_by(ab,group) |&gt; summarize(mean=mean(art), variance=var(art), n=n())
+&gt; x &lt;- seq(0.63, 3.37, 0.02)
+&gt; g  &lt;- data.frame( mean = x, poisson = x * phi, negbin = x * (1 + x/mnb$theta))
+&gt; png(&quot;c4afig1r.png&quot;, width=500, height=400)
+&gt; ggplot(mv, aes(x=mean, y=variance)) + geom_point()  + xlim(0.5, 3.8) + 
++   geom_line(data=g, aes(x=mean, y=poisson) , linetype=&quot;dashed&quot;) +
++   geom_line(data=g, aes(x=mean, y=negbin), linetype=&quot;solid&quot;) +
++   ggtitle(&quot;Mean-Variance Relationship&quot;, 
++     subtitle = &quot;Articles Published by Ph.D. biochemists&quot;) +
++   geom_text(x=3.6, y=6.2, label=&quot;P&quot;) + geom_text(x=3.6, y=8.5, label=&quot;NB&quot;) 
+&gt; dev.off()</code></pre>
+<pre><code>svg 
   2 </code></pre>
 <p><img src="c4afig1r.png" class="img-responsive center-block r" /></p>
 <p>The graph plots the mean versus the variance and overlays the curves
@@ -358,9 +360,9 @@ description of the data than the over-dispersed Poisson model.</p>
 <p>A frequent occurrence with count data is an excess of zeroes compared
 to what’s expected under a Poisson model. This is actually a problem
 with our data:</p>
-<pre class="r"><code>&gt;     zobs &lt;- ab$art == 0
-&gt;     zpoi &lt;- exp(-exp(predict(mp))) # or dpois(0,exp(predict(mp)))
-&gt;     c(obs=mean(zobs), poi=mean(zpoi))</code></pre>
+<pre class="r"><code>&gt; zobs &lt;- ab$art == 0
+&gt; zpoi &lt;- exp(-exp(predict(mp))) # or dpois(0,exp(predict(mp)))
+&gt; c(obs=mean(zobs), poi=mean(zpoi))</code></pre>
 <pre><code>      obs       poi 
 0.3005464 0.2092071 </code></pre>
 <p>We see that 30.0% of the scientists in the sample published no
@@ -394,15 +396,15 @@ equations. Otherwise one can provide two sets of predictors separated by
 a vertical bar, type <code>?zeroinfl</code> to learn more.</p>
 <p>Here’s a zero-inflated model with all covariates in both
 equations:</p>
-<pre class="r"><code>&gt;     library(pscl)</code></pre>
+<pre class="r"><code>&gt; library(pscl)</code></pre>
 <pre><code>Classes and Methods for R developed in the
 Political Science Computational Laboratory
 Department of Political Science
 Stanford University
 Simon Jackman
 hurdle and zeroinfl functions by Achim Zeileis</code></pre>
-<pre class="r"><code>&gt;     mzip &lt;- zeroinfl(art ~ fem + mar + kid5 + phd + ment, data=ab)
-&gt;     summary(mzip)</code></pre>
+<pre class="r"><code>&gt; mzip &lt;- zeroinfl(art ~ fem + mar + kid5 + phd + ment, data=ab)
+&gt; summary(mzip)</code></pre>
 <pre><code>
 Call:
 zeroinfl(formula = art ~ fem + mar + kid5 + phd + ment, data = ab)
@@ -451,20 +453,20 @@ probability of no publications. There are options in the
 <code>"count"</code> to obtain these. There’s also an option
 <code>"prob"</code> to compute the predicted density, but this is
 overkill, as we only want the probability of zero.</p>
-<pre class="r"><code>&gt;     pr &lt;- predict(mzip,type=&quot;zero&quot;)  # pi
-&gt;     mu &lt;- predict(mzip,type=&quot;count&quot;) # mu
-&gt;     zip &lt;- pr + (1-pr)*exp(-mu)      # or predict(mzip,type=&quot;prob&quot;)[,1]
-&gt;     mean(zip)</code></pre>
+<pre class="r"><code>&gt; pr &lt;- predict(mzip,type=&quot;zero&quot;)  # pi
+&gt; mu &lt;- predict(mzip,type=&quot;count&quot;) # mu
+&gt; zip &lt;- pr + (1-pr)*exp(-mu)      # or predict(mzip,type=&quot;prob&quot;)[,1]
+&gt; mean(zip)</code></pre>
 <pre><code>[1] 0.2985679</code></pre>
 <p>So the model solves the problem of excess zeroes, predicting that
 29.9% of the biochemists will publish no articles, extremely close to
 the observed value of 30.0%.</p>
 <p>There’s also a zero-inflated negative binomial model, which uses a
 negative binomial for the count in the “not always zero” class. This
-model can be fit using <span class="r"><code>zeroinfl()</code> with the
+model can be fit using <code>zeroinfl()</code> with the
 <code>dist="negbin"</code> parameter. Alternative links for the inflate
 equation include the probit, which can be specified using
-<code>link="probit"</code></span>.</p>
+<code>link="probit"</code>.</p>
 </div>
 <div id="aic" class="section level3">
 <h3>Model Comparison with AIC</h3>
@@ -472,11 +474,11 @@ equation include the probit, which can be specified using
 of zeroes too! Here’s the probability of zero articles in the negative
 binomial. We proceed from first principles, but one could also use the
 built-in negative binomial density</p>
-<pre class="r"><code>&gt;     munb &lt;- exp(predict(mnb))
-&gt;     theta &lt;- mnb$theta
-&gt;     znb &lt;- (theta/(munb+theta))^theta
-&gt;     # also dnbinom(0, mu=munb, size=theta)
-&gt;     mean(znb)</code></pre>
+<pre class="r"><code>&gt; munb &lt;- exp(predict(mnb))
+&gt; theta &lt;- mnb$theta
+&gt; znb &lt;- (theta/(munb+theta))^theta
+&gt; # also dnbinom(0, mu=munb, size=theta)
+&gt; mean(znb)</code></pre>
 <pre><code>[1] 0.3035957</code></pre>
 <p>The model predicts that 30.4% of the biochemists would publish no
 articles in the last three years of their Ph.D., very close to the
@@ -491,12 +493,12 @@ essentially the deviance and the second a penalty for the number of
 parameters. I will obtain it “by hand” so we see exactly what’s going
 on. AIC may also be calculated using the <code>AIC()</code>
 function.</p>
-<pre class="r"><code>&gt;     c(nb = AIC(mnb), zip = AIC(mzip))</code></pre>
+<pre class="r"><code>&gt; c(nb = AIC(mnb), zip = AIC(mzip))</code></pre>
 <pre><code>      nb      zip 
 3135.917 3233.546 </code></pre>
-<pre class="r"><code>&gt;     mzip$rank &lt;- length(coef(mzip)) # add a rank component
-&gt;     aic &lt;- function(model) -2*logLik(model) + 2*model$rank
-&gt;     sapply(list(mnb, mzip), aic)</code></pre>
+<pre class="r"><code>&gt; mzip$rank &lt;- length(coef(mzip)) # add a rank component
+&gt; aic &lt;- function(model) -2*logLik(model) + 2*model$rank
+&gt; sapply(list(mnb, mzip), aic)</code></pre>
 <pre><code>[1] 3133.917 3233.546</code></pre>
 <p>For this dataset the negative binomial model is a clear winner in
 terms of parsimony and goodness of fit.</p>
