@@ -3,6 +3,7 @@ layout: default
 section: glms
 tab: "Stata Logs"
 pager: true
+mathjax: true
 ---
 
 <h2 class="first" id="mlogit">6.A Interpreting Multinomial Logit
@@ -96,17 +97,18 @@ compute marginal effects, which can be done using continuous or discrete
 calculations.</p>
 <p>The continuous calculation is based on the derivative of the
 probability of working with respect to a predictor. Let <span
-class="math inline"><em>π</em><sub><em>i</em><em>j</em></sub> = Pr {<em>Y</em><sub><em>i</em></sub> = <em>j</em>}</span>
-denote the probability that the i-th observation follows on the j-th
-category, which is given by <span class="math display">$$
-\pi_{ij} = \frac{e^{x_i'\beta_j}}{\sum_r e^{x_i'\beta_r}}
-$$</span> where <span
-class="math inline"><em>β</em><sub><em>j</em></sub> = 0</span> when j is
-the baseline or reference outcome, in this case school.</p>
+class="math inline">\(\pi_{ij}=\Pr\{Y_i=j\}\)</span> denote the
+probability that the i-th observation follows on the j-th category,
+which is given by <span class="math display">\[
+\pi_{ij} = \frac{e^{x_i&#39;\beta_j}}{\sum_r e^{x_i&#39;\beta_r}}
+\]</span> where <span class="math inline">\(\beta_j = 0\)</span> when j
+is the baseline or reference outcome, in this case school.</p>
 <p>Taking derivatives w.r.t. the k-th predictor we obtain, after some
-simplification <span
-class="math display"><em>f</em><em>r</em><em>a</em><em>c</em>∂<em>π</em>_<em>i</em><em>j</em>∂<em>x</em><sub><em>i</em><em>k</em></sub> = <em>π</em><sub><em>i</em><em>j</em></sub>(<em>β</em>_<em>j</em><em>k</em>−∑<sub><em>r</em></sub><em>π</em><sub><em>i</em><em>r</em></sub><em>β</em><sub><em>r</em><em>k</em></sub>)</span>
-noting again that the coefficient is zero for the baseline outcome.</p>
+simplification <span class="math display">\[
+\frac{\partial\pi\_{ij}}{\partial x_{ik}} =
+\pi_{ij} ( \beta_{jk} - \sum_r \pi_{ir} \beta_{rk} )
+\]</span> noting again that the coefficient is zero for the baseline
+outcome.</p>
 <p>To compute these we predict the probabilities and then apply the
 formula.</p>
 <pre class='stata'>. predict p1 p2 p3, pr
