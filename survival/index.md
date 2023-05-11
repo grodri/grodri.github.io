@@ -70,7 +70,7 @@ Week 4 deals with
 ![](/images/pdficon_small.png) [Competing Risks](CompetingRisks.pdf), the
 analysis of survival time when there are multiple causes of failure.
 Additional materials include a discussion of
-![](/images/pdficon_small.png) [cumulative incidence](cumulativeIncidence.pdf),
+![](/images/pdficon_small.png) [cumulative incidence](CumulativeIncidence.pdf),
 and Fine and Gray's competing risk model. The computing logs apply these
 ideas to the tenure of U.S. Supreme Court justices, including estimating
 cumulative [incidence functions](justices) and a nice status plot, 
