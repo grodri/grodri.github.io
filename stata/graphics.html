@@ -18,10 +18,10 @@ I will also describe briefly bar plots, available through the
 graph interactively. I do not recomment this practice, however, because
 it conflicts with the goals of documenting and ensuring reproducibility
 of all the steps in your research.</p>
-<p>All the graphs in this section (except where noted) use a custom
-scheme with blue titles and a white background, but otherwise should
-look the same as your own graphs. I discuss schemes in Section
-4.2.5.</p>
+<p>All the graphs in this section (except where noted) use the new
+default scheme in Stata 18, called <code>stcolor</code>. If you use an
+earlier version your graphs will look a bit different, but the commands
+shown here will still work. I discuss schemes in Section 4.2.5.</p>
 <h2 id="s41">4.1 Scatterplots</h2>
 <p>In this section I will illustrate a few plots using the data on
 fertility decline first used in Section 2.1. To read the data from
@@ -32,7 +32,7 @@ net-aware Stata type</p>
 </pre>
 <p>To whet your appetite, here’s the plot that we will produce in this
 section:</p>
-<p><img src="fig31.png" class="img-responsive center-block" /></p>
+<p><img src="twoway.png" class="img-responsive center-block" /></p>
 <h3 id="a-simple-scatterplot">4.1.1 A Simple Scatterplot</h3>
 <p>To produce a simple scatterplot of fertility change by social setting
 you use the command</p>
@@ -126,8 +126,9 @@ Our complete command is then</p>
 >          ytitle("Fertility Decline") ///
 >          legend(ring(0) pos(5) order(2 "linear fit" 1 "95% CI")) 
 
-. graph export fig31.png, width(500) replace             
-file fig31.png saved as PNG format
+. graph export twoway.png, width(550) replace             
+(file twoway.png not found)
+file twoway.png saved as PNG format
 </pre>
 <p>The result is the graph shown at the beginning of this section.</p>
 <h3 id="axis-scales-and-labels">4.1.5 Axis Scales and Labels</h3>
@@ -148,9 +149,8 @@ available as one of the datasets shipped with Stata. (Try
 </pre>
 <p>The idea is to plot life expectancy for white and black males over
 the 20th century. Again, to whet your appetite I’ll start by showing you
-the final product, and then we will build the graph bit by bit.</p>
-<p><img src="fig32.png" class="img-responsive center-block"
-style="width:70.0%" /></p>
+the final product, and then we will build the graph step by step.</p>
+<p><img src="economist.png" class="img-responsive center-block" /></p>
 <h3 id="a-simple-line-plot">4.2.1 A Simple Line Plot</h3>
 <p>The simplest plot uses all the defaults:</p>
 <pre><code>graph twoway line le_wmale le_bmale year </code></pre>
@@ -246,15 +246,16 @@ all graphs with <code>set scheme_name</code>. You can also redisplay the
 (last) graph using a different scheme with
 <code>graph display, scheme(scheme_name</code>).</p>
 <p>To see a list of available schemes type
-<code>graph query, schemes</code>. Try <code>s2color</code> for screen
-graphs, <code>s1manual</code> for the style used in the Stata manuals,
-and <code>economist</code> for the style used in <em>The Economist</em>.
-Using the latter we obtain the graph shown at the start of this
-section.</p>
+<code>graph query, schemes</code>. Try <code>stgcolor</code> for the
+scheme used in the Stata manuals, <code>stcolor_alt</code> for a scheme
+used by some Stata commands, and <code>economist</code> for the style
+used in <em>The Economist</em>. Using the latter we obtain the graph
+shown at the start of this section.</p>
 <pre class='stata'>. graph display, scheme(economist)
 
-. graph export fig32.png, width(400) replace
-file fig32.png saved as PNG format
+. graph export economist.png, width(400) replace
+(file economist.png not found)
+file economist.png saved as PNG format
 </pre>
 <h2 id="s43">4.3 Other Graphs</h2>
 <p>I conclude the graphics section discussing bar graphs, box plots, and
@@ -286,7 +287,7 @@ nicer.</p>
 . graph bar tempjan tempjul, over(region) bargap(10) intensity(70) ///
 >     title(Mean Temperature) legend(order(1 "January" 2 "July")) 
 
-. graph export bar.png, width(500) replace
+. graph export bar.png, width(550) replace
 file bar.png saved as PNG format
 </pre>
 <p><img src="bar.png" class="img-responsive center-block" /></p>
@@ -312,7 +313,7 @@ in a scale of 0 to 255:</p>
 <pre class='stata'>. graph box tempjan, over(region, sort(1)) box(1, color("51 102 204")) ///
 >     title(Box Plots of January Temperature by Region)
 
-. graph export boxplot.png, width(500) replace
+. graph export boxplot.png, width(550) replace
 file boxplot.png saved as PNG format
 </pre>
 <p><img src="boxplot.png" class="img-responsive center-block" /></p>
@@ -352,7 +353,7 @@ in the top right corner of the plot.</p>
 >        ytitle("Smoothed density") ///
 >        legend(ring(0) pos(2) col(1) order(2 "NC" 1 "NE" 3 "S" 4 "W"))     
 
-. graph export kernel.png, width(500) replace
+. graph export kernel.png, width(550) replace
 file kernel.png saved as PNG format
 </pre>
 <p><img src="kernel.png" class="img-responsive center-block" /></p>
@@ -400,4 +401,3 @@ and paste it into a document using the Windows clipboard; to do this
 right click on the window containing the graph and then select copy from
 the context menu.</p>
 <p class="pull-right">Continue with <a href="programming" class="btn btn-default">Programming</a></p>
-

@@ -122,11 +122,10 @@ href="https://stattransfer.com/">stattransfer.com</a>).</p>
 <p>If your data are in free format, with variables separated by blanks,
 commas, or tabs, you can use the <code><u>inf</u>ile</code> command.</p>
 <p>For an example of a free format file consider the family planning
-effort data available in the datasets sections as
-<code>effort.raw</code>. This is essentially a text file with four
-columns, one with country names and three with numeric variables,
-separated by white space. We can read the data into Stata using the
-command</p>
+effort data available online as <code>effort.raw</code> as shown below.
+This is essentially a text file with four columns, one with country
+names and three with numeric variables, separated by white space. We can
+read the data into Stata using the command</p>
 <pre class='stata'>. clear
 
 . infile str14 country setting effort change using ///
@@ -525,7 +524,7 @@ range, specified using a slash, includes the two boundaries, so 15/19 is
 15 to 19, which could also be specified as 15 16 17 18 19 or even 15 16
 17/19. You can use <code>min</code> to refer to the smallest value and
 <code>max</code> to refer to the largest value, as in
-<code>min/19</code> and <code>44/max</code>. The parentheses can be
+<code>min/19</code> and <code>44/max</code>. The parentheses may be
 omitted when the rule has the form range=value, but they usually help
 make the command more readable.</p>
 <p>Values are assigned to the first category where they fall. Values
@@ -585,9 +584,11 @@ observations in an external dataset (see also <code>cross</code>).</p>
 one dataset in memory at the same time. Consider a situation where you
 have household and individual data on separate files, both with a common
 household id, and need to combine them. In previous versions of Stata
-you would have needed to <code>merge</code> the files. With Stata 16 you
-can store both datasets as frames, and <em>link</em> the household data
-to each individual. There are many more applications, type
-<code>help frames</code> to learn more.</p>
+you would have needed to <code>merge</code> the files. Starting with
+Stata 16 you can store both datasets as frames, and <em>link</em> the
+household data to each individual. Stata 18 lets you save a set of
+frames in a single file with extension <code>.dtas</code>, the plural of
+<code>.dta</code>. You can then <code>use</code> that file to load the
+set of frames into memory. There are many more applications of frames,
+type <code>help frames</code> to learn more.</p>
 <p class="pull-right">Continue with <a href="tables" class="btn btn-default">Tables</a></p>
-

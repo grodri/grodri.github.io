@@ -1,7 +1,7 @@
 ---
 layout: default
 section: stata
-tab: Programming
+tab: "Programming"
 git: true
 ---
 
@@ -174,18 +174,20 @@ indicates, have global scope.</p>
 where the name ends.)</p>
 <p>I suggest you avoid global macros because of the potential for name
 conflicts. A useful application, however, is to map the function keys on
-your keyboard. If you work on a shared network folder with a long name
-try something like this</p>
-<pre><code>global F5 \\server\shared\research\project\subproject\ </code></pre>
-<p>Then when you hit F5 Stata will substitute the full name. And your
-<em>do</em> files can use commands like <code>do ${F5}dofile</code>. (We
-need the braces to indicate that the macro is called <code>F5</code>,
-not <code>F5dofile</code>.)</p>
+your keyboard. If you work with a repository on GitHub, for example, try
+something like this</p>
+<p><code>global F5 https://raw.githubusercontent.com/</code><em><code>username</code></em><code>/</code><em><code>repositoryname</code></em><code>/main</code></p>
+<p>Then when you hit F5 Stata will substitute the full name. And you can
+execute a do file in the repository using
+<code>do $F5/</code><em><code>dofilename</code></em>. (The use of a
+<code>/</code> makes it clear where the macro name ends, and we just
+append the name of the do file.)</p>
 <p>Obviously you don’t want to type this macro each time you use Stata.
 Solution? Enter it in your <code>profile.do</code> file, a set of
-commands that is executed each time you run Stata. Your profile is best
-stored in Stata’s start-up directory, usually <code>C:\data</code>. Type
-<code>help profilew</code> to learn more.</p>
+commands that is executed each time you run Stata.</p>
+<p>To learn where to store your profile type <code>help profile</code>
+and then follow the link for your operating system, as there are some
+differences between Windows, Mac and Unix computers.</p>
 <h3 id="more-on-macros">5.1.4 More on Macros</h3>
 <p>Macros can also be used to obtain and store information about the
 system or the variables in your dataset using <em>extended macro
@@ -334,7 +336,7 @@ loop over these you could use</p>
     display &quot;`year&#39;&quot;
 }</code></pre>
 <p>Of course you would do something more interesting than just print the
-years. The numlist could be specified as <code>1 2 3</code>, or
+years. A numlist may be specified as <code>1 2 3</code>, or
 <code>1/5</code> (meaning 1 2 3 4 5), or <code>1(2)7</code> (count from
 1 to 7 in steps of 2 to get 1 3 5 7); type <code>help numlist</code> for
 more examples.</p>
@@ -502,9 +504,9 @@ version.</p>
 end</code></pre>
 <p>You will notice that I got rid of the <code>capture drop line</code>.
 I also used <code>display as text</code> to make sure we print using the
-text style. Another option is <code>display as error</code>, useful for
-error messages. Type <code>help display</code> to learn more about this
-command.</p>
+text style. For error messages you may want to use
+<code>display as error</code> instead. Type <code>help display</code> to
+learn more about this command.</p>
 <p>We are now ready to save the program as an <code>ado</code> file.
 Type <code>sysdir</code> to find out where your personal ado directory
 is, and then save the file there with the name <code>parrot.ado</code>.
@@ -560,7 +562,7 @@ standard deviation, and the proportion ever married in the schedule, all
 with defaults. Here’s a first cut at the command</p>
 <pre><code>capture program drop pnupt
 program define pnupt
-    version  9.1
+    version 14
     syntax varname, Generate(name) ///
         [ Mean(real 25) Stdev(real 5) Pem(real 1) ]
     // ... we don&#39;t do anything yet ...
@@ -718,7 +720,7 @@ variable (<code>float</code> by default) and that gets passed to our
 function, which passes it along to <code>gen</code>.</p>
 <h3 id="a-coale-mcneil-fit">5.3.7 A Coale-McNeil Fit</h3>
 <p>We are ready to reveal how the initial plot was produced. The data
-are available in a Stata file in the demography section of my website,
+are available in a Stata file in the datasets section of my website,
 which has counts of ever married and single women by age. We compute the
 observed proportion married, compute fitted values based on the
 estimates in Rodríguez and Trussell (1980), and plot the results. It’s
@@ -736,8 +738,8 @@ all done in a handful of lines</p>
 >     title(Proportions Married by Age) subtitle(Colombia 1976) ///
 >     ytitle(Proportion married) xtitle(age)
 
-. graph export cchhnup.png,     width(500) replace
-file cchhnup.png saved as PNG format
+. graph export cohhnup.png,     width(550) replace
+file cohhnup.png saved as PNG format
 </pre>
 <p>The actual estimation can be implemented using Stata’s maximum
 likelihood procedures, but that’s a story for another day.</p>
@@ -822,66 +824,11 @@ about sersets (<code>help serset</code>). To provide a graphical user
 interface to your command try <code>help dialog programming</code>. It
 is also possible to read and write text and binary files (see
 <code>help file</code>).</p>
-<p>The biggest omission is Mata, a full-fledged matrix programming
+<p>The biggest omission here is Mata, a full-fledged matrix programming
 language that was introduced in Version 9 of Stata. Mata is compiled to
 byte code, so it is much faster than Stata’s classic ado programs. I
 find that the best way to write new Stata commands is to use classic ado
 for the user interface and Mata for the actual calculations. If you are
 interested in learning Mata I strongly recommend Gould’s (2018) <em>The
 Mata Book</em>.</p>
-<h1 class="unnumbered" id="references">References</h1>
-
-<style>
-div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
-}
-</style>
-<div id="refs" class="references csl-bib-body hanging-indent"
-role="doc-bibliography">
-<div id="ref-acock2018" class="csl-entry" role="doc-biblioentry">
-Acock, Alan C. 2018. <em>A Gentle Introduction to
-<span>Stata</span></em>. Sixth Edition. College Station, TX:
-<span>Stata</span> Press.
-</div>
-<div id="ref-baum2016" class="csl-entry" role="doc-biblioentry">
-Baum, Christopher F. 2016. <em>An Introduction to <span>Stata</span>
-Programming</em>. 2nd edition. College Station, TX: <span>Stata</span>
-Press.
-</div>
-<div id="ref-clevesGouldMarchenko2016" class="csl-entry"
-role="doc-biblioentry">
-Cleves, Mario, William Gould, and Julia Marchenko. 2016. <em>An
-Introduction to Survival Analysis Using <span>Stata</span></em>. Revised
-3rd edition. College Station, TX: <span>Stata</span> Press.
-</div>
-<div id="ref-gould2018" class="csl-entry" role="doc-biblioentry">
-Gould, William W. 2018. <em>The <span>Mata</span> Book, a Book for
-Serious Programmers and Those Who Want to Be</em>. College Station, TX:
-<span>Stata</span> Press.
-</div>
-<div id="ref-gouldPitbladoPoi2010" class="csl-entry"
-role="doc-biblioentry">
-Gould, William W., Jeffrey Pitblado, and Brian Poi. 2010. <em>Maximum
-Likelihood Estimation with <span>Stata</span></em>. College Station, TX:
-<span>Stata</span> Press.
-</div>
-<div id="ref-longFreese2014" class="csl-entry" role="doc-biblioentry">
-Long, Scott, and Jeremy Freese. 2014. <em>Regression Models for
-Categorical Dependent Variables Using <span>Stata</span></em>. 3rd
-edition. College Station, TX: <span>Stata</span> Press.
-</div>
-<div id="ref-mitchell2012" class="csl-entry" role="doc-biblioentry">
-Mitchell, Michael N. 2012. <em>A Visual Guide to <span>Stata</span>
-Graphics</em>. 3rd edition. College Station, TX: <span>Stata</span>
-Press.
-</div>
-<div id="ref-rodriguezTrussell1980" class="csl-entry"
-role="doc-biblioentry">
-Rodríguez, Germán, and James Trussell. 1980. <span>“Maximum Likelihood
-Estimation of the Parameters of Coale’s Model Nuptiality Schedule from
-Survey Data.”</span> Technical Bulletin 7. World Fertility Survey.
-</div>
-</div>
-</body>
-</html>
+<p class="pull-right">Continue with <a href="references" class="btn btn-default">References</a></p>

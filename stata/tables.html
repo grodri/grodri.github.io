@@ -12,10 +12,11 @@ that can be used to collect the results left behind by various Stata
 commands and present them in tables. It also introduced a new
 <code>table</code> command that simplifies the process for many kinds of
 tabulations, and later an <code>etable</code> command that specializes
-in tables of estimates. In this tutorial we will touch briefly on all
-three commands. Stata 16 and earlier had a different <code>table</code>
-command with its own syntax and features, still available under version
-control.</p>
+in tables of estimates. Stata 18 added a <code>dtable</code> command to
+easily produce tables of descriptive statistics. In this tutorial we
+will touch briefly on all four commands. Stata 16 and earlier had a
+different <code>table</code> command with its own syntax and features,
+still available under version control.</p>
 <h2 id="frequency-tables">3.1 Frequency Tables</h2>
 <p>Frequency tables include marginals or one-way distributions,
 crosstabs or two-way tabulations, and multi-way tables involving three
@@ -192,7 +193,53 @@ statistics, such as the median, quartiles, standard deviation or
 variance. For a full list of the statistics available type
 <code>help table_summary##stat</code>. An interesting “statistic” is
 <code>fvproportion</code>, which gives relative frequencies for a factor
-or categorical variable, as shown in the next section.</p>
+or categorical variable.</p>
+<p>It is possible to include two (or more) statistics in the same table.
+Here is an example showing the mean and standard deviation of years of
+education by age groups and area of residence.</p>
+<pre class='stata'>. table ageg area, statistic(mean educ) statistic(sd educ) ///
+>   nformat(%5.2f) sformat((%s) sd) style(table-tab2)
+
+───────────┬──────────────────────────
+           │        Type of area      
+           │   Urban    Rural    Total
+───────────┼──────────────────────────
+Age groups │                          
+   15-19   │    6.21     4.20     5.31
+           │  (2.97)   (2.67)   (3.01)
+           │                          
+   20-29   │    6.67     3.75     5.40
+           │  (3.95)   (2.87)   (3.81)
+           │                          
+   30-39   │    4.98     2.64     3.88
+           │  (3.87)   (2.40)   (3.47)
+           │                          
+   40-49   │    4.32     1.63     2.90
+           │  (3.93)   (1.71)   (3.26)
+           │                          
+   Total   │    5.87     3.25     4.66
+           │  (3.79)   (2.71)   (3.58)
+───────────┴──────────────────────────
+</pre>
+<p>Type just the first line first to see all the defaults. The second
+line adds some customization. We use our old friend
+<code>nformat()</code> to display the statistics with just two decimals.
+We also use <code>sformat()</code> to print the standard deviation in
+parentheses, specifying <code>sd</code> to ensure that this format
+applies only to that statistic.</p>
+<p>Why two kinds of formats? All numeric output is first converted to a
+string, using an <code>nformat</code> if any. Then that string is
+displayed using an <code>sformat</code> if any. So a standard deviation
+of 9.4148 becomes “9.41” using the numeric format <code>%5.2f</code>,
+and is displayed as “(9.41)” using the string format
+<code>(%s)</code>.</p>
+<p>Finally we use a built-in style called <code>table-tab2</code> to
+hide the labels for the statistics and add some space between the age
+groups. To learn more about the available styles type
+<code>help Predefined styles</code>.</p>
+<p>To learn more about the <code>table</code> command, and its many
+options, including the <code>command</code> option that lets you run any
+Stata command and collect its results, type <code>help table</code>.</p>
 <h3 id="descriptive-statistics-table-1">3.2.2 Descriptive Statistics:
 Table 1</h3>
 <p>Research reports often include a table showing descriptive statistics
@@ -200,23 +247,87 @@ for a number of variables, using the mean and standard deviation for
 numeric or continuous variables, and relative frequencies for
 categorical or factor variables, frequently within categories of another
 variable of interest. Sometimes this is called “Table 1”. The
-<code>table</code> command makes it easy to produce this type of table,
-and even has a special style for it.</p>
+<code>table</code> command can produce this type of table, but the
+<code>dtable</code> command added in version 18 makes it very easy.</p>
 <p>Here is a table showing means and standard deviations for age and
-years of education, our two continuous variables, and the percent
-distribution for contraceptive use, all separately for urban and rural
-areas.</p>
-<pre class='stata'>. table (var) (area) ,  ///    
->     statistic(mean age educ) statistic(sd age educ) ///
->     statistic(fvpercent cuse) ///
->     nformat(%5.2f mean sd) nformat(%5.1f fvpercent) ///
->     sformat("(%s)" sd) sformat("%s%%" fvpercent) ///
->     style(table-1)
+years of education, our two continuous variables, and the frequency and
+percent distribution of contraceptive use, all separately for urban and
+rural areas.</p>
+<pre class='stata'>. dtable age educ i.cuse, by(area, test)
+note: using test regress across levels of area for age and educ.
+note: using test pearson across levels of area for cuse.
+
+───────────────────────────────────────────────────────────────────────
+                                       Type of area                    
+                        Urban          Rural           Total      Test 
+───────────────────────────────────────────────────────────────────────
+N                   1,683 (54.0%)   1,432 (46.0%) 3,115 (100.0%)       
+Age in years       27.435 (9.415) 28.515 (10.083) 27.931 (9.741)  0.002
+Education in years  5.866 (3.786)   3.249 (2.708)  4.663 (3.580) &lt;0.001
+Contraceptive use                                                      
+  Not using           319 (45.8%)     488 (68.1%)    807 (57.1%) &lt;0.001
+  Inefficient           54 (7.7%)       50 (7.0%)     104 (7.4%)       
+  Efficient           324 (46.5%)     179 (25.0%)    503 (35.6%)       
+───────────────────────────────────────────────────────────────────────
+</pre>
+<p>As you can see, all we need to do is list the variables to be
+described, using the <code>i.</code> prefix for factor variables. The
+<code>by()</code> option specifies a classification variable, with the
+suboption <code>test</code> to request a test of differences across that
+variable, based on regression or Pearson’s statistic as indicated in the
+notes. That’s quite a bit of work with little effort on our part.</p>
+<p>We see that the sample has a few more urban than rural women, and
+that urban women are younger, more educated, and more likely to use
+contraception (particularly efficient methods) than rural women.
+Moreover, all three differences are highly significant.</p>
+<p>The sample statististics showing the urban/rural split can be omitted
+using the <code>nosample</code> option. You can also select which
+statistics to calculate and where to place them using the
+<code>sample</code> option, type <code>help dtable##sample</code> for
+details.</p>
+<p>There is a <code>continuous</code> option to specify the statistics
+and/or tests to use for one or more continuous variables. For example if
+you wanted to use the median and interquartile range as descriptive
+statistics and the Kruskal-Wallis rank test for education you could use
+the option
+<code>continuous(educ, stat(median iqr) test(kwallis))</code>. Omitting
+the variable name would apply these choices to all continuous variables.
+To see a list of all the statistics and tests available for continuous
+variables type <code>help dtable##cstats</code> and
+<code>help dtable##ctests</code>.</p>
+<p>There is an equivalent <code>factor</code> option to specify the
+statistics and tests to be used for factor variables. For example you
+can use Fisher’s exact test, or a test based on ordinal association,
+such as Kendall’s tau or Goodman and Kruskal’s gamma. Type
+<code>help dtable##fstats</code> and <code>help dtable##ftests</code>
+for a full list of statistics and tests available for factor
+variables.</p>
+<p>The <code>dtable</code> command has a large number of options,
+including several that control table styles. The command creates its own
+collection called <code>DTable</code>, which allows further
+customization using <code>collect</code> commands. To learn more type
+<code>help dtable</code>.</p>
+<h2 id="an-alternative-table-1">3.2.3 An Alternative Table 1</h2>
+<p>The code below shows an alternative “table 1” that can be obtained
+with the <code>table</code> command in both Stata 17 and 18. It shows
+sample sizes, mean and standard deviations on separate lines for
+continuous variables, and just percents for factor variables, but no
+significance tests.</p>
+<pre class='stata'>. gen N = 1
+
+. table (var) (area) ,  ///
+>   stat(count N)                         /// sample
+>   stat(mean age educ) stat(sd age educ) /// continuous
+>   stat(fvpercent cuse)                  /// factor
+>   nformat(%5.2f mean sd) nformat(%5.1f fvpercent) ///
+>   sformat((%s) sd) sformat(%s%% fvpercent)  style(table-1) 
 
 ───────────────────┬───────────────────────────
                    │         Type of area      
                    │   Urban     Rural    Total
 ───────────────────┼───────────────────────────
+                 N │   1,683     1,432    3,115
+                   │                           
       Age in years │   27.43     28.51    27.93
                    │  (9.41)   (10.08)   (9.74)
                    │                           
@@ -229,49 +340,32 @@ Education in years │    5.87      3.25     4.66
        Efficient   │   46.5%     25.0%    35.6%
 ───────────────────┴───────────────────────────
 </pre>
-<p>We specify the rows using the keyword <code>var</code>, which refers
-to the variables in the <code>statistic</code> options, and the columns
-using <code>area</code>. We then request two statistics for our
-continuous variables, the <code>mean</code> and the <code>sd</code>, and
-one for our categorical variable, the <code>fvpercent</code>. Note that
-each <code>statistic</code> may list more than one variable.</p>
+<p>We first create a new variable called <code>N</code> to obtain sample
+sizes. We specify the table rows using <code>var</code>, which refers to
+the variables in the <code>statistics</code> option, and the columns
+using <code>area</code>. We then request the <code>count</code> for the
+sample size, the <code>mean</code> and <code>sd</code> for our
+continuous variables, and the <code>fvpercent</code> for our factor
+variable.</p>
 <p>To control the number of decimals printed we use our old friend
-<code>nformat</code>. If we wanted just one decimal for all numeric
-results we could say <code>nformat(%5.1f)</code>. In this case we want
-two decimals for mean and standard deviation, but just one for percents,
-so we use two numeric formats, <code>nformat(%5.2f mean sd)</code> to
-target the former and <code>nformat(%5.1f fvpercent)</code> for the
-latter.</p>
-<p>To distinguish mean and standard deviations in the output we enclose
-the latter in parentheses using an <code>sformat</code>. Note the
-addition of <code>sd</code>, so this string format applies only to that
-statistic. Just for fun we add a <code>%</code> symbol to the percents
-using another <code>sformat</code>, this time specifying
-<code>fvpercent</code> as the target. (If you are puzzled by the
-<code>%s%%</code> format, note that <code>%s</code> is the placeholder
-for the string, and that to append a <code>%</code> symbol we need to
-escape it using <code>%%</code>.)</p>
-<p>Why two kinds of formats? All numeric output is first converted to a
-string, using an <code>nformat</code> if any. Then that string is
-displayed using an <code>sformat</code> if any. So a standard deviation
-of 9.4148 becomes “9.41” (using the numeric format <code>%5.2f</code>)
-and is displayed as “(9.41)” (using the string format
-<code>(%s)</code>).</p>
+<code>nformat</code>, specifying 2 decimals for the mean and standard
+deviation, but just one for percents. To enclose the standard deviations
+in parentheses and append a <code>%</code> sign to the percents we use
+<code>sformat</code>. (If you are puzzled by the <code>%s%%</code>
+format, note that <code>%s</code> is the placeholder for the string and
+that to append a <code>%</code> symbol we need to escape it using
+<code>%%</code>.)</p>
 <p>Finally we use the built-in style <code>table-1</code>, which
-provides a more compact layout for the results for factor variables and
-a few other tweaks. Try running the table without this option to
-appreciate what it does. For more information about styles type
-<code>help Predefined styles</code>.</p>
-<p>To learn more about the <code>table</code> command and its many
-options, including the <code>command</code> option that lets you run any
-Stata command and collect its results, type <code>help table</code>.</p>
+provides a more compact layout for factor variables and a few other
+tweaks. Try running the table without the style to see what it does.</p>
 <h2 id="tables-of-estimates">3.3 Tables of Estimates</h2>
 <p>We now turn our attention to tables presenting the results of one or
 more estimation commands. We will use as an example simple linear
 regression with the <code>regress</code> command, but the same ideas
-apply to other models. We can collect the results ourselves using
+apply to other models. We could collect the results ourselves using
 <code>collect</code> as a prefix of the <code>regress</code> command, or
-even the <code>command</code> option of <code>table</code>, but the new
+even the <code>command</code> option of <code>table</code>, but
+the<br />
 <code>etable</code> command makes things easier.</p>
 <h3 id="a-single-regression">3.3.1 A Single Regression</h3>
 <p>If you type <code>etable</code> after a <code>regress</code> command
@@ -307,11 +401,6 @@ stars may be customized using the <code>stars()</code> option, type
 results of each one using <code>estimates store</code> (before they are
 overwriten by the next regression) and then pass the list of stored
 estimates to <code>etable</code>.</p>
-<p>Let us compare the fuel efficiency of foreign and domestic cars
-before and after adjusting for weight. Our measure of efficiency will be
-“gallons per 100 miles” or <code>gphm</code> rather than the usual
-<code>mpg</code>, because it has a more linear relationship with weight.
-First we run and store the regressions:</p>
 <pre class='stata'>. gen gphm = 100/mpg
 
 . quietly regress gphm i.foreign
@@ -321,11 +410,8 @@ First we run and store the regressions:</p>
 . quietly regress gphm i.foreign weight
 
 . estimates store adjusted
-</pre>
-<p>Next we build a table passing these estimates. We can get the
-defaults with <code>etable, estimates(unadjusted adjusted)</code>, but
-we will go beyond that. Consider the command:</p>
-<pre class='stata'>. etable, estimates(unadjusted adjusted) column(estimates) ///
+
+. etable, estimates(unadjusted adjusted) column(estimates) ///
 >     cstat(_r_b) cstat(_r_z, sformat((%s))) ///
 >     note(test statistic in parentheses) showstars showstarsnote
 
@@ -344,6 +430,12 @@ Number of observations      74         74
 ** p&lt;.01, * p&lt;.05
 test statistic in parentheses
 </pre>
+<p>Here we compare the efficiency of foreign and domestic cars before
+and after adjusting for weight. Our measure of efficiency is gallons per
+100 miles or <code>gphm</code> rather than the usual <code>mpg</code>,
+because it has a more linear relationship with weight. To get the
+defaults try <code>etable estimates(unadjusted adjusted)</code>. Here we
+added a couple of options.</p>
 <p>The option <code>column(estimates)</code> specifies that we want the
 columns to be labeled with the name of the estimates rather than the
 name of the dependent variable, which is the default.</p>
@@ -354,7 +446,7 @@ the coefficient (<code>_r_b</code>) and the test statistic
 (<code>_r_z</code>). To make sure the test statistic is in parentheses
 we use the <code>sformat</code> option of <code>cstat</code> to specify
 <code>(%s)</code>, where <code>%s</code> is a placeholder for the
-string, just as we did earlier in Section 3.2.2. We also use the
+string, just as we did earlier in Section 3.2.1. We also use the
 <code>note</code> option of <code>etable</code> to indicate exactly
 what’s shown.</p>
 <p>There is also a <code>mstat</code> option (short for model
@@ -558,4 +650,3 @@ various formats, including HTML, Word documents, Excel documents, LaTeX,
 PDF, plain text, Markdown and even Stata’s own SMCL format. Type
 <code>collect export</code> to learn more.</p>
 <p class="pull-right">Continue with <a href="graphics" class="btn btn-default">Graphics</a></p>
-
