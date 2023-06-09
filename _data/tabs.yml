@@ -63,6 +63,8 @@ stata:
     label: Graphics
   - url: programming
     label: Programming
+  - url: references
+    label: References
 R:
   - url: index
     label: Introduction
