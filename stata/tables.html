@@ -222,11 +222,11 @@ Age groups │
 ───────────┴──────────────────────────
 </pre>
 <p>Type just the first line first to see all the defaults. The second
-line adds some customization. We use our old friend
-<code>nformat()</code> to display the statistics with just two decimals.
-We also use <code>sformat()</code> to print the standard deviation in
-parentheses, specifying <code>sd</code> to ensure that this format
-applies only to that statistic.</p>
+line adds some customization. We use our old friend <code>nformat</code>
+to display the statistics with just two decimals. We also use
+<code>sformat</code> to print the standard deviation in parentheses,
+specifying <code>sd</code> to ensure that this format applies only to
+that statistic.</p>
 <p>Why two kinds of formats? All numeric output is first converted to a
 string, using an <code>nformat</code> if any. Then that string is
 displayed using an <code>sformat</code> if any. So a standard deviation
