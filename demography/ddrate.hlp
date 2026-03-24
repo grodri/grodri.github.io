@@ -59,7 +59,7 @@ Blackwell Publishing.
 These commands reproduce the results in Preston et al.
 
 	{cmd:. infile i str5 age swpop swdeaths kzpop kzdeaths using ///}
-    	    {cmd:https://grodri.github.io/datasets/preston.dat}
+    	    {cmd:https://grodri.github.io/datasets/preston21.dat}
 	
 	{cmd:. ddrate swpop swdeaths kzpop kzdeaths, names(Sweden Kazakhstan)}
 	

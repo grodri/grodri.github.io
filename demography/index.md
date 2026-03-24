@@ -46,7 +46,7 @@ splines](smoothing2) and [spline interpolation](interpolation).
 
 We start week 3 with a review of life tables, and a handout on [period
 life table construction](periodlt). We have an illustration of [Brass's
-relational logit](relationalLogit) model, and another fitting the
+relational logit](relationallogit) model, and another fitting the
 [modified logit and log-quadratic](mortmods) models.
 
 #### 4. Survival
