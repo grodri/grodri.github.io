@@ -88,7 +88,7 @@ using maximum likelihood and posterior Bayes estimates.
 
 For a three-level logit model consider the analysis of immunization in
 Guatemala. The data are available on the multilevel section of the
-website and the book by Rabe-Hesketh and Skrondal has a substantial
+website and the book by Rabe-HSsketh and Skrondal has a substantial
 analysis.
 
 ### 3. Poisson Models
@@ -97,7 +97,7 @@ We illustrate a [random-intercept Poisson model](lips) using data on lip
 cancer in Scotland from Rabe-Hesketch and Skrondal (2012).
 
 An important application of Poisson models is to survival data. I
-describe the calculation of [predicted probabilities](KenyaIcm) after
+describe the calculation of [predicted probabilities](Kenyaicm) after
 fitting a piecewise exponential model using data on infant and child
 mortality in Kenya, as explained in my chapter in the handbook of
 Multilevel Analysis.
@@ -105,14 +105,14 @@ Multilevel Analysis.
 ### 4. Bayesian Estimation
 
 The notes on how to run multilevel logit models using winBUGS are
-[here](hospBUGS), with a link to a compound document that can be run
-from WinBUGS. See also [part 2](hospBUGS2), showing how to run WinBUGS
+[here](hospbugs), with a link to a compound document that can be run
+from WinBUGS. See also [part 2](hospbugs2), showing how to run WinBUGS
 in batch mode, and how to import CODA output into Stata for further
 analysis.
 
 JAGS is \"Just Another Gibbs Sampler\", it uses essentially the same
 language as winBUGS and works well with R via \`rjags\`. I try it on the
-hospital data [here](hospJags)
+hospital data [here](hospjags)
 
 I also recommend you have a look at the MCMC feature in MLwiN, as
 demostrated in class. This is probably the easiest way to estimate
@@ -120,20 +120,20 @@ multilevel models using MCMC procedures.
 
 We now have a sample run of Stan, the latest on MCMC estimation using
 Hamiltonian Monte Carlo and the No U-Turn Sampler (NUTS), applied to the
-hospital delivery data [right here](hospStan).
+hospital delivery data [right here](hospstan).
 
 Stata can fit some multilevel models using Metropolis-Hastings combined
 with Gibbs sampling. We illustrate the procedure using the same hospital
 delivery data used with WinBUGS and Stan and compare resuts of all
-methods [here](hospBayesmh).
+methods [here](hospbayesmh).
 
 ### 5. Older Stuff
 
 A collection of MLwiN scripts is available [here](mln), [here](mln2),
-and [here](mln3). The lr3 \'manual\' is [here](lr3).
+and [here](mln3). 
 
 {% include markstat.md %}
 
-<small>Updated Fall 2022</small>
+<small>Links updated March 2026</small>
 
 {% include toc.html %}
